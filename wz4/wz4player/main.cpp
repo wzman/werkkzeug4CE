@@ -70,6 +70,7 @@ void RegisterWZ4Classes()
     sREGOPS(adf,0);     
     sREGOPS(pdf,0);
 
+    sREGOPS(wz4_physx,0);
   }
 
   Doc->FindType(L"Scene")->Secondary = 1;
@@ -720,9 +721,12 @@ static void sExitSts()
   sDelete(sSched);
 }
 
+extern void PhysXInitEngine();
 
 void sMain()
 {
+  PhysXInitEngine();
+
   bSelectorResult Selection;
   sClear(Selection);
   sAddSubsystem(L"StealingTaskScheduler (wz4player style)",0x80,0,sExitSts);

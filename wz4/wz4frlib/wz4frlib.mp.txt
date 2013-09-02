@@ -144,6 +144,12 @@ folder "tron"
   file "tADF.?pp";
 }
 
+folder "wz4_physx"
+{
+  file "wz4_physx_ops.ops";
+  file "wz4_physx.?pp";
+}
+
 folder "_generated"
 {
   file nonew "wz3_bitmap_ops.?pp";
@@ -187,4 +193,6 @@ folder "_generated"
   file nonew "pdf_ops.?pp";
   file nonew "tron_ops.?pp";
   file nonew "tron_shader.?pp";
+
+  file nonew "wz4_physx_ops.?pp";
 }

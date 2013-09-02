@@ -13,6 +13,7 @@
 #include "base/devices.hpp"
 #include "util/taskscheduler.hpp"
 #include "extra/blobheap.hpp"
+#include "wz4frlib/wz4_physx.hpp"
 
 /****************************************************************************/
 
@@ -62,6 +63,8 @@ void RegisterWZ4Classes()
     sREGOPS(fr063_tron,1);   // chaos+tron
     sREGOPS(adf,1);     
     sREGOPS(pdf,1);
+
+    sREGOPS(wz4_physx,0);
   }
 
   Doc->FindType(L"Scene")->Secondary = 1;
@@ -83,6 +86,8 @@ void RegisterWZ4Classes()
 
 void sMain()
 {
+  PhysXInitEngine();
+
 //  sBreakOnAllocation(27005);
 //  sAddMidi();
   sAddSched();

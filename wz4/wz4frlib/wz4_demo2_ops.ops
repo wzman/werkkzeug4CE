@@ -338,7 +338,10 @@ operator Wz4Render RenderMesh(Wz4Mesh)
   {
     RNRenderMesh *node = new RNRenderMesh();
     node->ParaBase = node->Para = *para;
-    in0->Charge();
+
+    // bug fix when player : Charge() here cause some operators to not work correctly
+    // because mesh fat vertices are deleted early
+    // in0->Charge();
     node->Mesh = in0; in0->AddRef();
 
 
