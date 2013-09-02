@@ -1876,6 +1876,67 @@ void RNModLight::Simulate(Wz4RenderContext *ctx)
     srt.MakeMatrix(trans);
   }
 
+  sMatrix34 transIndiv[8];
+  for(sInt i=0;i<8;i++)
+    transIndiv[i].Init();
+
+  if(Para.TransformEnable0 & 1)
+  {
+    sSRT srt;
+    srt.Init(&Para.Scale0.x);
+    srt.MakeMatrix(transIndiv[0]);
+  }
+
+  if(Para.TransformEnable1 & 1)
+  {
+    sSRT srt;
+    srt.Init(&Para.Scale1.x);
+    srt.MakeMatrix(transIndiv[1]);
+  }
+
+  if(Para.TransformEnable2 & 1)
+  {
+    sSRT srt;
+    srt.Init(&Para.Scale2.x);
+    srt.MakeMatrix(transIndiv[2]);
+  }
+
+  if(Para.TransformEnable3 & 1)
+  {
+    sSRT srt;
+    srt.Init(&Para.Scale3.x);
+    srt.MakeMatrix(transIndiv[3]);
+  }
+
+  if(Para.TransformEnable4 & 1)
+  {
+    sSRT srt;
+    srt.Init(&Para.Scale4.x);
+    srt.MakeMatrix(transIndiv[4]);
+  }
+
+  if(Para.TransformEnable5 & 1)
+  {
+    sSRT srt;
+    srt.Init(&Para.Scale5.x);
+    srt.MakeMatrix(transIndiv[5]);
+  }
+
+  if(Para.TransformEnable6 & 1)
+  {
+    sSRT srt;
+    srt.Init(&Para.Scale6.x);
+    srt.MakeMatrix(transIndiv[6]);
+  }
+
+  if(Para.TransformEnable7 & 1)
+  {
+    sSRT srt;
+    srt.Init(&Para.Scale7.x);
+    srt.MakeMatrix(transIndiv[7]);
+  }
+
+
   ModLightEnv *env = ModMtrlType->LightEnv[Para.Index];
   env->Ambient.InitColor(Para.Ambient);
 
@@ -1950,8 +2011,8 @@ void RNModLight::Simulate(Wz4RenderContext *ctx)
     }
     else
     {
-      env->Lights[i].ws_Pos = env->Lights[i].ws_Pos * trans;
-      env->Lights[i].ws_Dir = env->Lights[i].ws_Dir * trans;
+      env->Lights[i].ws_Pos = env->Lights[i].ws_Pos * trans * transIndiv[i];
+      env->Lights[i].ws_Dir = env->Lights[i].ws_Dir * trans * transIndiv[i];
     }
     env->Lights[i].ws_Pos_ = env->Lights[i].ws_Pos;
     env->Lights[i].ws_Dir_ = env->Lights[i].ws_Dir;
@@ -1974,7 +2035,6 @@ void RNModLight::Simulate(Wz4RenderContext *ctx)
   env->LimitShadowRadius = Para.LimitRadius;
 
 }
-
 
 void RNModLight::Render(Wz4RenderContext *ctx)
 {

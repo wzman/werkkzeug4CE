@@ -224,7 +224,7 @@ header_end
   };
 }
 
-operator Wz4Render ModLight(?Wz4Render)
+operator Wz4Render ModLight (?Wz4Render)
 {
   tab = Wz4Mtrl;
   column = 1;
@@ -593,13 +593,79 @@ operator Wz4Render ModLight(?Wz4Render)
       anim float31 LimitCenter(-1024..1024);
       anim float30 LimitRadius(0..1024) = 64;
     }
-    group "Transform";
+
+    group "Global Transform";
     layout flags TransformEnable("-|transformed");
     if(TransformEnable&1)
     {
       anim float31 Scale(-1024..1024 step 0.01) = 1;
       anim float30 Rot(-16..16 step 0.001);
-      anim float31 Trans(-1024..1024 step 0.01);    
+      anim float31 Trans(-1024..1024 step 0.01);
+    }
+
+    group "Individual Transform";
+    layout flags TransformEnable0("-|transformed0");
+    if(TransformEnable0&1)
+    {
+      anim float31 Scale0(-1024..1024 step 0.01) = 1;
+      anim float30 Rot0(-16..16 step 0.001);
+      anim float31 Trans0(-1024..1024 step 0.01);
+    }
+
+    layout flags TransformEnable1("-|transformed1");
+    if(TransformEnable1&1)
+    {
+      anim float31 Scale1(-1024..1024 step 0.01) = 1;
+      anim float30 Rot1(-16..16 step 0.001);
+      anim float31 Trans1(-1024..1024 step 0.01);
+    }
+
+    layout flags TransformEnable2("-|transformed2");
+    if(TransformEnable2&1)
+    {
+      anim float31 Scale2(-1024..1024 step 0.01) = 1;
+      anim float30 Rot2(-16..16 step 0.001);
+      anim float31 Trans2(-1024..1024 step 0.01);
+    }
+
+    layout flags TransformEnable3("-|transformed3");
+    if(TransformEnable3&1)
+    {
+      anim float31 Scale3(-1024..1024 step 0.01) = 1;
+      anim float30 Rot3(-16..16 step 0.001);
+      anim float31 Trans3(-1024..1024 step 0.01);
+    }
+
+    layout flags TransformEnable4("-|transformed4");
+    if(TransformEnable4&1)
+    {
+      anim float31 Scale4(-1024..1024 step 0.01) = 1;
+      anim float30 Rot4(-16..16 step 0.001);
+      anim float31 Trans4(-1024..1024 step 0.01);
+    }
+
+    layout flags TransformEnable5("-|transformed5");
+    if(TransformEnable5&1)
+    {
+      anim float31 Scale5(-1024..1024 step 0.01) = 1;
+      anim float30 Rot5(-16..16 step 0.001);
+      anim float31 Trans5(-1024..1024 step 0.01);
+    }
+
+    layout flags TransformEnable6("-|transformed6");
+    if(TransformEnable6&1)
+    {
+      anim float31 Scale6(-1024..1024 step 0.01) = 1;
+      anim float30 Rot6(-16..16 step 0.001);
+      anim float31 Trans6(-1024..1024 step 0.01);
+    }
+
+    layout flags TransformEnable7("-|transformed7");
+    if(TransformEnable7&1)
+    {
+      anim float31 Scale7(-1024..1024 step 0.01) = 1;
+      anim float30 Rot7(-16..16 step 0.001);
+      anim float31 Trans7(-1024..1024 step 0.01);
     }
 
     group "Animation Script"; overbox overlabel linenumber lines 5 string Script;
@@ -661,27 +727,161 @@ operator Wz4Render ModLight(?Wz4Render)
     sInt mode[8];
     sVector31 *ppos[8];
     sVector30 *pdir[8];
+    sF32 *range[8];
 
     sInt max = 0;
-    mode[max] = para->Mode0; ppos[max] = &para->Pos0; pdir[max] = &para->Dir0; max++;
-    mode[max] = para->Mode1; ppos[max] = &para->Pos1; pdir[max] = &para->Dir1; max++;
-    mode[max] = para->Mode2; ppos[max] = &para->Pos2; pdir[max] = &para->Dir2; max++;
-    mode[max] = para->Mode3; ppos[max] = &para->Pos3; pdir[max] = &para->Dir3; max++;
-    mode[max] = para->Mode4; ppos[max] = &para->Pos4; pdir[max] = &para->Dir4; max++;
-    mode[max] = para->Mode5; ppos[max] = &para->Pos5; pdir[max] = &para->Dir5; max++;
-    mode[max] = para->Mode6; ppos[max] = &para->Pos6; pdir[max] = &para->Dir6; max++;
-    mode[max] = para->Mode7; ppos[max] = &para->Pos7; pdir[max] = &para->Dir7; max++;
+    mode[max] = para->Mode0; ppos[max] = &para->Pos0; pdir[max] = &para->Dir0; range[max] = &para->Range0; max++;
+    mode[max] = para->Mode1; ppos[max] = &para->Pos1; pdir[max] = &para->Dir1; range[max] = &para->Range1; max++;
+    mode[max] = para->Mode2; ppos[max] = &para->Pos2; pdir[max] = &para->Dir2; range[max] = &para->Range2; max++;
+    mode[max] = para->Mode3; ppos[max] = &para->Pos3; pdir[max] = &para->Dir3; range[max] = &para->Range3; max++;
+    mode[max] = para->Mode4; ppos[max] = &para->Pos4; pdir[max] = &para->Dir4; range[max] = &para->Range4; max++;
+    mode[max] = para->Mode5; ppos[max] = &para->Pos5; pdir[max] = &para->Dir5; range[max] = &para->Range5; max++;
+    mode[max] = para->Mode6; ppos[max] = &para->Pos6; pdir[max] = &para->Dir6; range[max] = &para->Range6; max++;
+    mode[max] = para->Mode7; ppos[max] = &para->Pos7; pdir[max] = &para->Dir7; range[max] = &para->Range7; max++;
+
+    sSRT srt;
+    sMatrix34 mat;
+    if(para->TransformEnable)
+    {
+      srt.Scale = para->Scale;
+      srt.Rotate = para->Rot;
+      srt.Translate = para->Trans;
+    }
+    else
+    {
+      srt.Scale = sVector31(1);
+      srt.Rotate = sVector30(0);
+      srt.Translate = sVector31(0);
+    }
+    srt.MakeMatrix(mat);
+
+    sMatrix34 matIndiv[8];
+    for(sInt i=0;i<8;i++)
+      matIndiv[i].Init();
+
+    if(para->TransformEnable0)
+    {
+      srt.Scale = para->Scale0;
+      srt.Rotate = para->Rot0;
+      srt.Translate = para->Trans0;
+      srt.MakeMatrix(matIndiv[0]);
+    }
+
+    if(para->TransformEnable1)
+    {
+      srt.Scale = para->Scale1;
+      srt.Rotate = para->Rot1;
+      srt.Translate = para->Trans1;
+      srt.MakeMatrix(matIndiv[1]);
+    }
+
+    if(para->TransformEnable2)
+    {
+      srt.Scale = para->Scale2;
+      srt.Rotate = para->Rot2;
+      srt.Translate = para->Trans2;
+      srt.MakeMatrix(matIndiv[2]);
+    }
+
+    if(para->TransformEnable3)
+    {
+      srt.Scale = para->Scale3;
+      srt.Rotate = para->Rot3;
+      srt.Translate = para->Trans3;
+      srt.MakeMatrix(matIndiv[3]);
+    }
+
+    if(para->TransformEnable4)
+    {
+      srt.Scale = para->Scale4;
+      srt.Rotate = para->Rot4;
+      srt.Translate = para->Trans4;
+      srt.MakeMatrix(matIndiv[4]);
+    }
+
+    if(para->TransformEnable5)
+    {
+      srt.Scale = para->Scale5;
+      srt.Rotate = para->Rot5;
+      srt.Translate = para->Trans5;
+      srt.MakeMatrix(matIndiv[5]);
+    }
+
+    if(para->TransformEnable6)
+    {
+      srt.Scale = para->Scale6;
+      srt.Rotate = para->Rot6;
+      srt.Translate = para->Trans6;
+      srt.MakeMatrix(matIndiv[6]);
+    }
+
+    if(para->TransformEnable7)
+    {
+      srt.Scale = para->Scale7;
+      srt.Rotate = para->Rot7;
+      srt.Translate = para->Trans7;
+      srt.MakeMatrix(matIndiv[7]);
+    }
+
+    sVector31 * vStart;
+    sVector30 vEnd;
 
     for(sInt i=0;i<max;i++)
     {
-      if((mode[i]&15)>=2) 
+      sInt type = (mode[i]&15);
+      switch(type)
       {
-        pi.Handle3D(op,i+1,*ppos[i],wHM_PLANE);
-        pi.Line3D(*ppos[i],sVector31(ppos[i]->x,0,ppos[i]->z));
+        case 0:   // off
+          break;
+
+        case 2:   // point
+
+          // init vectors
+          vStart = ppos[i];
+
+          // update Handle pos
+          *vStart *= matIndiv[i];
+          pi.Handle3D(op,i+1, *vStart, wHM_PLANE);
+          *vStart *= matIndiv[i].Inverse();
+
+          // end = ground base
+          vEnd.x = vStart->x;
+          vEnd.y = 0;
+          vEnd.z = vStart->z;
+
+          // draw line
+          pi.Line3D(*vStart * matIndiv[i], sVector31(vEnd) * matIndiv[i]);
+          break;
+
+        case 1:   // directionnal
+        case 3:   // spot
+
+          // init vectors
+          vStart = ppos[i];
+          vEnd = *pdir[i];
+
+          // init line length
+          vEnd.Unit();
+          vEnd *= *range[i]/2;
+
+          // update Handle pos
+          *vStart *= matIndiv[i];
+          pi.Handle3D(op,i+1, *vStart, wHM_PLANE);
+          *vStart *= matIndiv[i].Inverse();
+
+          // add pos to dir
+          vEnd.x += vStart->x;
+          vEnd.y += vStart->y;
+          vEnd.z += vStart->z;
+
+          // draw line
+          pi.Line3D(*vStart * matIndiv[i], sVector31(vEnd) * matIndiv[i]);
+          break;
       }
     }
   }
 }
+
 
 header_end
 {
