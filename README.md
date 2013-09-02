@@ -30,9 +30,9 @@ Werkkzeug4 default project is preconfigured to find the PhysX SDK on **C:\librar
 If you want to change that, edit **wz4\wz4frlib\wz4_physx.hpp** and change PhysX path preprocessor variables.
 
 Add PhysX library path to your system environment variable to be able to run Werkkzeug4 from Visual Studio :
-C:\library\PhysX-3.2.3_PC_SDK_Core\Bin\win32
+**```C:\library\PhysX-3.2.3_PC_SDK_Core\Bin\win32```**
 and/or
-C:\library\PhysX-3.2.3_PC_SDK_Core\Bin\win64
+**```C:\library\PhysX-3.2.3_PC_SDK_Core\Bin\win64```**
 
 ## Compiling (the very easy way)
 
