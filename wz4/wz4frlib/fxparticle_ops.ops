@@ -203,10 +203,10 @@ operator Wz4Particles Cloud2()
     float SpeedSpread(0..2 step 0.001);
     array 
     {
-      float30 Pos(-1000000..1000000 step 0.01);
       float30 Scale(-1000000..1000000 step 0.01)=1;
+      float30 Rot(-1000000..1000000 step 0.01)=1;
+      float30 Pos(-1000000..1000000 step 0.01);
       float Speed(-1000000..1000000 step 0.01);
-      float Rot(-16..16 step 0.01);
       int Count(1..65536 step 16);
     }
   }
