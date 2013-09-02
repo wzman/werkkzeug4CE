@@ -16,8 +16,6 @@
 #define STB_VORBIS_HEADER_ONLY
 #include "wz4lib/stb_vorbis.inl"
 
-#include "libv2/v2mplayer.h"
-
 /****************************************************************************/
 
 class bRenderer
@@ -266,7 +264,6 @@ struct bMusicPlayer::VerySecret : protected bRenderer
   stb_vorbis *Vorbis;
   stb_vorbis_info VorbisInfo;
 
-  V2MPlayer *V2;
   sInt V2Length;
   sInt V2Decoded;
 
@@ -295,7 +292,7 @@ struct bMusicPlayer::VerySecret : protected bRenderer
   sInt      SeekBufferLen;
   sInt      CurBufferPos;
 
-  VerySecret(sBool seekable) : Seekable(seekable), Buffer(0), File(0), Vorbis(0), V2(0), Playing(sFALSE), Loop(sFALSE)
+  VerySecret(sBool seekable) : Seekable(seekable), Buffer(0), File(0), Vorbis(0), Playing(sFALSE), Loop(sFALSE)
   { 
     sClear(SeekBuffer);
     CurBuffer=0;
@@ -314,8 +311,6 @@ struct bMusicPlayer::VerySecret : protected bRenderer
     const sChar *ext = sFindFileExtension(filename);
     if (!sCmpStringI(ext,L"ogg"))
       InitVorbis(File->MapAll(),File->GetSize());
-    else if (!sCmpStringI(ext,L"v2m"))
-      InitV2(File->MapAll(),File->GetSize());
   }
 
   sBool InitCommon(void *ptr, sDInt size)
@@ -375,48 +370,6 @@ struct bMusicPlayer::VerySecret : protected bRenderer
     Output.Register(this);
   }
 
-
-  void InitV2(void *ptr, sDInt size)
-  {
-    if (!InitCommon(ptr,size)) return;
-    
-    if (Seekable)
-    {
-      sDPrintF(L"can't seek in V2M files yet\n");
-      Exit();
-      return;
-    }
-
-    const sInt rate=44100;
-
-    V2 = new V2MPlayer;
-    V2->Init();
-    
-    if (!V2->Open(ptr,rate))
-    {
-      sDPrintF(L"could not open V2M file\n");
-      Exit();
-      return;
-    }
-
-    sS32 *posarray=0;
-    sInt npos=V2->CalcPositions(&posarray);
-    if (posarray)
-    {
-      V2Length = sMulDiv(posarray[2*(npos-1)]+3000,rate,1000);
-      delete[] posarray;
-    }
-    else
-      V2Length=0;
-    V2Decoded=0;
-
-    V2->Play();
-
-    Output.Init(rate,2);
-    Output.Register(this);
-  }
-
-
   void InitDecoder()
   {
     if (Vorbis)
@@ -453,12 +406,6 @@ struct bMusicPlayer::VerySecret : protected bRenderer
       Vorbis=0;
     }
 
-    if (V2)
-    {
-      V2->Close();
-      sDelete(V2);
-    }
-
     Buffer=0;
     sDelete(File);
 
@@ -490,12 +437,6 @@ struct bMusicPlayer::VerySecret : protected bRenderer
   {
       if (Vorbis)
         InitDecoder();
-      else if (V2)
-      {
-        V2->Stop();
-        V2->Play();
-        V2Decoded=0;
-      }
   }
 
   void Seek(sF32 time)
@@ -560,13 +501,6 @@ struct bMusicPlayer::VerySecret : protected bRenderer
   {
     if (Vorbis)
       return stb_vorbis_get_samples_float_interleaved(Vorbis,VorbisInfo.channels,buffer,nFloats);
-    else if (V2)
-    {
-      if (V2Length && V2Decoded>=V2Length) return 0;
-      V2->Render(buffer,nFloats/2);
-      V2Decoded+=nFloats/2;
-      return nFloats/2;
-    }
     else
       return 0;
   }

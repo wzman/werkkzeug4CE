@@ -45,14 +45,6 @@ folder "resources"
   file "resources/share_stumbleupon.ico" license default;
 }
 
-folder "libv2"
-{
-  file "libv2/libv2.lib" license default;
-  file "libv2/libv2.h" license default;
-  file "libv2/v2mplayer.cpp" license default;
-  file "libv2/v2mplayer.h" license default;
-}
-
 file "wz4player.mp.txt";
 file "main.cpp";
 file "selector_win.?pp";
