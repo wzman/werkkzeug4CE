@@ -650,6 +650,27 @@ public:
 };
 
 /****************************************************************************/
+
+class RPMorphStream : public Wz4ParticleNode
+{
+  sRandomMT mt;
+public:
+  RPMorphStream();
+  ~RPMorphStream();
+  void Init();
+
+  Wz4ParticlesParaMorphStream Para,ParaBase;
+  Wz4ParticlesAnimMorphStream Anim;
+  Wz4ParticleNode *Source;
+  Wz4ParticleNode *Shape;
+
+  void Simulate(Wz4RenderContext *ctx);
+  sInt GetPartCount();
+  sInt GetPartFlags();
+  void Func(Wz4PartInfo &pinfo,sF32 time,sF32 dt);
+};
+
+/****************************************************************************/
 /****************************************************************************/
 
 #endif // FILE_WZ4FRLIB_FXPARTICLE_HPP

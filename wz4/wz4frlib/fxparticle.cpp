@@ -3600,3 +3600,85 @@ void RPMorph::Func(Wz4PartInfo &pinfo,sF32 time,sF32 dt)
 
   pinfo.Used = max;
 }
+
+/****************************************************************************/
+
+RPMorphStream::RPMorphStream()
+{
+  Source = 0;
+  Shape = 0;
+  Anim.Init(Wz4RenderType->Script);
+}
+
+RPMorphStream::~RPMorphStream()
+{
+  Source->Release();
+  Shape->Release();
+}
+
+void RPMorphStream::Init()
+{
+  Para = ParaBase;
+}
+
+sInt RPMorphStream::GetPartCount()
+{
+  return sMax<sInt>(Source->GetPartCount(),Shape->GetPartCount());
+}
+
+sInt RPMorphStream::GetPartFlags()
+{
+  return 0;
+}
+
+void RPMorphStream::Simulate(Wz4RenderContext *ctx)
+{
+  Para = ParaBase;
+  Anim.Bind(ctx->Script,&Para);
+  SimulateCalc(ctx);
+  Source->Simulate(ctx);
+
+  Shape->Simulate(ctx);
+}
+
+void RPMorphStream::Func(Wz4PartInfo &pinfo,sF32 time,sF32 dt)
+{
+  mt.Seed(time);
+  sArray<sVector31> shapePoints;
+
+  // get shape particles and exec particle func
+  Wz4PartInfo::SaveInfo save;
+  pinfo.Save(save);
+  pinfo.Alloc = Shape->GetPartCount();
+  Shape->Func(pinfo,time,dt);
+  for(int i=0; i<pinfo.Alloc; i++)
+    shapePoints.AddTail(pinfo.Parts[i].Pos);
+  pinfo.Load(save);
+
+  // exec source particles
+  Source->Func(pinfo,time,dt);
+  Wz4Particle *part = pinfo.Parts;
+
+  // for each particles
+  for(int i=0; i<pinfo.Alloc; i++)
+  {
+    if(i >= Source->GetPartCount())
+    {
+      if(Para.OverCountPartDest == 0)
+      {
+        // should hide overflow of particles of the destination
+        //part->Pos = sVector31(0);
+        part->Time = -1;
+      }
+    }
+    else
+    {
+      if(Shape->GetPartCount() > 0)
+      {
+        sInt index = mt.Int(shapePoints.GetCount());
+        part->Pos = sFade<sVector31>(part->Time * Para.Strength, part->Pos, shapePoints[index]);
+      }
+    }
+    part++;
+  }
+}

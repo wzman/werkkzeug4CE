@@ -883,4 +883,28 @@ operator Wz4Particles Morph(Wz4Mesh,Wz4Mesh)
 }
 
 /****************************************************************************/
+
+operator Wz4Particles MorphStream(Wz4Particles, Wz4Particles)
+{
+  tab = Wz4Render;
+  column = 3;
+  parameter
+  {
+    anim float Strength (-1024..1024 step 0.01) = 1.0;
+    flags OverCountPartDest ("Hide|Show");
+    group "Animation Script"; overbox overlabel linenumber lines 5 string Script;
+  }
+  code
+  {
+    RPMorphStream *node = new RPMorphStream();
+    node->ParaBase = node->Para = *para;
+    node->Source = in0->RootNode; in0->RootNode->AddRef();
+    node->Shape = in1->RootNode; in1->RootNode->AddRef();
+    node->Init();
+    out->RootNode = node;
+    out->AddCode(cmd);
+  }
+}
+
+/****************************************************************************/
 /****************************************************************************/
