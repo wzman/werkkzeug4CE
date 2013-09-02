@@ -1,6 +1,6 @@
 # Werkkzeug4 Community Edition
 
-Here is a dedicated repository of the Werkzkeug4 project.
+Here is a dedicated repository of the Werkkzeug4 project.
 
 ## What changes ?
 
