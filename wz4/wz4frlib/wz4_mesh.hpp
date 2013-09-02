@@ -260,6 +260,7 @@ public:
   void Bevel(sF32 amount);
   void Weld(sF32 weldEpsilon);
   void Mirror(sBool mx, sBool my, sBool mz, sInt selection, sInt mode); 
+  void FromVertex(Wz4Mesh * inputMesh, Wz4Mesh * outputMesh, sF32 random, sInt seed, sInt selection, sVector31 scale, sVector30 rot, sVector31 trans, sInt cumulated);
 
   // generators
 

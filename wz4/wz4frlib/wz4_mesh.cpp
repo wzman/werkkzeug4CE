@@ -6803,6 +6803,115 @@ void Wz4Mesh::SplitAlongPlane(const sVector4 &plane)
   }
 }
 
+// For sorting (to identify unique verts)
+static inline bool operator <(const sVector31 &a, const sVector31 &b)
+{
+  if (a.x != b.x) return a.x < b.x;
+  if (a.y != b.y) return a.y < b.y;
+  return a.z < b.z;
+}
+
+void Wz4Mesh::FromVertex(Wz4Mesh * inputMesh, Wz4Mesh * outputMesh, sF32 amount, sInt seed, sInt selection, sVector31 scale, sVector30 rot, sVector31 trans, sInt cumulated)
+{
+  sVERIFY(inputMesh != 0);
+
+  sArray<sVector31> positions;
+  Wz4MeshVertex * vp;
+  sMatrix34 mat;
+  sSRT srt;
+
+  sVector31 scaleCumulate(1);
+  sVector30 rotateCumulate(0);
+  sVector31 transCumulate(0);
+
+  sRandom rnd;
+  rnd.Seed(seed);
+
+  // build list of all positions (including duplicates)
+  sFORALL(inputMesh->Vertices, vp)
+  {
+    if(logic(selection, vp->Select))
+      positions.AddTail(vp->Pos);
+  }
+
+  // delete current mesh
+  Clear();
+
+  // sort to identify unique particles
+  sIntroSort(sAll(positions));
+
+  // for each vertex replace with the output mesh
+  for(sInt i=0; i<positions.GetCount(); i++)
+  {
+    if((i == 0 || positions[i] != positions[i-1]) && rnd.Float(1) <= amount) // haven't seen this vertex before and it is inside random amount
+    {
+      // compute new mesh pos
+      if(cumulated)
+      {
+        srt.Translate = positions[i];
+        srt.Translate.x += transCumulate.x;
+        srt.Translate.y += transCumulate.y;
+        srt.Translate.z += transCumulate.z;
+        srt.Scale = sVector31(scaleCumulate);
+        srt.Rotate = sVector30(rotateCumulate);
+        srt.MakeMatrix(mat);
+
+        scaleCumulate.Init(scaleCumulate.x + scale.x, scaleCumulate.y + scale.y, scaleCumulate.z + scale.z);
+        rotateCumulate += rot;
+        transCumulate.Init(transCumulate.x + trans.x, transCumulate.y + trans.y, transCumulate.z + trans.z);
+      }
+      else
+      {
+        srt.Translate = positions[i];
+        srt.Translate.x += trans.x;
+        srt.Translate.y += trans.y;
+        srt.Translate.z += trans.z;
+        srt.Scale = scale;
+        srt.Rotate = rot;
+        srt.MakeMatrix(mat);
+      }
+
+      Wz4Mesh m;
+      m.CopyFrom(outputMesh);
+      m.Transform(mat);
+
+      //this->Add(&m);
+      //-------------------------------------------------------------------------------------
+      // add mesh (same code as Add() method, but incredible more faster to copy it here)
+      Wz4Mesh *add = &m;
+
+      sInt v0 = Vertices.GetCount();
+      sInt f0 = Faces.GetCount();
+      sInt c0 = Clusters.GetCount();
+
+      Vertices.HintSize(add->Vertices.GetCount());
+      Vertices.Add(add->Vertices);
+      Faces.HintSize(add->Faces.GetCount());
+      Faces.Add(add->Faces);
+
+      Wz4MeshCluster *cl;
+      Clusters.HintSize(add->Clusters.GetCount());
+      sFORALL(add->Clusters,cl)
+      {
+        Wz4MeshCluster *ncl = new Wz4MeshCluster;
+        ncl->Mtrl = cl->Mtrl; cl->Mtrl->AddRef();
+        Clusters.AddTail(ncl);
+      }
+
+      for(sInt i=f0;i<Faces.GetCount();i++)
+      {
+        Wz4MeshFace *mf = &Faces[i];
+        mf->Cluster += c0;
+        for(sInt i=0;i<mf->Count;i++)
+          mf->Vertex[i] += v0;
+      }
+
+      MergeClusters();
+      //-------------------------------------------------------------------------------------
+    }
+  }
+}
+
 /****************************************************************************/
 /***                                                                      ***/
 /***   Wz3 Mesh Loading                                                   ***/
