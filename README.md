@@ -22,6 +22,15 @@ So basically there's two directories.
 - Visual Studio 2010, at least Visual Studio 2008 (Express versions will do, also VS2005 should work but hasn't been tested for a long time)
 - DirectX SDK
 - YASM
+- PhysX SDK v3.2.3
+
+## PhysX configuration
+
+Add PhysX librarie path to your system environment variable to be able to run Werkkzeug4 from Visual Studio.
+
+Werkkzeug4 project is preconfigured to find the PhysX SDK on C:\library\PhysX-3.2.3_PC_SDK_Core\ folder.
+If you want to change that, edit wz4\wz4frlib\wz4_physx.hpp and change PhysX path preprocessor variables (include and pragma comment)
+
 
 
 ## Compiling (the very easy way)
