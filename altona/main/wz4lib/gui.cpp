@@ -422,7 +422,7 @@ void MainWindow::UpdateStatus()
     Status->PrintF(STATUS_FILENAME,L"%s",Doc->Filename);
 
   sString<sMAXPATH> name;
-  name.PrintF(L"werkkzeug4 V%d.%d",WZ4_VERSION,WZ4_REVISION);
+  name.PrintF(L"werkkzeug4 CE v%d.%d",WZ4_VERSION,WZ4_REVISION);
   if(sRENDERER==sRENDER_DX9)
     name.Add(L" (DX9)");
   if(sRENDERER==sRENDER_DX11)
