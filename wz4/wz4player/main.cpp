@@ -839,9 +839,9 @@ void sMain()
     bSelectorSetup selsetup;
     selsetup.Title=title;
     selsetup.IconInt=100;
-    selsetup.IconURL=L"http://www.farbrausch.com";
-    selsetup.Caption=L"farbrausch";
-    selsetup.SubCaption.PrintF(L"werkkzeug4 player V%d.%d",WZ4_VERSION,WZ4_REVISION);
+    selsetup.IconURL=L"https://github.com/wzman/werkkzeug4";
+    selsetup.Caption=L"werkkzeug4";
+    selsetup.SubCaption.PrintF(L"werkkzeug4 CE player V%d.%d",WZ4_VERSION,WZ4_REVISION);
     selsetup.DialogFlags = opt.DialogFlags;
     selsetup.DialogScreenX = opt.ScreenX;
     selsetup.DialogScreenY = opt.ScreenY;

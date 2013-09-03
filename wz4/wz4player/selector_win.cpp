@@ -548,8 +548,8 @@ sBool bOpenSelector(const bSelectorSetup &setup,bSelectorResult &result)
   }
 
   y+=2*margin;
-  Die=AddButton(L"Die",leftx,y,0,0);
-  Demo=AddButton(L"Demo",W-leftx-80,y,0,1);
+  Die=AddButton(L"Quit",leftx,y,0,0);
+  Demo=AddButton(L"Run",W-leftx-80,y,0,1);
   AddStatic(L"||",leftx+92,y+6,15);
   y+=25;
 
