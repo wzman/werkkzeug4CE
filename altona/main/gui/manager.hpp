@@ -35,9 +35,13 @@ struct sGuiTheme
   sU32 LowColor;
   sU32 HighColor2;
   sU32 LowColor2;
+  sU32 Text2;
+  sU32 MathBack;
+  sU32 MathLine;
 
   sString<64> PropFont;
   sString<64> FixedFont;
+  sInt FontSize;
 
   template <class streamer> void Serialize_(streamer &stream);
   void Serialize(sWriter &s);

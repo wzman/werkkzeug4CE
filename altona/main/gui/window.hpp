@@ -86,6 +86,9 @@ enum sGuiColor
   sGC_LOW,                        // low edge, outer
   sGC_HIGH2,                      // hight edge, inner
   sGC_LOW2,                       // low edge, inner
+  sGC_TEXT2,                      // op add list text + windows menu
+  sGC_MATHBACK,                   // curve dialog background
+  sGC_MATHLINE,                   // curve dialog lines
 
   sGC_RED,                        // the color, with contrast to sGC_TEXT and sGC_DRAW
   sGC_YELLOW,                     // the color, with contrast to sGC_TEXT and sGC_DRAW

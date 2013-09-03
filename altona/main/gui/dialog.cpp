@@ -912,10 +912,14 @@ public:
     gh.Label(L"High"); gh.ColorPick(&Theme.HighColor, L"rgb", 0);
     gh.Label(L"Low"); gh.ColorPick(&Theme.LowColor, L"rgb", 0);
     gh.Label(L"Lower"); gh.ColorPick(&Theme.LowColor2, L"rgb", 0);
+    gh.Label(L"Text2"); gh.ColorPick(&Theme.Text2, L"rgb", 0);
+    gh.Label(L"MathBack"); gh.ColorPick(&Theme.MathBack, L"rgb", 0);
+    gh.Label(L"MathLines"); gh.ColorPick(&Theme.MathLine, L"rgb", 0);
 
     gh.Group(L"Fonts");
     gh.Label(L"Proportional"); gh.String(Theme.PropFont);
-    gh.Label(L"Fixed Width"); gh.String(Theme.FixedFont);
+    gh.Label(L"Fixed"); gh.String(Theme.FixedFont);
+    gh.Label(L"Size"); gh.Int(&Theme.FontSize,8,22,0.125000f);
 
     gh.Group();
     gh.Box(L"OK",sMessage(this,&sGuiThemeEditWindow::CmdButton,OK));

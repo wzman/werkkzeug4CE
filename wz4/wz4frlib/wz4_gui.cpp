@@ -63,10 +63,10 @@ void sMathPaper::Paint2D()
   sInt h = font->GetHeight();
   font->SetColor(sGC_TEXT,sGC_BACK);
 
-//  sRect2D(Client,sGC_RED);
-  sSetColor2D(sGC_MAX+0,0xffc0c0c0);
-  sSetColor2D(sGC_MAX+1,0xff808080);
-  sSetColor2D(sGC_MAX+2,0xff404040);
+  sU32 color = sGetColor2D(sGC_MATHLINE);
+  sSetColor2D(sGC_MAX+0,color);
+  sSetColor2D(sGC_MAX+1,color + 0xff202020);
+  sSetColor2D(sGC_MAX+2,color + 0xff404040);
 
   // scaling
 
@@ -117,7 +117,7 @@ void sMathPaper::Paint2D()
       r.x1 = XToS((x+1)*xstep);
       r.y1 = YToS((y+0)*ystep);
 
-      sRect2D(r,sGC_DOC);
+      sRect2D(r,sGC_MATHBACK);
     }
   }
 

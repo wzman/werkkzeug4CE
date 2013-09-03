@@ -210,7 +210,7 @@ void sToolBorder::OnPaint2D()
     else
       r.x0 = c->Outer.x1;
   }
-  sRect2D(r,sGC_BACK);
+  sRect2D(r,sGC_HIGH2);
 
   r = Client;
   if(Bottom)

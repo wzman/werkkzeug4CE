@@ -222,7 +222,7 @@ void sButtonControl::OnPaint2D()
 {
   if(Style & sBCS_NOBORDER)
   {
-    sInt bp = sGC_BACK;
+    sInt bp = sGC_HIGH2;
     if(BackColor)
     {
       sSetColor2D(0,BackColor);
@@ -232,7 +232,7 @@ void sButtonControl::OnPaint2D()
     if ((Flags&sWF_HOVER)&&!(Style&sBCS_STATIC))
       bp=sGC_SELECT;
 
-    sGui->PropFont->SetColor(sGC_TEXT,bp);
+    sGui->PropFont->SetColor(sGC_TEXT2, bp);
 
     sRect r = Client;
     if(Style & sBCS_CHECKMARK)
