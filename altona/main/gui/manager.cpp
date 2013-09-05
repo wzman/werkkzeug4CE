@@ -146,19 +146,19 @@ void sGui_::Tag()
 
 void sGui_::SetTheme(const sGuiTheme &theme)
 {
-  sSetColor2D(sGC_BACK    ,theme.BackColor);
-  sSetColor2D(sGC_DOC     ,theme.DocColor);
-  sSetColor2D(sGC_BUTTON  ,theme.ButtonColor);
-  sSetColor2D(sGC_TEXT    ,theme.TextColor);
-  sSetColor2D(sGC_DRAW    ,theme.DrawColor);
-  sSetColor2D(sGC_SELECT  ,theme.SelectColor);
-  sSetColor2D(sGC_HIGH    ,theme.HighColor);
-  sSetColor2D(sGC_LOW     ,theme.LowColor);
-  sSetColor2D(sGC_HIGH2   ,theme.HighColor2);
-  sSetColor2D(sGC_LOW2    ,theme.LowColor2);
-  sSetColor2D(sGC_TEXT2   ,theme.Text2);
-  sSetColor2D(sGC_MATHBACK,theme.MathBack);
-  sSetColor2D(sGC_MATHLINE,theme.MathLine);
+  sSetColor2D(sGC_BACK        ,theme.BackColor);
+  sSetColor2D(sGC_DOC         ,theme.DocColor);
+  sSetColor2D(sGC_BUTTON      ,theme.ButtonColor);
+  sSetColor2D(sGC_TEXT        ,theme.TextColor);
+  sSetColor2D(sGC_DRAW        ,theme.DrawColor);
+  sSetColor2D(sGC_SELECT      ,theme.SelectColor);
+  sSetColor2D(sGC_HIGH        ,theme.HighColor);
+  sSetColor2D(sGC_LOW         ,theme.LowColor);
+  sSetColor2D(sGC_HIGH2       ,theme.HighColor2);
+  sSetColor2D(sGC_LOW2        ,theme.LowColor2);
+  sSetColor2D(sGC_TEXT2       ,theme.Text2);
+  sSetColor2D(sGC_GRAPHBACK   ,theme.GraphBack);
+  sSetColor2D(sGC_GRAPHLINES  ,theme.GraphLines);
 
   sSetColor2D(sGC_RED     ,0xff4040);
   sSetColor2D(sGC_YELLOW  ,0xffff20);
@@ -171,15 +171,33 @@ void sGui_::SetTheme(const sGuiTheme &theme)
   sSetColor2D(sGC_LTGRAY  ,0xc0c0c0);
   sSetColor2D(sGC_PINK    ,0xff8080);
 
+  // set font style
+  sInt fontStyle;
+  switch(theme.FontFlag)
+  {
+  case 1:
+    fontStyle = sF2C_BOLD;
+    break;
+  case 2:
+    fontStyle = sF2C_ITALICS;
+    break;
+  default:
+    fontStyle = 0;
+  }
+
   if (PropFont)
-    PropFont->Init(theme.PropFont,theme.FontSize,0);
+    PropFont->Init(theme.PropFont,theme.FontSize,fontStyle);
   else
-    PropFont = new sFont2D(theme.PropFont,theme.FontSize,0);
+    PropFont = new sFont2D(theme.PropFont,theme.FontSize,fontStyle);
 
   if (FixedFont)
-    FixedFont->Init(theme.FixedFont,theme.FontSize,0);
+    FixedFont->Init(theme.FixedFont,theme.FontSize,fontStyle);
   else
-    FixedFont = new sFont2D(theme.FixedFont,theme.FontSize,0);
+    FixedFont = new sFont2D(theme.FixedFont,theme.FontSize,fontStyle);
+
+  // set operator size
+  OperatorDim.width = theme.OpWidth;
+  OperatorDim.height = theme.OpHeight;
 
   if (Root) Root->Update();
 }
@@ -1213,31 +1231,18 @@ const sGuiTheme sGuiThemeDefault =
   0x989898, // high2
   0x262626, // low2
   0x000000, // Text2
-  0x484848, // MathBack
-  0x555555, // MathLine
-  L"Arial", // prop
+  0x484848, // GraphBack
+  0x555555, // GraphLine
+  24,             // operator width
+  16,             // operator height
+  L"Arial",       // prop
   L"Courier New", // fixed
-  14,
+  14,             // font size
+  0,              // font style
 };
 
 const sGuiTheme sGuiThemeDarker = 
 {
-  /*0xc0c0c0, // back
-  0xd0d0d0, // doc
-  0xb0b0b0, // button
-  0x000000, // text
-  0x000000, // draw
-  0xff8080, // select
-  0xe0e0e0, // high
-  0x606060, // low
-  0xffffff, // high2
-  0x000000, // low2
-  0x000000, // Text2
-  0xAAAAAA, // MathBack
-  0xAAAAAA, // MathLine
-  L"Arial", // prop
-  L"Courier New", // fixed
-  14,       // font size*/
   0xe4e4e4, // back
   0xffffff, // doc
   0xd4d4cc, // button
@@ -1249,11 +1254,14 @@ const sGuiTheme sGuiThemeDarker =
   0xfafafa, // high2
   0x808080, // low2
   0x000000, // Text2
-  0xAAAAAA, // MathBack
-  0xAAAAAA, // MathLine
+  0xAAAAAA, // GraphBack
+  0xAAAAAA, // GraphLine
+  24,       // operator width
+  16,       // operator height
   L"Arial", // prop
   L"Courier New", // fixed
-  14,
+  14,             // font size
+  0,              // font style
 };
 
 template <class streamer> void sGuiTheme::Serialize_(streamer &s)
@@ -1262,8 +1270,8 @@ template <class streamer> void sGuiTheme::Serialize_(streamer &s)
   sVERIFY(version>0);
 
   s | BackColor | DocColor | ButtonColor | TextColor | DrawColor;
-  s | SelectColor | HighColor | LowColor | HighColor2 | LowColor2 | Text2 | MathBack | MathLine ;
-  s | PropFont | FixedFont | FontSize;
+  s | SelectColor | HighColor | LowColor | HighColor2 | LowColor2 | Text2 | GraphBack | GraphLines | OpWidth | OpHeight;
+  s | PropFont | FixedFont | FontSize | FontFlag;
 
   s.Footer();
 }
@@ -1284,8 +1292,8 @@ void sGuiTheme::Tint(sU32 add,sU32 sub)
   HighColor2  = sAddColor(HighColor2 ,addh);
   LowColor2   = sAddColor(LowColor2  ,addh);
   Text2       = sAddColor(Text2       ,addh);
-  MathBack    = sAddColor(MathBack    ,addh);
-  MathLine    = sAddColor(MathLine    ,addh);
+  GraphBack   = sAddColor(GraphBack   ,addh);
+  GraphLines  = sAddColor(GraphLines  ,addh);
 
   BackColor   = sSubColor(BackColor  ,sub);
   ButtonColor = sSubColor(ButtonColor,sub);
@@ -1294,9 +1302,9 @@ void sGuiTheme::Tint(sU32 add,sU32 sub)
   LowColor    = sSubColor(LowColor   ,subh);
   HighColor2  = sSubColor(HighColor2 ,subh);
   LowColor2   = sSubColor(LowColor2  ,subh);
-  Text2       = sSubColor(Text2     ,subh);
-  MathBack    = sSubColor(MathBack  ,subh);
-  MathLine    = sSubColor(MathLine  ,subh);
+  Text2       = sSubColor(Text2       ,subh);
+  GraphBack   = sSubColor(GraphBack   ,subh);
+  GraphLines  = sSubColor(GraphLines  ,subh);
 }
 
 /****************************************************************************/

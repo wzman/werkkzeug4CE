@@ -1554,7 +1554,8 @@ void MainWindow::CmdEditOptions()
     gh.Label(L"Expensive IPP Quality");
     gh.Choice(&Doc->EditOptions.ExpensiveIPPQuality,L"low|medium|high");
     gh.Label(L"GUI theme");
-    gh.Choice(&Doc->EditOptions.Theme,L"Dark default|Altona|custom")->ChangeMsg = sMessage(this,&MainWindow::CmdUpdateTheme);
+    gh.Choice(&Doc->EditOptions.Theme,L"Dark default|Altona|Custom")->ChangeMsg = sMessage(this,&MainWindow::CmdUpdateTheme);
+    gh.Label(L"Custom theme");
     gh.PushButton(L"edit",sMessage(this,&MainWindow::CmdEditTheme),0);
 
   //  gh.Label(L"Minimal Timeline");
@@ -1794,6 +1795,7 @@ void MainWindow::CmdUpdateTheme()
 void MainWindow::CmdEditTheme()
 {
   sOpenGuiThemeDialog(&Doc->EditOptions.CustomTheme);
+  Doc->EditOptions.Theme = wEditOptions::TH_CUSTOM;
 }
 
 void MainWindow::CmdMusicDialog()
@@ -4200,8 +4202,8 @@ void WinStack::CursorStatus()
 
 WinStack::WinStack()
 {
-  OpXS = 24;
-  OpYS = 16;
+  OpXS = sGui->OperatorDim.width;
+  OpYS = sGui->OperatorDim.height;
   CursorX = 0;
   CursorY = 0;
   Page = 0;
@@ -4336,6 +4338,9 @@ void WinStack::OnPaint2D()
   wStackOp *op;
   const sChar *name;
 
+  // set operator dimensions
+  OpXS = sGui->OperatorDim.width;
+  OpYS = sGui->OperatorDim.height;
 
   Doc->CurrentPage = Page;
 

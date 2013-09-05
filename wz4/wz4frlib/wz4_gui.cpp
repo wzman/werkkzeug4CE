@@ -63,7 +63,7 @@ void sMathPaper::Paint2D()
   sInt h = font->GetHeight();
   font->SetColor(sGC_TEXT,sGC_BACK);
 
-  sU32 color = sGetColor2D(sGC_MATHLINE);
+  sU32 color = sGetColor2D(sGC_GRAPHLINES);
   sSetColor2D(sGC_MAX+0,color);
   sSetColor2D(sGC_MAX+1,color + 0xff202020);
   sSetColor2D(sGC_MAX+2,color + 0xff404040);
@@ -117,7 +117,7 @@ void sMathPaper::Paint2D()
       r.x1 = XToS((x+1)*xstep);
       r.y1 = YToS((y+0)*ystep);
 
-      sRect2D(r,sGC_MATHBACK);
+      sRect2D(r,sGC_GRAPHBACK);
     }
   }
 
@@ -1865,7 +1865,7 @@ void Wz4TimelineCed::OnPaint2D(const sRect &client)
       }
 
       sSetColor2D(sGC_MAX,col);
-      sGui->PropFont->SetColor(sGC_TEXT,clip->Select?sGC_PINK:sGC_MAX);
+      sGui->PropFont->SetColor(sGC_TEXT2,clip->Select?sGC_PINK:sGC_MAX);
       sGui->PropFont->Print(sF2P_OPAQUE,r,clip->Name);
     }
     else
@@ -1878,9 +1878,11 @@ void Wz4TimelineCed::OnPaint2D(const sRect &client)
     sClipExclude(clip->Rect);
   }
 
-  sSetColor2D(sGC_MAX+1,0xd0d0d0);
-  sSetColor2D(sGC_MAX+0,0xa0a0a0);
-  sSetColor2D(sGC_MAX+2,0x707070);
+  // TimeLine Editor Lines Colors
+  sU32 color = sGetColor2D(sGC_GRAPHLINES);
+  sSetColor2D(sGC_MAX+1,color + 0xd0d0d0);
+  sSetColor2D(sGC_MAX+0,color + 0xa0a0a0);
+  sSetColor2D(sGC_MAX+2,color + 0x707070);
  
   sInt skip = 0x10000;
   sBool wide = 0x10000;
@@ -1902,7 +1904,7 @@ void Wz4TimelineCed::OnPaint2D(const sRect &client)
     if(i==0)
       pen = sGC_DRAW;
     sRect2D(x0,Client.y0,x0+1,Client.y1,pen);
-    sRect2D(x0+1,Client.y0,x1,Client.y1,sGC_DOC);
+    sRect2D(x0+1,Client.y0,x1,Client.y1,sGC_GRAPHBACK);
 
     if((i & (skip-wide))==skip-wide)
     {

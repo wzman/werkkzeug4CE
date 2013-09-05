@@ -36,12 +36,16 @@ struct sGuiTheme
   sU32 HighColor2;
   sU32 LowColor2;
   sU32 Text2;
-  sU32 MathBack;
-  sU32 MathLine;
+  sU32 GraphBack;
+  sU32 GraphLines;
+  sInt OpWidth;
+  sInt OpHeight;
 
   sString<64> PropFont;
   sString<64> FixedFont;
   sInt FontSize;
+  sInt FontFlag;
+
 
   template <class streamer> void Serialize_(streamer &stream);
   void Serialize(sWriter &s);
@@ -77,6 +81,12 @@ private:
     sIED_JOYPAD = 3,
     sIED_MOUSEHARD = 4,
     sIED_MAX,
+  };
+
+  struct sOperatorDim
+  {
+    sInt width;
+    sInt height;
   };
 
   friend class sGuiApp;
@@ -166,6 +176,7 @@ public:
 
   // painting resources
 
+  sOperatorDim OperatorDim;
   sFont2D *PropFont;
   sFont2D *FixedFont;
   void RectHL(const sRect &r,sInt colh,sInt coll) const;

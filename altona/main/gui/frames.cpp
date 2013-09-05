@@ -577,7 +577,7 @@ public:
   }
   void OnPaint2D()
   {
-    sRect2D(Client,sGC_BACK);
+    sRect2D(Client,sGC_HIGH2);
     sGui->RectHL(sRect(Client.x0+5,Client.y0+5,Client.x1-5,Client.y0+7),sTRUE);
   }
 };

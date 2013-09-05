@@ -913,13 +913,18 @@ public:
     gh.Label(L"Low"); gh.ColorPick(&Theme.LowColor, L"rgb", 0);
     gh.Label(L"Lower"); gh.ColorPick(&Theme.LowColor2, L"rgb", 0);
     gh.Label(L"Text2"); gh.ColorPick(&Theme.Text2, L"rgb", 0);
-    gh.Label(L"MathBack"); gh.ColorPick(&Theme.MathBack, L"rgb", 0);
-    gh.Label(L"MathLines"); gh.ColorPick(&Theme.MathLine, L"rgb", 0);
+    gh.Label(L"GraphBack"); gh.ColorPick(&Theme.GraphBack, L"rgb", 0);
+    gh.Label(L"GraphLines"); gh.ColorPick(&Theme.GraphLines, L"rgb", 0);
 
     gh.Group(L"Fonts");
     gh.Label(L"Proportional"); gh.String(Theme.PropFont);
     gh.Label(L"Fixed"); gh.String(Theme.FixedFont);
-    gh.Label(L"Size"); gh.Int(&Theme.FontSize,8,22,0.125000f);
+    gh.Label(L"Size"); gh.Int(&Theme.FontSize,8,64,0.125000f);
+    gh.Label(L"Style"); gh.Choice(&Theme.FontFlag, L"normal|bold|italic");
+
+    gh.Group(L"Operators");
+    gh.Label(L"Width"); gh.Int(&Theme.OpWidth,4,128,0.125000f);
+    gh.Label(L"Height"); gh.Int(&Theme.OpHeight,4,128,0.125000f);
 
     gh.Group();
     gh.Box(L"OK",sMessage(this,&sGuiThemeEditWindow::CmdButton,OK));
