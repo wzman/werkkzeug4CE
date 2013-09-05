@@ -1,0 +1,25 @@
+[63dde2a] - 2013-09-05 - Release Binaries
+[33fab4d] - 2013-09-05 - Add theme controls to resize operators, Add theme controls for fonts, and fix theme color for clip dialog
+[99571c2] - 2013-09-03 - Add wz4 tutorial
+[ce913c7] - 2013-09-03 - update window title and version in player
+[be4a639] - 2013-09-03 - Change windows title + Version number
+[8cee2b7] - 2013-09-03 - New theme parameters + font size + new default skin
+[88ec521] - 2013-09-02 - Add new mesh operator : FromVertex
+[8530dc6] - 2013-09-02 - update README.md
+[b5f0c5d] - 2013-09-02 - update README.md
+[5115d84] - 2013-09-02 - update README.md
+[bf902db] - 2013-09-02 - update README.md
+[fa3b28a] - 2013-09-02 - Physx fix compiler error if _DEBUG is defined
+[9f29bbb] - 2013-09-02 - update README.md
+[f9621cf] - 2013-09-02 - add console pause to build_project.bat script
+[cf96eae] - 2013-09-02 - add PhysX librarie and support of RigidBody
+[a9b57f4] - 2013-09-02 - add new a particles operator : MorphStream
+[27fef75] - 2013-09-02 - Add to Cloud2 rot x and z axis
+[9d6055c] - 2013-09-02 - Add handles for modlight + individual matrix transformation
+[cf71a47] - 2013-09-02 - Remove useless v2 lib in player to allow x64 build
+[a1840d0] - 2013-09-02 - fix README.md
+[b08d1f4] - 2013-09-02 - update README.md
+[2e6d139] - 2013-09-02 - add altona_config.hpp file
+[4b6820b] - 2013-09-02 - add altona binaries
+[099c296] - 2013-09-02 - Farbrausch Werkkzeug4 initial fork
+[ca1f483] - 2013-09-02 - first commit
