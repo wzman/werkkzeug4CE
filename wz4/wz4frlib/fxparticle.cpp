@@ -3657,10 +3657,20 @@ void RPMorphStream::Func(Wz4PartInfo &pinfo,sF32 time,sF32 dt)
   Wz4PartInfo::SaveInfo save;
   pinfo.Save(save);
   pinfo.Alloc = Shape->GetPartCount();
+  if(Shape->GetPartFlags() == wPNF_Orientation)
+    pinfo.Quats = new sQuaternion[pinfo.Alloc];
+  if(Shape->GetPartFlags() == wPNF_Color)
+    pinfo.Colors = new sU32[pinfo.Alloc];
   Shape->Func(pinfo,time,dt);
   for(int i=0; i<pinfo.Alloc; i++)
     shapePoints.AddTail(pinfo.Parts[i].Pos);
   pinfo.Load(save);
+
+  // init quaternions and Colors if needed
+  if(Source->GetPartFlags() == wPNF_Orientation)
+    pinfo.Quats = new sQuaternion[pinfo.Alloc];
+  if(Source->GetPartFlags() == wPNF_Color)
+    pinfo.Colors = new sU32[pinfo.Alloc];
 
   // exec source particles
   Source->Func(pinfo,time,dt);
