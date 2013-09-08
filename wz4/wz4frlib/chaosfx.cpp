@@ -174,17 +174,22 @@ RNPrint::~RNPrint()
   Font->Release();
 }
 
-
 void RNPrint::Simulate(Wz4RenderContext *ctx)
 {
   Para = ParaBase;
 
   Anim.Bind(ctx->Script,&Para);
   SimulateCalc(ctx);
-//  Anim.UnBind(ctx->Script,&Para);
-  SimulateChilds(ctx);
 }
 
+void RNPrint::Prepare(Wz4RenderContext *ctx)
+{
+  sSRT srt;
+  srt.Scale = Para.Scale;
+  srt.Rotate = Para.Rot*sPI2F;
+  srt.Translate = Para.Trans;
+  srt.MakeMatrix(Matrix);
+}
 
 void RNPrint::Render(Wz4RenderContext *ctx)
 {
@@ -194,12 +199,11 @@ void RNPrint::Render(Wz4RenderContext *ctx)
     sViewport view = ctx->View;
     sFORALL(Matrices,model)
     {
-      view.Model = sMatrix34(*model);
+      view.Model = sMatrix34(*model) * Matrix;
       view.Prepare();
-      Font->Print(view,Text,Para.Color,1.0f/Font->Height);   // hier fehlt die matrix im text op!
+      Font->Print(view,Text,Para.Color,1.0f/Font->Height);
     }
- 
-  }  
+  }
 }
 
 /****************************************************************************/

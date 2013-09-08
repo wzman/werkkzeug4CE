@@ -42,11 +42,13 @@ public:
 
 class RNPrint : public Wz4RenderNode
 {
+  sMatrix34 Matrix;
 public:
   RNPrint();
   ~RNPrint();
 
   void Simulate(Wz4RenderContext *ctx);
+  void Prepare(Wz4RenderContext *ctx);
   void Render(Wz4RenderContext *ctx);
 
   Wz4RenderParaPrint Para,ParaBase;
