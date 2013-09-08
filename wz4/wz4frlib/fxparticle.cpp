@@ -1978,6 +1978,13 @@ void RPTrails::Func(Wz4PartInfo &pinfo,sF32 time,sF32 dt)
   for(sInt i=0;i<Para.Count;i++)
   {
     pinfo.Alloc = Source->GetPartCount();
+
+    if(Source->GetPartFlags() == wPNF_Orientation)
+      pinfo.Quats = new sQuaternion[pinfo.Alloc];
+
+    if(Source->GetPartFlags() == wPNF_Color)
+      pinfo.Colors = new sU32[pinfo.Alloc];
+
     pinfo.Used = 0;
     Source->Func(pinfo,time,d*i+dt);
     used += pinfo.Used;
