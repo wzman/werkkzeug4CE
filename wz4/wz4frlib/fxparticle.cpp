@@ -3129,8 +3129,8 @@ void RPSparcle::DelayedInit()
   Wz4PartInfo part[2];
   sInt db = 0;
   
-  part[0].Init(0,maxsrc);
-  part[1].Init(0,maxsrc);
+  part[0].Init(Source->GetPartFlags(),maxsrc);
+  part[1].Init(Source->GetPartFlags(),maxsrc);
 
   part[db].Reset();
   Source->Func(part[db],-1.0f,0);
