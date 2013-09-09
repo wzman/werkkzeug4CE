@@ -491,7 +491,7 @@ operator Wz4Render Sprites(Wz4Particles,Texture2D,?Texture2D)
     anim float Aspect(-16..16 step 0.01) = 0;
     layout flags Mode ("*0add|premul alpha|mul|mul2|smooth|alpha (please use pm-alpha):*4zoff|zread|zwrite|zon:*8-|sort")=0x4000;
     continue layout flags Mode ("*9atlas anim|atlas multi:*11fade in out|-:*12screen align|vector align:*13-|particle color:*14-|scale by transform");
-    continue layout flags Mode ("*16dest alpha from shader|dest alpha unchanged|dest alpha = 0|dest alpha blend:*20Center|Button:*24-|Tree Lock :*28Alpha Test Off|Alpha Test On");    
+    continue layout flags Mode ("*16dest alpha from shader|dest alpha unchanged|dest alpha = 0|dest alpha blend:*20Center|Bottom:*24-|Tree Lock :*28Alpha Test Off|Alpha Test On");    
     anim color Color("rgba") = 0xffffffff;
     padding(1);
     
