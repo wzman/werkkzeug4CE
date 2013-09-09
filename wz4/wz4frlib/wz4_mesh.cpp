@@ -4589,6 +4589,14 @@ void Wz4Mesh::ChargeSolid(sInt flags)
 #endif
   if(Clusters.GetCount()==0) return;
   if(Clusters[0]->Geo[geoindex]) return;
+
+  // check if geo is null in all Clusters
+  sFORALL(Clusters,cl)
+  {
+    if(cl->Geo[geoindex] != 0)
+      return;
+  }
+
   ChargeBBox();
 
   sInt ccount = Clusters.GetCount();
