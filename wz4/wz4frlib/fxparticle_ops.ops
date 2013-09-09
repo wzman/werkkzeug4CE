@@ -796,7 +796,7 @@ operator Wz4Particles Bulge(Wz4Particles)
 
 /****************************************************************************/
 
-operator Wz4Particles Sparcle(Wz4Particles)
+operator Wz4Particles Sparcle "Sparkle" (Wz4Particles)
 {
   tab = Wz4Render;
   column = 3;
