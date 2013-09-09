@@ -43,7 +43,7 @@ Use this one if your configuration is Visual Studio 10, Directx 9 and if you wan
 
 2. run **build_project.bat**. If everything goes according to plan, you should now find solution and project files in every directory.
 
-3. Open the Visual Studio **wz4/werkkzeug4/werkkzeug4.sln** or **wz4/wz4player/wz4player.sln** project, compile, enjoy.
+3. Open the Visual Studio **wz4/werkkzeug4/werkkzeug4.sln** or **wz4/wz4player/wz4player.sln** project, choose your build configuration, compile, enjoy.
 
 
 ### Custom Compiling (the easy way)
@@ -55,7 +55,7 @@ Use this one for a custom configuration.
 2. **``` makeproject -r path_to_source ```** - 
 If everything goes according to plan, you should now find solution and project files in every directory.
 
-3. Open the Visual Studio **wz4/werkkzeug4/werkkzeug4.sln** or **wz4/wz4player/werkkzeug4.sln** projects, compile, enjoy.
+3. Open the Visual Studio **wz4/werkkzeug4/werkkzeug4.sln** or **wz4/wz4player/werkkzeug4.sln** projects, choose your build configuration, compile, enjoy.
 
 
 ### Manual Compiling (the hard way)
