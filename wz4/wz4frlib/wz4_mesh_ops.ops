@@ -750,7 +750,7 @@ operator Wz4Mesh DeleteFace(Wz4Mesh)
 operator Wz4Mesh SetMaterial(Wz4Mesh,Wz4Mtrl)
 {
   column = 3;
-  shortcut = 'M';
+  shortcut = 'w';
   flags = passinput|passoutput;
   parameter
   {
@@ -1837,6 +1837,7 @@ operator Wz4Mesh Select(Wz4Mesh,?GenBitmap)
 operator Wz4Mesh SplitAlongPlane(Wz4Mesh)
 {
   column = 2;
+  shortcut = 'C';
   parameter
   {
     float4 Plane(-256..256 step 0.001) = { 0,1,0,0.5 };
