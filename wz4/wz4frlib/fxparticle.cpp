@@ -2316,6 +2316,7 @@ void RNTrails::Prepare(Wz4RenderContext *ctx)
 
         if(faces==2)
         {
+          wide = -wide;
           pt = &PInfos[j].Parts[i];
           vp->px = pt->Pos.x+side.x;
           vp->py = pt->Pos.y+side.y;
