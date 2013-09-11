@@ -901,6 +901,8 @@ void RNSprites::Prepare(Wz4RenderContext *ctx)
       texanim=sInt(uvcountf*sMod(t*Para.TexAnimSpeed+part->TexAnimRand,1));
       if (texanim<0) texanim+=uvcounti;
     }
+
+    sVERIFY(texanim>=0)
     vp1->uvrect = UVRects[texanim+part->Group*uvcounti];
 
     vp1->fade = part->DistFade;
