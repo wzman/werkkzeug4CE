@@ -40,6 +40,7 @@ struct sGuiTheme
   sU32 GraphLines;
   sInt OpWidth;
   sInt OpHeight;
+  sInt VerticalResizableFlag;
 
   sString<64> PropFont;
   sString<64> FixedFont;
@@ -177,6 +178,7 @@ public:
   // painting resources
 
   sOperatorDim OperatorDim;
+  sBool isOpsVerticalResizable;
   sFont2D *PropFont;
   sFont2D *FixedFont;
   void RectHL(const sRect &r,sInt colh,sInt coll) const;

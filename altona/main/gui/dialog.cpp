@@ -925,6 +925,7 @@ public:
     gh.Group(L"Operators");
     gh.Label(L"Width"); gh.Int(&Theme.OpWidth,4,128,0.125000f);
     gh.Label(L"Height"); gh.Int(&Theme.OpHeight,4,128,0.125000f);
+    gh.Label(L"Vertical Resizable"); gh.Choice(&Theme.VerticalResizableFlag, L"false|true");
 
     gh.Group();
     gh.Box(L"OK",sMessage(this,&sGuiThemeEditWindow::CmdButton,OK));

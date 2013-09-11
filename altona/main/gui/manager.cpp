@@ -199,6 +199,9 @@ void sGui_::SetTheme(const sGuiTheme &theme)
   OperatorDim.width = theme.OpWidth;
   OperatorDim.height = theme.OpHeight;
 
+  // vertical resize flag for all op
+  isOpsVerticalResizable = theme.VerticalResizableFlag;
+
   if (Root) Root->Update();
 }
 
@@ -1235,6 +1238,7 @@ const sGuiTheme sGuiThemeDefault =
   0x555555, // GraphLine
   24,             // operator width
   16,             // operator height
+  1,              // operator vertical resizable
   L"Arial",       // prop
   L"Courier New", // fixed
   14,             // font size
@@ -1258,6 +1262,7 @@ const sGuiTheme sGuiThemeDarker =
   0xAAAAAA, // GraphLine
   24,       // operator width
   16,       // operator height
+  0,        // operator vertical resizable
   L"Arial", // prop
   L"Courier New", // fixed
   14,             // font size
@@ -1270,7 +1275,7 @@ template <class streamer> void sGuiTheme::Serialize_(streamer &s)
   sVERIFY(version>0);
 
   s | BackColor | DocColor | ButtonColor | TextColor | DrawColor;
-  s | SelectColor | HighColor | LowColor | HighColor2 | LowColor2 | Text2 | GraphBack | GraphLines | OpWidth | OpHeight;
+  s | SelectColor | HighColor | LowColor | HighColor2 | LowColor2 | Text2 | GraphBack | GraphLines | OpWidth | OpHeight | VerticalResizableFlag ;
   s | PropFont | FixedFont | FontSize | FontFlag;
 
   s.Footer();

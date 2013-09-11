@@ -5035,7 +5035,7 @@ void WinStack::DragMove(const sWindowDrag &dd,sDInt mode)
     {
       op = GetHit(dd.StartX,dd.StartY);
       DragMoveW = (dd.DeltaX+1024*OpXS+OpXS/2)/OpXS-1024;
-      if(op->Class->Flags & wCF_VERTICALRESIZE)
+      if(sGui->isOpsVerticalResizable || op->Class->Flags & wCF_VERTICALRESIZE)
         DragMoveH = (dd.DeltaY+1024*OpYS+OpYS/2)/OpYS-1024;
     }
     Update();
