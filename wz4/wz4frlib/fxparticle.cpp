@@ -1335,7 +1335,7 @@ void RNChunks::Render(Wz4RenderContext *ctx)
     sMatrix34CM *mats = FBMUse(PInfo[0].Used*Matrices.GetCount());
     sMatrix34CM *matp;
 
-    if(mats>0)
+    if(mats>0 && PInfo[0].Used>0)
     {
       for(sInt i=0;i<Meshes.GetCount();i++)
       {
