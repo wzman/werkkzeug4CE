@@ -349,7 +349,7 @@ void RNFR063_Sprites::Prepare(Wz4RenderContext *ctx)
     sVector4 out_col = out_ambient + out_diffuse + out_specular;
 
     sF32 d;
-    sF32 od;
+    sF32 od=0.0f;
     sBool isin=SDF->GetObj()->IsInBox(part->Pos);
 
     part->Drop=false;
