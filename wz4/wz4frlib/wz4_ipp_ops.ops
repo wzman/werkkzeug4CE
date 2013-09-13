@@ -324,7 +324,7 @@ operator Wz4Render CrashZoom(Wz4Render)
   {
     int Renderpass(-127..127);
     layout flags Flags ("*4center2d|center3d")=1;
-    continue flags Flags "Steps"("|| 2| 3| 4");
+    continue flags Flags "Steps"("| 1| 2| 3| 4");
     if(Flags & 16)
       anim float31 Center3D (-1024..1024 step 0.125);
     if(!(Flags & 16))
