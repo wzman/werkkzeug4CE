@@ -543,7 +543,8 @@ void RPExploder::Func(Wz4PartInfo &pinfo,sF32 time,sF32 dt)
     sF32 time = tt;
     if(Para.RotationAirDrag)
       time = invRotDrag * (1.0f - sFExp(-Para.RotationAirDrag * tt));
-    pinfo.Quats[_i].Init(part->RotAxis,time*part->AngularVelocity);
+    if(pinfo.Quats)
+      pinfo.Quats[_i].Init(part->RotAxis,time*part->AngularVelocity);
   }
   
   pinfo.Flags = wPNF_Orientation;
@@ -1980,13 +1981,6 @@ void RPTrails::Func(Wz4PartInfo &pinfo,sF32 time,sF32 dt)
   for(sInt i=0;i<Para.Count;i++)
   {
     pinfo.Alloc = Source->GetPartCount();
-
-    if(Source->GetPartFlags() == wPNF_Orientation)
-      pinfo.Quats = new sQuaternion[pinfo.Alloc];
-
-    if(Source->GetPartFlags() == wPNF_Color)
-      pinfo.Colors = new sU32[pinfo.Alloc];
-
     pinfo.Used = 0;
     Source->Func(pinfo,time,d*i+dt);
     used += pinfo.Used;
@@ -3660,20 +3654,10 @@ void RPMorphStream::Func(Wz4PartInfo &pinfo,sF32 time,sF32 dt)
   Wz4PartInfo::SaveInfo save;
   pinfo.Save(save);
   pinfo.Alloc = Shape->GetPartCount();
-  if(Shape->GetPartFlags() == wPNF_Orientation)
-    pinfo.Quats = new sQuaternion[pinfo.Alloc];
-  if(Shape->GetPartFlags() == wPNF_Color)
-    pinfo.Colors = new sU32[pinfo.Alloc];
   Shape->Func(pinfo,time,dt);
   for(int i=0; i<pinfo.Alloc; i++)
     shapePoints.AddTail(pinfo.Parts[i].Pos);
   pinfo.Load(save);
-
-  // init quaternions and Colors if needed
-  if(Source->GetPartFlags() == wPNF_Orientation)
-    pinfo.Quats = new sQuaternion[pinfo.Alloc];
-  if(Source->GetPartFlags() == wPNF_Color)
-    pinfo.Colors = new sU32[pinfo.Alloc];
 
   // exec source particles
   Source->Func(pinfo,time,dt);
