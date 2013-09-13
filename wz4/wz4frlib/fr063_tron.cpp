@@ -1809,17 +1809,23 @@ void SphCollSDF::CollPart(RPSPH *s)
   sInt max = s->Parts[0]->GetCount();
   RPSPH::Particle *p = s->Parts[0]->GetData(); 
 
+  sAABBox box;
+  SDF->GetObj()->GetBox(box);
+  sF32 bl = box.Size().Length();
+
   if(Para.Flags & 1)
   {
+    // kill
     for(sInt i=0;i<max;i++)
     {
-      sF32 d=df->GetDistance(p[i].NewPos);
+      sF32 d=df->GetDistance(p[i].NewPos)/bl;
       if (Para.Flags&16) d=-d;
-      if (d<0.0f) p[i].Color = 0;      
+      if (d<0.01f) p[i].Color = 0;
     }
   }
   else
   {
+     // contain
     for(sInt i=0;i<max;i++)
     {
       if (df->IsInBox(p[i].NewPos))
@@ -1827,18 +1833,25 @@ void SphCollSDF::CollPart(RPSPH *s)
         sVector31 sp=p[i].OldPos;
         sVector31 ep=p[i].NewPos;
         sF32 d;
-        d=df->GetDistance(ep);
+        d=df->GetDistance(ep)/bl;
         if (Para.Flags&16) d=-d;
-        if (d<0.0f)
+        if (d<0.01f)
         {
           sVector30 n;
           df->GetNormal(ep,n);
-          if (Para.Flags&16) n=-n;
-          if (n.LengthSq()<0.001f)
+          if (Para.Flags&16)
           {
-            n=p[i].NewPos-p[i].OldPos;
+            n=-n;
+            if (n.LengthSq()<0.01f)
+            {
+              n=p[i].NewPos-p[i].OldPos;
+            }
+            ep+=d*n;
           }
-          ep=ep+d*n;
+          else
+          {
+            ep-=d*n;
+          }
         }
         p[i].NewPos=ep;
       }
