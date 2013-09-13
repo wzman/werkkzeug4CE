@@ -162,7 +162,7 @@ operator AnyType Comment()
   flags = verticalresize|comment;
   parameter
   {
-    overbox overlabel lines 5 string Text;   
+    overbox overlabel lines 20 string Text;
     flags Color ("white|red|yellow|green|cyan|blue|pink|gray");
   }
   code { return 1; }
