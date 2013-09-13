@@ -934,7 +934,7 @@ public:
     gh.Box(L"Save",sMessage(this,&sGuiThemeEditWindow::CmdButton,SAVE));
     gh.Box(L"Load",sMessage(this,&sGuiThemeEditWindow::CmdButton,LOAD));
 
-    gh.Grid->ReqSizeX = 400;
+    gh.Grid->ReqSizeX = 600;
   }
 
 };
