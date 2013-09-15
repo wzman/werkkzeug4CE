@@ -1095,7 +1095,7 @@ operator ModShader SphereFog()
   {
     float31 Center(-1000000..1000000 step 0.01);
     float Radius(0..1000000 step 0.01)= 1;
-    flags Animate("all static|radius from lightenv|all from lightenv");
+    flags Animate("all static|radius from ModMisc|all from ModMisc");
     if(Animate >= 1) 
       flags LightEnvVector "RadiusVector"(" 0| 1| 2| 3| 4| 5| 6| 7");
     if(Animate >= 2) 
