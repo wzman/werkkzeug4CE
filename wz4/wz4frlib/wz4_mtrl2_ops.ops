@@ -224,8 +224,14 @@ type CustomMtrl : Wz4Mtrl
     void PrepareViewR(sViewport &view);
 
     const sViewport *Viewport;
-  }
 
+    struct LightEnv_
+    {
+      sCBuffer<CustomShaderVEnv> cbv;
+      sCBuffer<CustomShaderPEnv> cbp;
+    };
+    LightEnv_ *LightEnv[sMAX_LIGHTENV];
+  }
 }
 
 operator CustomMtrl CustomMaterial2 "CustomMaterial" (TextObject,TextObject,*?Texture2D)
@@ -247,18 +253,26 @@ operator CustomMtrl CustomMaterial2 "CustomMaterial" (TextObject,TextObject,*?Te
     action FlushShaders(2);
 
     group "Vertex shader variables";
-    float vs_var0[4](-1024..1024 step 0.001) = 0;
-    float vs_var1[4](-1024..1024 step 0.001) = 0;
-    float vs_var2[4](-1024..1024 step 0.001) = 0;
-    float vs_var3[4](-1024..1024 step 0.001) = 0;
-    float vs_var4[4](-1024..1024 step 0.001) = 0;
+    layout flags vsVarSource "VsVarSource" ("-|Here|CustomMtrlEnv") = 0;
+    if(vsVarSource == 1)
+    {
+      float vs_var0[4](-1024..1024 step 0.001) = 0;
+      float vs_var1[4](-1024..1024 step 0.001) = 0;
+      float vs_var2[4](-1024..1024 step 0.001) = 0;
+      float vs_var3[4](-1024..1024 step 0.001) = 0;
+      float vs_var4[4](-1024..1024 step 0.001) = 0;
+    }
 
     group "Pixel shader variables";
-    float ps_var0[4](-1024..1024 step 0.001) = 0;
-    float ps_var1[4](-1024..1024 step 0.001) = 0;
-    float ps_var2[4](-1024..1024 step 0.001) = 0;
-    float ps_var3[4](-1024..1024 step 0.001) = 0;
-    float ps_var4[4](-1024..1024 step 0.001) = 0;
+    layout flags psVarSource "PsVarSource" ("-|Here|CustomMtrlEnv") = 0;
+    if(psVarSource == 1)
+    {
+      float ps_var0[4](-1024..1024 step 0.001) = 0;
+      float ps_var1[4](-1024..1024 step 0.001) = 0;
+      float ps_var2[4](-1024..1024 step 0.001) = 0;
+      float ps_var3[4](-1024..1024 step 0.001) = 0;
+      float ps_var4[4](-1024..1024 step 0.001) = 0;
+    }
 
     group "Texture filtering";
     if(input[ 2]) flags TexFilter0 ("*0trilinear|aniso|point|bilinear:*4tile|clamp|mirror|border_black|border_white");
@@ -299,6 +313,9 @@ operator CustomMtrl CustomMaterial2 "CustomMaterial" (TextObject,TextObject,*?Te
     sCopyMem(out->ps_var2, para->ps_var2, sizeof(para->ps_var2));
     sCopyMem(out->ps_var3, para->ps_var3, sizeof(para->ps_var3));
     sCopyMem(out->ps_var4, para->ps_var4, sizeof(para->ps_var4));
+
+    out->vsVarSource = para->vsVarSource;
+    out->psVarSource = para->psVarSource;
 
     static sU32 blend[] = { 0,sMB_PMALPHA,sMB_ADD,sMB_SUB,sMB_MUL,sMB_MUL2,sMB_ADDSMOOTH,sMB_ALPHA };
     sMatrix34 mat;
@@ -556,6 +573,55 @@ operator Wz4Render SimpleMtrlEnv()
   code
   {
     RNSimpleMtrlEnv *node = new RNSimpleMtrlEnv();
+    node->ParaBase = *para;
+    out->RootNode = node;
+    out->AddCode(cmd,para->Renderpass);
+  }
+}
+
+/****************************************************************************/
+/****************************************************************************/
+
+header_end
+{
+  class RNCustomMtrlEnv : public Wz4RenderNode
+  {
+  public:
+    Wz4RenderParaCustomMtrlEnv Para,ParaBase;
+    Wz4RenderAnimCustomMtrlEnv Anim;
+
+    RNCustomMtrlEnv();
+
+    void Simulate(Wz4RenderContext *);
+    void Render(Wz4RenderContext *);
+  };
+}
+
+operator Wz4Render CustomMtrlEnv()
+{
+  tab = Wz4Mtrl;
+  column = 1;
+  parameter
+  {
+    int Index "LightEnv" (0..15);
+    int Renderpass (-127..127);
+    group "Vertex shader variables";
+    anim float vs_var0[4](-1024..1024 step 0.001) = 0;
+    anim float vs_var1[4](-1024..1024 step 0.001) = 0;
+    anim float vs_var2[4](-1024..1024 step 0.001) = 0;
+    anim float vs_var3[4](-1024..1024 step 0.001) = 0;
+    anim float vs_var4[4](-1024..1024 step 0.001) = 0;
+    group "Pixel shader variables";
+    anim float ps_var0[4](-1024..1024 step 0.001) = 0;
+    anim float ps_var1[4](-1024..1024 step 0.001) = 0;
+    anim float ps_var2[4](-1024..1024 step 0.001) = 0;
+    anim float ps_var3[4](-1024..1024 step 0.001) = 0;
+    anim float ps_var4[4](-1024..1024 step 0.001) = 0;
+    group "Animation Script"; overbox overlabel linenumber lines 5 string Script;
+  }
+  code
+  {
+    RNCustomMtrlEnv *node = new RNCustomMtrlEnv();
     node->ParaBase = *para;
     out->RootNode = node;
     out->AddCode(cmd,para->Renderpass);

@@ -150,6 +150,9 @@ public:
   sF32 ps_var2[4];
   sF32 ps_var3[4];
   sF32 ps_var4[4];
+
+  sInt vsVarSource;
+  sInt psVarSource;
 };
 
 /****************************************************************************/
