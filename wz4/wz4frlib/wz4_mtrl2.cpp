@@ -1007,9 +1007,16 @@ void CustomMtrl::Set(sInt flags,sInt index,const sMatrix34CM *mat,sInt SkinMatCo
       sVERIFY(CustomMtrlType->Viewport);
       const sViewport &view=*CustomMtrlType->Viewport;
 
-      sVector30 d;
-      d = -view.Camera.k;
-      d.Unit();
+      sMatrix34 model;
+      if(mat)
+        mat->ConvertTo(model);
+
+      sF32 newTime = sGetTime() * 0.001;
+
+      //sVector30 d;
+      //d = -view.Camera.k;
+      //d.Unit();
+
       cbv.Data->mvp = view.ModelScreen;
       cbv.Data->mvp.Trans4();
       cbv.Data->mv = view.ModelView;
@@ -1020,6 +1027,7 @@ void CustomMtrl::Set(sInt flags,sInt index,const sMatrix34CM *mat,sInt SkinMatCo
       cbv.Data->vs_var2.Init(vs_var2[0],vs_var2[1],vs_var2[2],vs_var2[3]);
       cbv.Data->vs_var3.Init(vs_var3[0],vs_var3[1],vs_var3[2],vs_var3[3]);
       cbv.Data->vs_var4.Init(vs_var4[0],vs_var4[1],vs_var4[2],vs_var4[3]);
+      cbv.Data->model  = model;
       cbv.Modify();
 
       cbp.Data->mvp = view.ModelScreen;
@@ -1032,6 +1040,7 @@ void CustomMtrl::Set(sInt flags,sInt index,const sMatrix34CM *mat,sInt SkinMatCo
       cbp.Data->ps_var2.Init(ps_var2[0],ps_var2[1],ps_var2[2],ps_var2[3]);
       cbp.Data->ps_var3.Init(ps_var3[0],ps_var3[1],ps_var3[2],ps_var3[3]);
       cbp.Data->ps_var4.Init(ps_var4[0],ps_var4[1],ps_var4[2],ps_var4[3]);
+      cbp.Data->time = sVector4(newTime,0,0,0) ;
       cbp.Modify();
 
       for (sInt i=0; i<sMTRL_MAXTEX; i++)
