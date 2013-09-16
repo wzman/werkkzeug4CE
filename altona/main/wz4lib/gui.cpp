@@ -1335,7 +1335,6 @@ void MainWindow::CmdOpenBackup2()
     CheckAfterLoading();
     OnDocOptionsChanged();
   }
-  Doc->Filename = filename;
   ResetWindows();
 }
 
