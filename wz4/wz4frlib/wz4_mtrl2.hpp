@@ -153,6 +153,7 @@ public:
 
   sInt vsVarSource;
   sInt psVarSource;
+  sInt CustomMtrlEnvIndex;
 };
 
 /****************************************************************************/

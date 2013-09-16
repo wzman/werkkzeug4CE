@@ -927,13 +927,13 @@ void CustomMtrlType_::Init()
   Viewport=0;
 
   for(sInt i=0;i<sMAX_LIGHTENV;i++)
-    LightEnv[i] = new LightEnv_;
+    CustomMtrlEnv[i] = new CustomMtrlEnv_;
 }
 
 void CustomMtrlType_::Exit()
 {
   for(sInt i=0;i<sMAX_LIGHTENV;i++)
-    delete LightEnv[i];
+    delete CustomMtrlEnv[i];
 }
 
 void CustomMtrlType_::BeginShow(wPaintInfo &pi)
@@ -992,6 +992,9 @@ CustomMtrl::CustomMtrl()
   sClear(TFlags);
   AlphaTest = sMFF_ALWAYS;
   AlphaRef = 4;
+  vsVarSource = 0;
+  psVarSource = 0;
+  CustomMtrlEnvIndex = 0;
 }
 
 CustomMtrl::~CustomMtrl()
@@ -1014,7 +1017,7 @@ void CustomMtrl::Set(sInt flags,sInt index,const sMatrix34CM *mat,sInt SkinMatCo
       if(mat)
         mat->ConvertTo(model);
 
-      CustomMtrlType_::LightEnv_ *env = CustomMtrlType->LightEnv[index];
+      CustomMtrlType_::CustomMtrlEnv_ *env = CustomMtrlType->CustomMtrlEnv[CustomMtrlEnvIndex];
 
       // Vertex Shader
 
@@ -1204,7 +1207,7 @@ sShader *CustomMtrl::CompileShader(sInt shadertype, const sChar *source)
   src2.Print(L"uniform float4x4 mv  : register(c4);\n");
   src2.Print(L"uniform float3   eye : register(c8);\n");
 
-  if(shadertype == sSTF_VERTEX|sSTF_HLSL23)
+  if(shadertype == (sSTF_VERTEX|sSTF_HLSL23))
     src2.Print(L"uniform float4x4 model : register(c14);\n");
 
   src2.Print(L"\n");
@@ -1251,8 +1254,8 @@ void RNCustomMtrlEnv::Simulate(Wz4RenderContext *ctx)
 
 void RNCustomMtrlEnv::Render(Wz4RenderContext *ctx)
 {
-  CustomShaderVEnv *cbv = CustomMtrlType->LightEnv[Para.Index]->cbv.Data;
-  CustomShaderPEnv *cbp = CustomMtrlType->LightEnv[Para.Index]->cbp.Data;
+  CustomShaderVEnv *cbv = CustomMtrlType->CustomMtrlEnv[Para.Index]->cbv.Data;
+  CustomShaderPEnv *cbp = CustomMtrlType->CustomMtrlEnv[Para.Index]->cbp.Data;
 
   cbv->vs_var0.Init(Para.vs_var0[0],Para.vs_var0[1],Para.vs_var0[2],Para.vs_var0[3]);
   cbv->vs_var1.Init(Para.vs_var1[0],Para.vs_var1[1],Para.vs_var1[2],Para.vs_var1[3]);
@@ -1266,6 +1269,6 @@ void RNCustomMtrlEnv::Render(Wz4RenderContext *ctx)
   cbp->ps_var3.Init(Para.ps_var3[0],Para.ps_var3[1],Para.ps_var3[2],Para.ps_var3[3]);
   cbp->ps_var4.Init(Para.ps_var4[0],Para.ps_var4[1],Para.ps_var4[2],Para.ps_var4[3]);
 
-  CustomMtrlType->LightEnv[Para.Index]->cbv.Modify();
-  CustomMtrlType->LightEnv[Para.Index]->cbp.Modify();
+  CustomMtrlType->CustomMtrlEnv[Para.Index]->cbv.Modify();
+  CustomMtrlType->CustomMtrlEnv[Para.Index]->cbp.Modify();
 }

@@ -225,12 +225,12 @@ type CustomMtrl : Wz4Mtrl
 
     const sViewport *Viewport;
 
-    struct LightEnv_
+    struct CustomMtrlEnv_
     {
       sCBuffer<CustomShaderVEnv> cbv;
       sCBuffer<CustomShaderPEnv> cbp;
     };
-    LightEnv_ *LightEnv[sMAX_LIGHTENV];
+    CustomMtrlEnv_ * CustomMtrlEnv[sMAX_LIGHTENV];
   }
 }
 
@@ -247,6 +247,7 @@ operator CustomMtrl CustomMaterial2 "CustomMaterial" (TextObject,TextObject,*?Te
     layout flags AlphaTest ("|||inverted|on|||off")=7;
     if(AlphaTest!=7)
       nolabel int AlphaRef (0..255 step 1);
+    int CustomMtrlEnvIndex (0..16 step 1) = 0;
 
     group "debug";
     action Shadercode(1);
@@ -316,6 +317,7 @@ operator CustomMtrl CustomMaterial2 "CustomMaterial" (TextObject,TextObject,*?Te
 
     out->vsVarSource = para->vsVarSource;
     out->psVarSource = para->psVarSource;
+    out->CustomMtrlEnvIndex = para->CustomMtrlEnvIndex;
 
     static sU32 blend[] = { 0,sMB_PMALPHA,sMB_ADD,sMB_SUB,sMB_MUL,sMB_MUL2,sMB_ADDSMOOTH,sMB_ALPHA };
     sMatrix34 mat;
@@ -603,7 +605,7 @@ operator Wz4Render CustomMtrlEnv()
   column = 1;
   parameter
   {
-    int Index "LightEnv" (0..15);
+    int Index "CustomMtrlEnv" (0..15);
     int Renderpass (-127..127);
     group "Vertex shader variables";
     anim float vs_var0[4](-1024..1024 step 0.001) = 0;
