@@ -34,7 +34,7 @@ sTextWindow::sTextWindow()
   UndoValid = 0;
   UndoIndex = 0;
   HintLine = 0;
-  TabSize = 8;
+  TabSize = 2;
   HintLineColor = sGC_HIGH;
 
   PrintInfo.Init();
