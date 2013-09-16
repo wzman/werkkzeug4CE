@@ -2305,6 +2305,7 @@ void wDocOptions::Init()
   SampleRate = 44100;
   DialogFlags = wDODF_Benchmark;
   Infinite = 0;
+  MusicFile = sPoolString();
 
   VariableBpm = 0;
   BpmSegments.Clear();

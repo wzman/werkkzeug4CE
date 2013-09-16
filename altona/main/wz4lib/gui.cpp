@@ -1241,6 +1241,7 @@ void MainWindow::CmdNew()
 void MainWindow::CmdNew2()
 {
   Doc->New();
+  Doc->Includes.Clear();
   Doc->DefaultDoc();
   Status->PrintF(STATUS_MESSAGE,L"new document");
   ResetWindows();
