@@ -734,12 +734,12 @@ operator ModShaderSampler BakedShadow(Wz4Mesh)
 
   parameter
   {
-    anim float30 Dir(-10000000..10000000 step 0.01) = { 0,0,0 };
-    anim flags ShadowSize(" 1| 2| 4| 8| 16| 32| 64| 128| 256| 512| 1024| 2048| 4096| 8192") = 10;
+    float30 Dir(-10000000..10000000 step 0.01) = { 0,0,0 };
+    flags ShadowSize(" 1| 2| 4| 8| 16| 32| 64| 128| 256| 512| 1024| 2048| 4096| 8192") = 10;
     continue flags ShadowSize "ShadowFilter0" ("*16point|ordered|random:*20-|PCF");
-    anim float ShadowBaseBias(0..1024 step 0.001) = 0.500;
-    anim float ShadowFilter(0..1024 step 0.001) = 0.500;
-    anim float ShadowSlopeBias(-1024..1024 step 0.001) = 0.5000;
+    float ShadowBaseBias(0..1024 step 0.001) = 0.500;
+    float ShadowFilter(0..1024 step 0.001) = 0.500;
+    float ShadowSlopeBias(-1024..1024 step 0.001) = 0.5000;
     color Color("rgba") = 0x00808080;
     layout continue flags ShadowSize "Limit Shadows" ("*21-|limit");
     if(ShadowSize & 0x00200000)
