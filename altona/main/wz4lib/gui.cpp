@@ -1424,7 +1424,7 @@ void MainWindow::CmdAutoSave()
 void MainWindow::CmdSave2()
 {
   if(!Doc->Save(Doc->Filename))
-    sErrorDialog(sMessage(),L"could not save file");
+    CmdSaveAs();
   else
   {
     wDocInclude *inc;
