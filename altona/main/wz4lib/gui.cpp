@@ -1367,7 +1367,22 @@ void MainWindow::CheckAfterLoading()
 }
 void MainWindow::CmdSaveAs()
 {
+  wOp  * op[3];
+
+  // save op in view
+  for(sInt i=0;i<sCOUNTOF(ViewWin);i++)
+    op[i] = ViewWin[i]->Op;
+
+  // set no active op in view
+  for(sInt i=0;i<sCOUNTOF(ViewWin);i++)
+    ViewWin[i]->SetOp(0);
+
+  // open save dialog
   sOpenFileDialog(L"save as",L"wz4",sSOF_SAVE,Doc->Filename,sMessage(this,&MainWindow::CmdSave),sMessage());
+
+  // restore op in view
+  for(sInt i=0;i<sCOUNTOF(ViewWin);i++)
+    ViewWin[i]->Op = op[i];
 }
 
 void MainWindow::CmdSave()
