@@ -964,6 +964,37 @@ operator Wz4Mesh Center(Wz4Mesh)
 
 /****************************************************************************/
 
+operator Wz4Mesh CenterEx(Wz4Mesh)
+{
+  column = 1;
+  flags = passinput|passoutput;
+  parameter
+  {
+    layout flags Which("-|x:*1-|y:*2-|z")=7;
+    continue flags Which "Operation" ("*7center|on ground");
+  }
+  code
+  {
+    Wz4MeshVertex *mv;
+
+    sAABBox bounds;
+    sFORALL(out->Vertices,mv)
+      bounds.Add(mv->Pos);
+
+    sMatrix34 mat;
+    mat.Init();
+
+    if(para->Which&1) mat.l.x = -0.5f * (bounds.Min.x + bounds.Max.x);
+    if(para->Which&2) mat.l.y = (para->Which & 128) ? -bounds.Min.y : -0.5f * (bounds.Min.y + bounds.Max.y);
+    if(para->Which&4) mat.l.z = -0.5f * (bounds.Min.z + bounds.Max.z);
+
+    out->Transform(mat);
+    out->Flush();
+  }
+}
+
+/****************************************************************************/
+
 operator Wz4Mesh SelectGrow(Wz4Mesh)
 {
   column = 3;
