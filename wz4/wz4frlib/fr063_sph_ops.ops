@@ -210,6 +210,40 @@ operator SphCollision SphSimpleColl()
   {
     out->Para = *para;
   }
+  handles
+  {
+    sSRT srt;
+    sMatrix34 mat;
+    sVector31 v[8],p;
+
+    srt.Rotate = sVector30(0,0,0);
+    srt.Translate = para->Center;
+    srt.Scale = sVector31(para->Radius);
+    srt.MakeMatrix(mat);
+
+    sF32 s = 1;
+    p.Init(-s,-s,-s); v[0] = p*mat;
+    p.Init(-s,-s, s); v[1] = p*mat;
+    p.Init(-s, s, s); v[2] = p*mat;
+    p.Init(-s, s,-s); v[3] = p*mat;
+    p.Init( s,-s,-s); v[4] = p*mat;
+    p.Init( s,-s, s); v[5] = p*mat;
+    p.Init( s, s, s); v[6] = p*mat;
+    p.Init( s, s,-s); v[7] = p*mat;
+
+    pi.Line3D(v[0],v[1]);
+    pi.Line3D(v[1],v[2]);
+    pi.Line3D(v[2],v[3]);
+    pi.Line3D(v[3],v[0]);
+    pi.Line3D(v[4],v[5]);
+    pi.Line3D(v[5],v[6]);
+    pi.Line3D(v[6],v[7]);
+    pi.Line3D(v[7],v[4]);
+    pi.Line3D(v[0],v[4]);
+    pi.Line3D(v[1],v[5]);
+    pi.Line3D(v[2],v[6]);
+    pi.Line3D(v[3],v[7]);
+  }
 }
 
 operator SphCollision SphPlaneColl()
