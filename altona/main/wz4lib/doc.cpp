@@ -117,6 +117,8 @@ wPaintInfo::wPaintInfo()
   LineGeo2 = new sGeometry;
   LineGeo2->Init(sGF_LINELIST,sVertexFormatBasic);
 
+  InitHandleEx();
+
   static sInt countdown = 5;
   if(countdown>0) 
     countdown--;
@@ -139,6 +141,11 @@ wPaintInfo::~wPaintInfo()
   delete TexDummy;
   delete LineGeo;
   delete LineGeo2;
+
+  delete HandleExGeoBox;
+  delete HandleExMtrl;
+  delete HandleExTex;
+  delete HandleExEnv;
 }
 
 void wPaintInfo::AddHandle(wOp *op,sInt id,const sRect &r,sInt mode,sInt *t,sF32 *x,sF32 *y,sF32 *z,sInt arrayline)
@@ -772,6 +779,101 @@ void wPaintInfo::Line3D(const sVector31 &a,const sVector31 &b,sU32 color,sBool z
       color = 0xff000000 | ((HandleColor&0xfefefe)>>1);
 
     PaintAddLine(x0,y0,z0,x1,y1,z1,color,zoff);
+  }
+}
+
+void wPaintInfo::InitHandleEx()
+{
+  // texture
+  sImage HandleExImg = sImage(512,512);
+  HandleExImg.Checker(0x00222222,0x445555AA,8,8);
+  HandleExTex = sLoadTexture2D(&HandleExImg,sTEX_2D|sTEX_ARGB8888);
+
+  // material
+  HandleExMtrl = new sSimpleMaterial();
+  HandleExMtrl->Flags = sMTRL_ZREAD | sMTRL_CULLOFF;
+  HandleExMtrl->Flags |= sMTRL_LIGHTING | sMTRL_LIGHTING_2SIDED;
+  HandleExMtrl->Texture[0] = HandleExTex;
+  HandleExMtrl->TFlags[0] = sMTF_LEVEL3|sMTF_CLAMP;
+  HandleExMtrl->BlendColor = sMB_PMALPHA;
+  HandleExMtrl->BlendAlpha = sMBS_1|sMBO_ADD|sMBD_0;
+  HandleExMtrl->BlendFactor = 0x11111111;
+  HandleExMtrl->Prepare(sVertexFormatStandard);
+
+  // light env
+  HandleExEnv = new sMaterialEnv;
+  HandleExEnv->Fix();
+  HandleExEnv->AmbientColor  = 0xff808080;
+  HandleExEnv->LightColor[0] = 0xff808080;
+  HandleExEnv->Fix();
+
+  // geometry
+  sF32 c = 1.0f;
+  sVertexStandard *vp;
+  HandleExGeoBox = new sGeometry;
+  HandleExGeoBox->Init(sGF_TRILIST|sGF_INDEX16,sVertexFormatStandard);
+
+  // Cube
+  HandleExGeoBox->BeginLoadVB(24,sGD_STATIC,&vp);
+
+  vp->Init(-c, c,-c,  0, 0,-1, 1,0); vp++; // 3
+  vp->Init( c, c,-c,  0, 0,-1, 1,1); vp++; // 2
+  vp->Init( c,-c,-c,  0, 0,-1, 0,1); vp++; // 1
+  vp->Init(-c,-c,-c,  0, 0,-1, 0,0); vp++; // 0
+
+  vp->Init(-c,-c, c,  0, 0, 1, 1,0); vp++; // 4
+  vp->Init( c,-c, c,  0, 0, 1, 1,1); vp++; // 5
+  vp->Init( c, c, c,  0, 0, 1, 0,1); vp++; // 6
+  vp->Init(-c, c, c,  0, 0, 1, 0,0); vp++; // 7
+
+  vp->Init(-c,-c,-c,  0,-1, 0, 1,0); vp++; // 0
+  vp->Init( c,-c,-c,  0,-1, 0, 1,1); vp++; // 1
+  vp->Init( c,-c, c,  0,-1, 0, 0,1); vp++; // 5
+  vp->Init(-c,-c, c,  0,-1, 0, 0,0); vp++; // 4
+
+  vp->Init( c,-c,-c,  1, 0, 0, 1,0); vp++; // 1
+  vp->Init( c, c,-c,  1, 0, 0, 1,1); vp++; // 2
+  vp->Init( c, c, c,  1, 0, 0, 0,1); vp++; // 6
+  vp->Init( c,-c, c,  1, 0, 0, 0,0); vp++; // 5
+
+  vp->Init( c, c,-c,  0, 1, 0, 1,0); vp++; // 2
+  vp->Init(-c, c,-c,  0, 1, 0, 1,1); vp++; // 3
+  vp->Init(-c, c, c,  0, 1, 0, 0,1); vp++; // 7
+  vp->Init( c, c, c,  0, 1, 0, 0,0); vp++; // 6
+
+  vp->Init(-c, c,-c, -1, 0, 0, 1,0); vp++; // 3
+  vp->Init(-c,-c,-c, -1, 0, 0, 1,1); vp++; // 0
+  vp->Init(-c,-c, c, -1, 0, 0, 0,1); vp++; // 4
+  vp->Init(-c, c, c, -1, 0, 0, 0,0); vp++; // 7
+
+  HandleExGeoBox->EndLoadVB();
+
+  sU16 *ip = 0;
+  HandleExGeoBox->BeginLoadIB(6*6,sGD_STATIC,&ip);
+  for(sInt i=0;i<6;i++)
+    sQuad(ip,i*4,0,1,2,3);
+  HandleExGeoBox->EndLoadIB();
+}
+
+void wPaintInfo::Box3D(const sVector31 &s, const sVector30 &r, const sVector31 &t)
+{
+  if(HandleEnable)
+  {
+    sMatrix34 mat;
+    sSRT srt;
+    srt.Scale = s;
+    srt.Rotate = r;
+    srt.Translate = t;
+    srt.MakeMatrix(mat);
+
+    sViewport  view = *View;
+    view.UpdateModelMatrix(mat*HandleTrans);
+
+    sCBuffer<sSimpleMaterialEnvPara> cb;
+    cb.Data->Set(view,*HandleExEnv);
+    HandleExMtrl->Set(&cb);
+
+    HandleExGeoBox->Draw();
   }
 }
 

@@ -117,6 +117,11 @@ class wPaintInfo
   sMaterial *TexAMtrl;
   sTexture2D *TexDummy;
 
+  sTexture2D  * HandleExTex;
+  sSimpleMaterial * HandleExMtrl;
+  sGeometry *HandleExGeoBox;
+  sMaterialEnv *HandleExEnv;
+
   sVertexSingle *TexGeoVP;
   sInt TexGeoVC;
 
@@ -130,6 +135,7 @@ class wPaintInfo
 public:
   wPaintInfo();
   ~wPaintInfo();
+  void InitHandleEx();
   // general info
 
   WinView *Window;                // you SHOULD not use this, but it might be usefull anyway
@@ -230,6 +236,7 @@ public:
   void Handle3D(wOp *op,sInt id,sF32 *x,sF32 *y,sF32 *z,sInt mode,sInt arrayline=-1);
   void Line3D(const sVector31 &a,const sVector31 &b,sU32 col=0,sBool zoff=0);
   void Transform3D(const sMatrix34 &mat);       // apply matrix to all child handles. matrix will be inverted
+  void Box3D(const sVector31 &s, const sVector30 &r, const sVector31 &t);
 
   // special anim helpers
 /*
