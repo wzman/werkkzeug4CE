@@ -201,7 +201,7 @@ operator SphCollision SphSimpleColl()
     flags Flags("contain|kill");
     flags Shape("box|sphere");
     float31 Center(-1024..1024 step 0.01);
-    float30 Radius(0..1024 step 0.01);
+    float30 Radius(0..1024 step 0.01) = 1;
     int StartTime (0..100000) = 0;
     int EndTime(0..100000) = 0;
 
@@ -210,7 +210,7 @@ operator SphCollision SphSimpleColl()
     if(HandleFlag == 0)
       layout flags HandleFlagColor "Color" ("custom|theme") = 1;
         if(HandleFlagColor == 0)
-          nolabel color HandleColor ("rgba") = 0xff000000;
+          nolabel color HandleColor ("rgba") = 0x00880000;
 
   }
 
@@ -242,11 +242,29 @@ operator SphCollision SphPlaneColl()
     float y(-1024..1024 step 0.01);
     int StartTime (0..100000) = 0;
     int EndTime(0..100000) = 0;
+
+    group "Handle options";
+    layout flags HandleFlag "Type" ("default|boxLine") = 0;
+    if(HandleFlag == 0)
+      layout flags HandleFlagColor "Color" ("custom|theme") = 1;
+        if(HandleFlagColor == 0)
+          nolabel color HandleColor ("rgba") = 0x00880000;
   }
 
   code
   {
     out->Para = *para;
+  }
+  handles
+  {
+    sVector31 scale(20.0f, 0.0f, 20.0f);
+    sVector30 rot(0.0f);
+    sVector31 trans(0.0f, para->y, 0.0f);
+
+    if(para->HandleFlag==0)
+      pi.Box3D(scale,rot,trans,para->HandleFlagColor,para->HandleColor);
+    else
+      pi.Box3DLine(scale,rot,trans);
   }
 }
 
