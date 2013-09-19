@@ -356,9 +356,9 @@ window View0,View1,View2
   key TeleportAbort:TeleportHandleTool ESCAPE;
   
   key Help MENU;
-  key HandlesAll "Show All Handles" 'y';
-  key HandlesCurrent "Show Handles from selected op" 'Y'|SHIFT ;
-  key HandlesGroup "Show Handles from selected op and deeper" 'y'|CTRL;
+  key HandlesAll "Show All Handles" 'y'|CTRL;
+  key HandlesCurrent "Show Handles from selected op" 'y';
+  key HandlesGroup "Show Handles from selected op and deeper" 'Y'|SHIFT;
   key Maximize2 "Maximize" TAB;
   key LockCamera 'l';
   key FreeCamera 'o';
