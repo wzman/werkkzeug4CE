@@ -152,12 +152,34 @@ operator SphGenerator SphObject(?Wz4Mesh)
     color Color("rgb");
     float30 StartSpeed(-1024..1024 step 0.001);
     int Time0(0..65536) = 0;
+
+    group "Handle options";
+    layout flags HandleFlag "Type" ("default|boxLine") = 0;
+    if(HandleFlag == 0)
+      layout flags HandleFlagColor "Color" ("custom|theme") = 1;
+        if(HandleFlagColor == 0)
+          nolabel color HandleColor ("rgba") = 0x00880000;
   }
 
   code
   {    
     out->Para = *para;
     out->Init(in0);
+  }
+  handles
+  {
+    sVector31 scale(para->Radius.x, para->Radius.y, para->Radius.z);
+    sVector30 rot(0.0f);
+
+    if(para->HandleFlag==0)
+    {
+      if(para->Shape==0)
+        pi.Box3D(scale,rot,para->Center,para->HandleFlagColor,para->HandleColor);
+      else if(para->Shape==1)
+        pi.Sphere3D(scale,rot,para->Center,para->HandleFlagColor,para->HandleColor);
+    }
+    else
+      pi.Box3DLine(scale,rot,para->Center);
   }
 }
 
