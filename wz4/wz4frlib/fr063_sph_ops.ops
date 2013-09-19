@@ -179,12 +179,34 @@ operator SphGenerator SphSource()
     
     int StartTime(0..1000000);
     int EndTime(0..1000000);
+
+    group "Handle options";
+    layout flags HandleFlag "Type" ("default|boxLine") = 0;
+    if(HandleFlag == 0)
+      layout flags HandleFlagColor "Color" ("custom|theme") = 1;
+        if(HandleFlagColor == 0)
+          nolabel color HandleColor ("rgba") = 0x00880000;
   }
 
   code
   {
     out->Para = *para;
     out->Init();
+  }
+  handles
+  {
+    sVector31 scale(para->Radius, 0.1f, para->Radius);
+    sVector30 rot(0.0f);
+
+    if(para->HandleFlag==0)
+    {
+      if(para->Shape==0)
+        pi.Box3D(scale,rot,para->Center,para->HandleFlagColor,para->HandleColor);
+      else if(para->Shape==1)
+        pi.Sphere3D(scale,rot,para->Center,para->HandleFlagColor,para->HandleColor);
+    }
+    else
+      pi.Box3DLine(scale,rot,para->Center);
   }
 }
 
@@ -224,7 +246,12 @@ operator SphCollision SphSimpleColl()
     sVector30 rot(0.0f);
 
     if(para->HandleFlag==0)
-      pi.Box3D(scale,rot,para->Center,para->HandleFlagColor,para->HandleColor);
+    {
+      if(para->Shape==0)
+        pi.Box3D(scale,rot,para->Center,para->HandleFlagColor,para->HandleColor);
+      else if(para->Shape==1)
+        pi.Sphere3D(scale,rot,para->Center,para->HandleFlagColor,para->HandleColor);
+    }
     else
       pi.Box3DLine(scale,rot,para->Center);
   }

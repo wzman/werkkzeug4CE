@@ -120,6 +120,7 @@ class wPaintInfo
   sTexture2D  * HandleExTex;
   sSimpleMaterial * HandleExMtrl;
   sGeometry *HandleExGeoBox;
+  sGeometry *HandleExGeoSphere;
   sMaterialEnv *HandleExEnv;
 
   sVertexSingle *TexGeoVP;
@@ -238,6 +239,7 @@ public:
   void Transform3D(const sMatrix34 &mat);       // apply matrix to all child handles. matrix will be inverted
   void Box3D(const sVector31 &s, const sVector30 &r, const sVector31 &t, sBool themeColor, sU32 color=0);
   void Box3DLine(const sVector31 &s, const sVector30 &r, const sVector31 &t);
+  void Sphere3D(const sVector31 &s, const sVector30 &r, const sVector31 &t, sBool themeColor, sU32 color=0);
 
   // special anim helpers
 /*

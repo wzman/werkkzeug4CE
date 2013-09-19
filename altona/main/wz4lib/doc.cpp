@@ -142,6 +142,7 @@ wPaintInfo::~wPaintInfo()
   delete LineGeo;
   delete LineGeo2;
 
+  delete HandleExGeoSphere;
   delete HandleExGeoBox;
   delete HandleExMtrl;
   delete HandleExTex;
@@ -807,13 +808,14 @@ void wPaintInfo::InitHandleEx()
   HandleExEnv->LightDir[0].Init(0,0,-1);
   HandleExEnv->Fix();
 
-  // geometry
+  //------------- geometry ----------------------
+
+  // -------------- CUBE --------------------
+
   sF32 c = 1.0f;
   sVertexStandard *vp;
   HandleExGeoBox = new sGeometry;
   HandleExGeoBox->Init(sGF_TRILIST|sGF_INDEX16,sVertexFormatStandard);
-
-  // Cube
   HandleExGeoBox->BeginLoadVB(24,sGD_STATIC,&vp);
 
   vp->Init(-c, c,-c,  0, 0,-1, 1,0); vp++; // 3
@@ -853,6 +855,59 @@ void wPaintInfo::InitHandleEx()
   for(sInt i=0;i<6;i++)
     sQuad(ip,i*4,0,1,2,3);
   HandleExGeoBox->EndLoadIB();
+
+
+  // -------------- SPHERE --------------------
+
+  sVertexStandard *vps;
+  sU16 *ips = 0;
+  sU16 wVertexIndex = 0;
+
+  sInt nbRings = 10;
+  sInt nbSegments = 16;
+  sF32 rDeltaRingAngle = (sPI / nbRings);
+  sF32 rDeltaSegAngle = (2.0f * sPI / nbSegments);
+
+  sInt numOfVertices = (nbRings + 1) * (nbSegments + 1);
+  sInt numOfIndices  = 2 * nbRings * (nbSegments + 1);
+
+  HandleExGeoSphere = new sGeometry;
+  HandleExGeoSphere->Init(sGF_TRISTRIP|sGF_INDEX16, sVertexFormatStandard);
+  HandleExGeoSphere->BeginLoadVB(numOfVertices, sGD_STATIC, &vps);
+  HandleExGeoSphere->BeginLoadIB(numOfIndices, sGD_STATIC, &ips);
+
+  for(sInt nCurrentRing=0; nCurrentRing<nbRings+1; nCurrentRing++)
+  {
+    sF32 r0 = sinf(nCurrentRing * rDeltaRingAngle);
+    sF32 y0 = cosf(nCurrentRing * rDeltaRingAngle);
+
+    for(sInt nCurrentSegment=0; nCurrentSegment<nbSegments+1; nCurrentSegment++)
+    {
+      sF32 x0 = r0 * sinf(nCurrentSegment * rDeltaSegAngle);
+      sF32 z0 = r0 * cosf(nCurrentSegment * rDeltaSegAngle);
+
+      sVector31 pos(x0,y0,z0);
+      sVector30 norm(x0,y0,z0);
+      norm.Unit();
+      sF32 u0 = 1.0f - ((sF32)nCurrentSegment / (sF32)nbSegments);
+      sF32 v0 = (sF32)nCurrentRing / (sF32)nbRings;
+
+      vps->Init(pos, norm, u0, v0);
+      vps++;
+
+      if(nCurrentRing != nbRings)
+      {
+        *ips = wVertexIndex;
+         ips++;
+         *ips = wVertexIndex + (sU16)(nbSegments + 1);
+         ips++;
+         wVertexIndex++;
+      }
+    }
+  }
+
+  HandleExGeoSphere->EndLoadVB();
+  HandleExGeoSphere->EndLoadIB();
 }
 
 void wPaintInfo::Box3D(const sVector31 &s, const sVector30 &r, const sVector31 &t, sBool themeColor, sU32 color)
@@ -880,6 +935,34 @@ void wPaintInfo::Box3D(const sVector31 &s, const sVector30 &r, const sVector31 &
     HandleExMtrl->Set(&cb);
 
     HandleExGeoBox->Draw();
+  }
+}
+
+void wPaintInfo::Sphere3D(const sVector31 &s, const sVector30 &r, const sVector31 &t, sBool themeColor, sU32 color)
+{
+  if(HandleEnable)
+  {
+    sMatrix34 mat;
+    sSRT srt;
+    srt.Scale = s;
+    srt.Rotate = r;
+    srt.Translate = t;
+    srt.MakeMatrix(mat);
+
+    sViewport  view = *View;
+    view.UpdateModelMatrix(mat*HandleTrans);
+
+    if(themeColor)
+      color = sGetColor2D(sGC_HANDLECOLOR);
+    HandleExEnv->AmbientColor = color;
+    HandleExEnv->LightDir[0] = sVector30(-view.Camera.l);
+    HandleExEnv->Fix();
+
+    sCBuffer<sSimpleMaterialEnvPara> cb;
+    cb.Data->Set(view,*HandleExEnv);
+    HandleExMtrl->Set(&cb);
+
+    HandleExGeoSphere->Draw();
   }
 }
 

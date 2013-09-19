@@ -1841,7 +1841,12 @@ operator Wz4Mesh Select(Wz4Mesh,?GenBitmap)
     if(((para->Flags&0x1c0)==0x00) || ((para->Flags&0x1c0)==0x40))
     {
       if(para->HandleFlag==0)
-        pi.Box3D(para->Scale,para->Rot,para->Trans,para->HandleFlagColor,para->HandleColor);
+      {
+        if((para->Flags&0x1c0)==0x00)
+          pi.Box3D(para->Scale,para->Rot,para->Trans,para->HandleFlagColor,para->HandleColor);
+        else if((para->Flags&0x1c0)==0x40)
+          pi.Sphere3D(para->Scale,para->Rot,para->Trans,para->HandleFlagColor,para->HandleColor);
+      }
       else
         pi.Box3DLine(para->Scale,para->Rot,para->Trans);
     }
