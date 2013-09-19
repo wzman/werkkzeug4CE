@@ -915,6 +915,7 @@ public:
     gh.Label(L"Text2"); gh.ColorPick(&Theme.Text2, L"rgb", 0);
     gh.Label(L"GraphBack"); gh.ColorPick(&Theme.GraphBack, L"rgb", 0);
     gh.Label(L"GraphLines"); gh.ColorPick(&Theme.GraphLines, L"rgb", 0);
+    gh.Label(L"HandleColor"); gh.ColorPick(&Theme.HandleColor, L"rgb", 0);
 
     gh.Group(L"Fonts");
     gh.Label(L"Proportional"); gh.String(Theme.PropFont);

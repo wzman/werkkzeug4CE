@@ -89,6 +89,7 @@ enum sGuiColor
   sGC_TEXT2,                      // op add list text + windows menu
   sGC_GRAPHBACK,                  // graph based dialog background (splines, timeline editors)
   sGC_GRAPHLINES,                 // graph based dialog lines (splines, timeline editors)
+  sGC_HANDLECOLOR,                // handle default color
 
   sGC_RED,                        // the color, with contrast to sGC_TEXT and sGC_DRAW
   sGC_YELLOW,                     // the color, with contrast to sGC_TEXT and sGC_DRAW

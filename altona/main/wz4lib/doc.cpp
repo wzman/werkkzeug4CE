@@ -855,7 +855,7 @@ void wPaintInfo::InitHandleEx()
   HandleExGeoBox->EndLoadIB();
 }
 
-void wPaintInfo::Box3D(const sVector31 &s, const sVector30 &r, const sVector31 &t, sU32 color)
+void wPaintInfo::Box3D(const sVector31 &s, const sVector30 &r, const sVector31 &t, sBool themeColor, sU32 color)
 {
   if(HandleEnable)
   {
@@ -869,6 +869,8 @@ void wPaintInfo::Box3D(const sVector31 &s, const sVector30 &r, const sVector31 &
     sViewport  view = *View;
     view.UpdateModelMatrix(mat*HandleTrans);
 
+    if(themeColor)
+      color = sGetColor2D(sGC_HANDLECOLOR);
     HandleExEnv->AmbientColor = color;
     HandleExEnv->LightDir[0] = sVector30(-view.Camera.l);
     HandleExEnv->Fix();

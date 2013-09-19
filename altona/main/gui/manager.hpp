@@ -38,6 +38,7 @@ struct sGuiTheme
   sU32 Text2;
   sU32 GraphBack;
   sU32 GraphLines;
+  sU32 HandleColor;
   sInt OpWidth;
   sInt OpHeight;
   sInt VerticalResizableFlag;

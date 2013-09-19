@@ -159,6 +159,7 @@ void sGui_::SetTheme(const sGuiTheme &theme)
   sSetColor2D(sGC_TEXT2       ,theme.Text2);
   sSetColor2D(sGC_GRAPHBACK   ,theme.GraphBack);
   sSetColor2D(sGC_GRAPHLINES  ,theme.GraphLines);
+  sSetColor2D(sGC_HANDLECOLOR, theme.HandleColor);
 
   sSetColor2D(sGC_RED     ,0xff4040);
   sSetColor2D(sGC_YELLOW  ,0xffff20);
@@ -1236,6 +1237,7 @@ const sGuiTheme sGuiThemeDefault =
   0x000000, // Text2
   0x484848, // GraphBack
   0x555555, // GraphLine
+  0x00262626, // handle default color
   24,             // operator width
   16,             // operator height
   1,              // operator vertical resizable
@@ -1260,6 +1262,7 @@ const sGuiTheme sGuiThemeDarker =
   0x000000, // Text2
   0xAAAAAA, // GraphBack
   0xAAAAAA, // GraphLine
+  0x00262626, // handle default color
   24,       // operator width
   16,       // operator height
   0,        // operator vertical resizable
@@ -1275,7 +1278,7 @@ template <class streamer> void sGuiTheme::Serialize_(streamer &s)
   sVERIFY(version>0);
 
   s | BackColor | DocColor | ButtonColor | TextColor | DrawColor;
-  s | SelectColor | HighColor | LowColor | HighColor2 | LowColor2 | Text2 | GraphBack | GraphLines | OpWidth | OpHeight | VerticalResizableFlag ;
+  s | SelectColor | HighColor | LowColor | HighColor2 | LowColor2 | Text2 | GraphBack | GraphLines | HandleColor | OpWidth | OpHeight | VerticalResizableFlag ;
   s | PropFont | FixedFont | FontSize | FontFlag;
 
   s.Footer();
@@ -1299,6 +1302,7 @@ void sGuiTheme::Tint(sU32 add,sU32 sub)
   Text2       = sAddColor(Text2       ,addh);
   GraphBack   = sAddColor(GraphBack   ,addh);
   GraphLines  = sAddColor(GraphLines  ,addh);
+  HandleColor = sAddColor(HandleColor  ,addh);
 
   BackColor   = sSubColor(BackColor  ,sub);
   ButtonColor = sSubColor(ButtonColor,sub);
@@ -1310,6 +1314,7 @@ void sGuiTheme::Tint(sU32 add,sU32 sub)
   Text2       = sSubColor(Text2       ,subh);
   GraphBack   = sSubColor(GraphBack   ,subh);
   GraphLines  = sSubColor(GraphLines  ,subh);
+  HandleColor = sSubColor(HandleColor  ,subh);
 }
 
 /****************************************************************************/

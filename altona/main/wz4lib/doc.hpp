@@ -236,7 +236,7 @@ public:
   void Handle3D(wOp *op,sInt id,sF32 *x,sF32 *y,sF32 *z,sInt mode,sInt arrayline=-1);
   void Line3D(const sVector31 &a,const sVector31 &b,sU32 col=0,sBool zoff=0);
   void Transform3D(const sMatrix34 &mat);       // apply matrix to all child handles. matrix will be inverted
-  void Box3D(const sVector31 &s, const sVector30 &r, const sVector31 &t, sU32 color);
+  void Box3D(const sVector31 &s, const sVector30 &r, const sVector31 &t, sBool themeColor, sU32 color=0);
 
   // special anim helpers
 /*
