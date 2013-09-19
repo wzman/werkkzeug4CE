@@ -223,7 +223,7 @@ type CustomMtrl : Wz4Mtrl
     void BeginShow(wPaintInfo &pi);
     void PrepareViewR(sViewport &view);
 
-    const sViewport *Viewport;
+    sViewport *Viewport;
 
     struct CustomMtrlEnv_
     {

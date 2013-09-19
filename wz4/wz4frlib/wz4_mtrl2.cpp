@@ -1011,11 +1011,12 @@ void CustomMtrl::Set(sInt flags,sInt index,const sMatrix34CM *mat,sInt SkinMatCo
     case sRF_TARGET_MAIN:
     {
       sVERIFY(CustomMtrlType->Viewport);
-      const sViewport &view=*CustomMtrlType->Viewport;
+      sViewport &view = *CustomMtrlType->Viewport;
 
       sMatrix34 model;
       if(mat)
         mat->ConvertTo(model);
+      view.UpdateModelMatrix(model);
 
       CustomMtrlType_::CustomMtrlEnv_ *env = CustomMtrlType->CustomMtrlEnv[CustomMtrlEnvIndex];
 
