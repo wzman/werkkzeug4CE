@@ -204,6 +204,14 @@ operator SphCollision SphSimpleColl()
     float30 Radius(0..1024 step 0.01);
     int StartTime (0..100000) = 0;
     int EndTime(0..100000) = 0;
+
+    group "Handle options";
+    layout flags HandleFlag "Type" ("default|boxLine") = 0;
+    if(HandleFlag == 0)
+      layout flags HandleFlagColor "Color" ("custom|theme") = 1;
+        if(HandleFlagColor == 0)
+          nolabel color HandleColor ("rgba") = 0xff000000;
+
   }
 
   code
@@ -212,37 +220,13 @@ operator SphCollision SphSimpleColl()
   }
   handles
   {
-    sSRT srt;
-    sMatrix34 mat;
-    sVector31 v[8],p;
+    sVector31 scale(para->Radius.x, para->Radius.y, para->Radius.z);
+    sVector30 rot(0.0f);
 
-    srt.Rotate = sVector30(0,0,0);
-    srt.Translate = para->Center;
-    srt.Scale = sVector31(para->Radius);
-    srt.MakeMatrix(mat);
-
-    sF32 s = 1;
-    p.Init(-s,-s,-s); v[0] = p*mat;
-    p.Init(-s,-s, s); v[1] = p*mat;
-    p.Init(-s, s, s); v[2] = p*mat;
-    p.Init(-s, s,-s); v[3] = p*mat;
-    p.Init( s,-s,-s); v[4] = p*mat;
-    p.Init( s,-s, s); v[5] = p*mat;
-    p.Init( s, s, s); v[6] = p*mat;
-    p.Init( s, s,-s); v[7] = p*mat;
-
-    pi.Line3D(v[0],v[1]);
-    pi.Line3D(v[1],v[2]);
-    pi.Line3D(v[2],v[3]);
-    pi.Line3D(v[3],v[0]);
-    pi.Line3D(v[4],v[5]);
-    pi.Line3D(v[5],v[6]);
-    pi.Line3D(v[6],v[7]);
-    pi.Line3D(v[7],v[4]);
-    pi.Line3D(v[0],v[4]);
-    pi.Line3D(v[1],v[5]);
-    pi.Line3D(v[2],v[6]);
-    pi.Line3D(v[3],v[7]);
+    if(para->HandleFlag==0)
+      pi.Box3D(scale,rot,para->Center,para->HandleFlagColor,para->HandleColor);
+    else
+      pi.Box3DLine(scale,rot,para->Center);
   }
 }
 
