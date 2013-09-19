@@ -802,9 +802,9 @@ void wPaintInfo::InitHandleEx()
 
   // light env
   HandleExEnv = new sMaterialEnv;
-  HandleExEnv->Fix();
   HandleExEnv->AmbientColor  = 0xff808080;
-  HandleExEnv->LightColor[0] = 0xff808080;
+  HandleExEnv->LightColor[0] = 0x00010101;
+  HandleExEnv->LightDir[0].Init(0,0,-1);
   HandleExEnv->Fix();
 
   // geometry
@@ -855,7 +855,7 @@ void wPaintInfo::InitHandleEx()
   HandleExGeoBox->EndLoadIB();
 }
 
-void wPaintInfo::Box3D(const sVector31 &s, const sVector30 &r, const sVector31 &t)
+void wPaintInfo::Box3D(const sVector31 &s, const sVector30 &r, const sVector31 &t, sU32 color)
 {
   if(HandleEnable)
   {
@@ -868,6 +868,10 @@ void wPaintInfo::Box3D(const sVector31 &s, const sVector30 &r, const sVector31 &
 
     sViewport  view = *View;
     view.UpdateModelMatrix(mat*HandleTrans);
+
+    HandleExEnv->AmbientColor = color;
+    HandleExEnv->LightDir[0] = sVector30(-view.Camera.l);
+    HandleExEnv->Fix();
 
     sCBuffer<sSimpleMaterialEnvPara> cb;
     cb.Data->Set(view,*HandleExEnv);
