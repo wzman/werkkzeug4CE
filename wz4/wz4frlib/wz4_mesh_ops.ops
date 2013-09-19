@@ -1601,6 +1601,16 @@ operator Wz4Mesh Select(Wz4Mesh,?GenBitmap)
       radio InputSlot "Slot" (" 1| 2| 3| 4| 5| 6| 7| 8");
     if(((Flags&0x1c0)!=0x1c0))
       radio OutputSlot "Slot" ("none| 1| 2| 3| 4| 5| 6| 7| 8");
+
+    if(((Flags&0x1c0)==0x00) || ((Flags&0x1c0)==0x40))
+    {
+      group "Handle options";
+      layout flags HandleFlag "Type" ("default|boxLine") = 0;
+      if(HandleFlag == 0)
+        layout flags HandleFlagColor "Color" ("custom|theme") = 1;
+          if(HandleFlagColor == 0)
+            nolabel color HandleColor ("rgba") = 0x00ffffff;
+    }
   }
   code
   {
@@ -1828,39 +1838,12 @@ operator Wz4Mesh Select(Wz4Mesh,?GenBitmap)
 
   handles
   {
-    sSRT srt;
-    sMatrix34 mat;
-    sVector31 v[8],p;
-
-    if(((para->Flags&0x1c0)!=0x1c0))  // no handles when input == slot
+    if(((para->Flags&0x1c0)==0x00) || ((para->Flags&0x1c0)==0x40))
     {
-      srt.Rotate = para->Rot;
-      srt.Translate = para->Trans;
-      srt.Scale = para->Scale;
-      srt.MakeMatrix(mat);
-
-      sF32 s = 1;
-      p.Init(-s,-s,-s); v[0] = p*mat;
-      p.Init(-s,-s, s); v[1] = p*mat;
-      p.Init(-s, s, s); v[2] = p*mat;
-      p.Init(-s, s,-s); v[3] = p*mat;
-      p.Init( s,-s,-s); v[4] = p*mat;
-      p.Init( s,-s, s); v[5] = p*mat;
-      p.Init( s, s, s); v[6] = p*mat;
-      p.Init( s, s,-s); v[7] = p*mat;
-
-      pi.Line3D(v[0],v[1]);
-      pi.Line3D(v[1],v[2]);
-      pi.Line3D(v[2],v[3]);
-      pi.Line3D(v[3],v[0]);
-      pi.Line3D(v[4],v[5]);
-      pi.Line3D(v[5],v[6]);
-      pi.Line3D(v[6],v[7]);
-      pi.Line3D(v[7],v[4]);
-      pi.Line3D(v[0],v[4]);
-      pi.Line3D(v[1],v[5]);
-      pi.Line3D(v[2],v[6]);
-      pi.Line3D(v[3],v[7]);
+      if(para->HandleFlag==0)
+        pi.Box3D(para->Scale,para->Rot,para->Trans,para->HandleFlagColor,para->HandleColor);
+      else
+        pi.Box3DLine(para->Scale,para->Rot,para->Trans);
     }
   }
 }

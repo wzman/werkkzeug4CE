@@ -883,6 +883,41 @@ void wPaintInfo::Box3D(const sVector31 &s, const sVector30 &r, const sVector31 &
   }
 }
 
+void wPaintInfo::Box3DLine(const sVector31 &s, const sVector30 &r, const sVector31 &t)
+{
+  sSRT srt;
+  sMatrix34 mat;
+  sVector31 v[8],p;
+
+  srt.Scale = s;
+  srt.Rotate = r;
+  srt.Translate = t;
+  srt.MakeMatrix(mat);
+
+  sF32 c = 1;
+  p.Init(-c,-c,-c); v[0] = p*mat;
+  p.Init(-c,-c, c); v[1] = p*mat;
+  p.Init(-c, c, c); v[2] = p*mat;
+  p.Init(-c, c,-c); v[3] = p*mat;
+  p.Init( c,-c,-c); v[4] = p*mat;
+  p.Init( c,-c, c); v[5] = p*mat;
+  p.Init( c, c, c); v[6] = p*mat;
+  p.Init( c, c,-c); v[7] = p*mat;
+
+  Line3D(v[0],v[1]);
+  Line3D(v[1],v[2]);
+  Line3D(v[2],v[3]);
+  Line3D(v[3],v[0]);
+  Line3D(v[4],v[5]);
+  Line3D(v[5],v[6]);
+  Line3D(v[6],v[7]);
+  Line3D(v[7],v[4]);
+  Line3D(v[0],v[4]);
+  Line3D(v[1],v[5]);
+  Line3D(v[2],v[6]);
+  Line3D(v[3],v[7]);
+}
+
 void wPaintInfo::Transform3D(const sMatrix34 &mat)
 {
   HandleTrans = mat * HandleTrans;

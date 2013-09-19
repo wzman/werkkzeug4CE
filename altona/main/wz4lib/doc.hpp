@@ -237,6 +237,7 @@ public:
   void Line3D(const sVector31 &a,const sVector31 &b,sU32 col=0,sBool zoff=0);
   void Transform3D(const sMatrix34 &mat);       // apply matrix to all child handles. matrix will be inverted
   void Box3D(const sVector31 &s, const sVector30 &r, const sVector31 &t, sBool themeColor, sU32 color=0);
+  void Box3DLine(const sVector31 &s, const sVector30 &r, const sVector31 &t);
 
   // special anim helpers
 /*
