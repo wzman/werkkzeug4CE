@@ -93,7 +93,7 @@ void sMain()
   sAddSched();
   sAddGlobalBlobHeap();
   sEnlargeRTDepthBuffer(1024,1024);
-  sInit(sISF_2D|sISF_NOVSYNC|sISF_3D,1280,768);
+  sInit(sISF_2D|sISF_NOVSYNC|sISF_3D|sISF_NODWM,1280,768);
   sInitGui();
 //  sCreateZBufferRT(1600,1200);
   sGui->AddBackWindow(new Wz4FrMainWindow);
