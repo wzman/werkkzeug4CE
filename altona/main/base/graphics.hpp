@@ -1565,6 +1565,7 @@ public:
 
   void LoadCube(sU32 c0=0xffffffffU,sF32 sx=1,sF32 sy=1,sF32 sz=1,sGeometryDuration gd=sGD_STATIC);  // load cube (24 vertices). is quite smart in interpreting vertex formats and geometry flags
   void LoadTorus(sInt tx=48,sInt ty=12,sF32 ro=1.0f,sF32 ri=0.25f,sGeometryDuration=sGD_STATIC,sU32 c0=0xffffffffU);  // load torus
+  void LoadSphere(sInt nbRings=12,sInt nbSegments=16,sGeometryDuration=sGD_STATIC); // load sphere
 
   // dynamic buffer loading, full control to update only parts of the buffer
 

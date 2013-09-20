@@ -808,106 +808,15 @@ void wPaintInfo::InitHandleEx()
   HandleExEnv->LightDir[0].Init(0,0,-1);
   HandleExEnv->Fix();
 
-  //------------- geometry ----------------------
-
-  // -------------- CUBE --------------------
-
-  sF32 c = 1.0f;
-  sVertexStandard *vp;
+  // load cube geometry
   HandleExGeoBox = new sGeometry;
   HandleExGeoBox->Init(sGF_TRILIST|sGF_INDEX16,sVertexFormatStandard);
-  HandleExGeoBox->BeginLoadVB(24,sGD_STATIC,&vp);
+  HandleExGeoBox->LoadCube(0x0,2,2,2);
 
-  vp->Init(-c, c,-c,  0, 0,-1, 1,0); vp++; // 3
-  vp->Init( c, c,-c,  0, 0,-1, 1,1); vp++; // 2
-  vp->Init( c,-c,-c,  0, 0,-1, 0,1); vp++; // 1
-  vp->Init(-c,-c,-c,  0, 0,-1, 0,0); vp++; // 0
-
-  vp->Init(-c,-c, c,  0, 0, 1, 1,0); vp++; // 4
-  vp->Init( c,-c, c,  0, 0, 1, 1,1); vp++; // 5
-  vp->Init( c, c, c,  0, 0, 1, 0,1); vp++; // 6
-  vp->Init(-c, c, c,  0, 0, 1, 0,0); vp++; // 7
-
-  vp->Init(-c,-c,-c,  0,-1, 0, 1,0); vp++; // 0
-  vp->Init( c,-c,-c,  0,-1, 0, 1,1); vp++; // 1
-  vp->Init( c,-c, c,  0,-1, 0, 0,1); vp++; // 5
-  vp->Init(-c,-c, c,  0,-1, 0, 0,0); vp++; // 4
-
-  vp->Init( c,-c,-c,  1, 0, 0, 1,0); vp++; // 1
-  vp->Init( c, c,-c,  1, 0, 0, 1,1); vp++; // 2
-  vp->Init( c, c, c,  1, 0, 0, 0,1); vp++; // 6
-  vp->Init( c,-c, c,  1, 0, 0, 0,0); vp++; // 5
-
-  vp->Init( c, c,-c,  0, 1, 0, 1,0); vp++; // 2
-  vp->Init(-c, c,-c,  0, 1, 0, 1,1); vp++; // 3
-  vp->Init(-c, c, c,  0, 1, 0, 0,1); vp++; // 7
-  vp->Init( c, c, c,  0, 1, 0, 0,0); vp++; // 6
-
-  vp->Init(-c, c,-c, -1, 0, 0, 1,0); vp++; // 3
-  vp->Init(-c,-c,-c, -1, 0, 0, 1,1); vp++; // 0
-  vp->Init(-c,-c, c, -1, 0, 0, 0,1); vp++; // 4
-  vp->Init(-c, c, c, -1, 0, 0, 0,0); vp++; // 7
-
-  HandleExGeoBox->EndLoadVB();
-
-  sU16 *ip = 0;
-  HandleExGeoBox->BeginLoadIB(6*6,sGD_STATIC,&ip);
-  for(sInt i=0;i<6;i++)
-    sQuad(ip,i*4,0,1,2,3);
-  HandleExGeoBox->EndLoadIB();
-
-
-  // -------------- SPHERE --------------------
-
-  sVertexStandard *vps;
-  sU16 *ips = 0;
-  sU16 wVertexIndex = 0;
-
-  sInt nbRings = 10;
-  sInt nbSegments = 16;
-  sF32 rDeltaRingAngle = (sPI / nbRings);
-  sF32 rDeltaSegAngle = (2.0f * sPI / nbSegments);
-
-  sInt numOfVertices = (nbRings + 1) * (nbSegments + 1);
-  sInt numOfIndices  = 2 * nbRings * (nbSegments + 1);
-
+  //load sphere geometry
   HandleExGeoSphere = new sGeometry;
   HandleExGeoSphere->Init(sGF_TRISTRIP|sGF_INDEX16, sVertexFormatStandard);
-  HandleExGeoSphere->BeginLoadVB(numOfVertices, sGD_STATIC, &vps);
-  HandleExGeoSphere->BeginLoadIB(numOfIndices, sGD_STATIC, &ips);
-
-  for(sInt nCurrentRing=0; nCurrentRing<nbRings+1; nCurrentRing++)
-  {
-    sF32 r0 = sinf(nCurrentRing * rDeltaRingAngle);
-    sF32 y0 = cosf(nCurrentRing * rDeltaRingAngle);
-
-    for(sInt nCurrentSegment=0; nCurrentSegment<nbSegments+1; nCurrentSegment++)
-    {
-      sF32 x0 = r0 * sinf(nCurrentSegment * rDeltaSegAngle);
-      sF32 z0 = r0 * cosf(nCurrentSegment * rDeltaSegAngle);
-
-      sVector31 pos(x0,y0,z0);
-      sVector30 norm(x0,y0,z0);
-      norm.Unit();
-      sF32 u0 = 1.0f - ((sF32)nCurrentSegment / (sF32)nbSegments);
-      sF32 v0 = (sF32)nCurrentRing / (sF32)nbRings;
-
-      vps->Init(pos, norm, u0, v0);
-      vps++;
-
-      if(nCurrentRing != nbRings)
-      {
-        *ips = wVertexIndex;
-         ips++;
-         *ips = wVertexIndex + (sU16)(nbSegments + 1);
-         ips++;
-         wVertexIndex++;
-      }
-    }
-  }
-
-  HandleExGeoSphere->EndLoadVB();
-  HandleExGeoSphere->EndLoadIB();
+  HandleExGeoSphere->LoadSphere();
 }
 
 void wPaintInfo::Box3D(const sVector31 &s, const sVector30 &r, const sVector31 &t, sBool themeColor, sU32 color)

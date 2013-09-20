@@ -1326,6 +1326,55 @@ void sGeometry::LoadTorus(sInt tx,sInt ty,sF32 ro,sF32 ri,sGeometryDuration gd,s
   }
 }
 
+void sGeometry::LoadSphere(sInt nbRings,sInt nbSegments,sGeometryDuration gd)
+{
+  sVertexStandard *vp;
+  sU16 *ip = 0;
+  sU16 wVertexIndex = 0;
+
+  sF32 rDeltaRingAngle = (sPI / nbRings);
+  sF32 rDeltaSegAngle = (2.0f * sPI / nbSegments);
+
+  sInt numOfVertices = (nbRings + 1) * (nbSegments + 1);
+  sInt numOfIndices  = 2 * nbRings * (nbSegments + 1);
+
+  BeginLoadVB(numOfVertices, gd, &vp);
+  BeginLoadIB(numOfIndices, gd, &ip);
+
+  for(sInt nCurrentRing=0; nCurrentRing<nbRings+1; nCurrentRing++)
+  {
+    sF32 r0 = sinf(nCurrentRing * rDeltaRingAngle);
+    sF32 y0 = cosf(nCurrentRing * rDeltaRingAngle);
+
+    for(sInt nCurrentSegment=0; nCurrentSegment<nbSegments+1; nCurrentSegment++)
+    {
+      sF32 x0 = r0 * sinf(nCurrentSegment * rDeltaSegAngle);
+      sF32 z0 = r0 * cosf(nCurrentSegment * rDeltaSegAngle);
+
+      sVector31 pos(x0,y0,z0);
+      sVector30 norm(x0,y0,z0);
+      norm.Unit();
+      sF32 u0 = 1.0f - ((sF32)nCurrentSegment / (sF32)nbSegments);
+      sF32 v0 = (sF32)nCurrentRing / (sF32)nbRings;
+
+      vp->Init(pos, norm, u0, v0);
+      vp++;
+
+      if(nCurrentRing != nbRings)
+      {
+        *ip = wVertexIndex;
+         ip++;
+         *ip = wVertexIndex + (sU16)(nbSegments + 1);
+         ip++;
+         wVertexIndex++;
+      }
+    }
+  }
+
+  EndLoadVB();
+  EndLoadIB();
+}
+
 /****************************************************************************/
 /***                                                                      ***/
 /***   sTexture                                                           ***/
