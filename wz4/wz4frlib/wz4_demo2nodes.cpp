@@ -1443,7 +1443,7 @@ void RNLayer2D::Prepare(Wz4RenderContext *ctx)
   uv1.y0 = Para.ScrollUV2[1];
   uv1.y1 = Para.ScrollUV2[1]+Para.ScaleUV2[1];
   sF32 z = 0.0f;
-  sU32 col = Para.Color;
+  sU32 col = Para.Colors;
 
   Geo->BeginLoadVB(4,sGD_FRAME,&vp);
   vp[0].Init(r.x0-0.5f,r.y0-0.5f,z,col,uv0.x0,uv0.y0,uv1.x0,uv1.y0);

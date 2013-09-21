@@ -198,7 +198,7 @@ operator Wz4Render ModSlice(?Wz4Render)
     anim float ColPhase(-16..16 step 0.01);
     anim float ColSize(-16..16 step 0.01);
 
-    anim color Color("rgb");
+    anim color Colors("rgb");
 
     anim float Bias(-16..16 step 0.01);
     anim float TexAmp(-1024..1024 step 0.001) = 1.0;

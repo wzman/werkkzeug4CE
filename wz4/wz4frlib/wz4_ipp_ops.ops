@@ -163,7 +163,7 @@ operator Wz4Render SSAO(Wz4Render)
     anim float SampleRadius(0..65536 step 0.001) = 1.0;
     anim float NormalThreshold(-1..1 step 0.001) = 0.5;
     flags Output("Result|Normals|SSAO") = 0;
-    anim color Color("rgb")=0;
+    anim color Colors("rgb")=0;
     flags Quality(" 4 Samples| 8 Samples| 16 Samples") = 2;
     anim float Intensity(-16..16 step 0.002) = 1;
     layout flags Fog("-|Fog|Centered");

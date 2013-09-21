@@ -934,7 +934,7 @@ void RNSprites::Render(Wz4RenderContext *ctx)
     sMatrix34CM *cm;
     sMatrix34 mat;
     sCBuffer<StaticParticlePSPara> cb1;
-    cb1.Data->col.InitColor(Para.Color);
+    cb1.Data->col.InitColor(Para.Colors);
 
     sU32 fade0col;
     switch(Para.Mode & 0x000f)
@@ -944,7 +944,7 @@ void RNSprites::Render(Wz4RenderContext *ctx)
       case 0x0002: fade0col=0x00ffffff; break;
       case 0x0003: fade0col=0x00808080; break;
       case 0x0004: fade0col=0x00000000; break;
-      case 0x0005: fade0col=Para.Color&0x00ffffff; break;
+      case 0x0005: fade0col=Para.Colors&0x00ffffff; break;
     }
     cb1.Data->fade0col.InitColor(fade0col);
 

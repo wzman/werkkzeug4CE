@@ -1016,7 +1016,7 @@ void RNSSAO::Render(Wz4RenderContext *ctx)
 
     sF32 nt = Para.NormalThreshold;
     cbfp.Data->Tweak.Init(nt,1.0f/(1.0f-nt),1.0f-1.0f/(1.0f-nt),0.0f);
-    cbfp.Data->ScrColor.InitColor(Para.Color);
+    cbfp.Data->ScrColor.InitColor(Para.Colors);
     cbfp.Modify();
 
     MtrlFinish->Texture[0] = screen;

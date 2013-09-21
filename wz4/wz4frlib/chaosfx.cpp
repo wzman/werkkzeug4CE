@@ -201,7 +201,7 @@ void RNPrint::Render(Wz4RenderContext *ctx)
     {
       view.Model = sMatrix34(*model) * Matrix;
       view.Prepare();
-      Font->Print(view,Text,Para.Color,1.0f/Font->Height);
+      Font->Print(view,Text,Para.Colors,1.0f/Font->Height);
     }
   }
 }

@@ -46,7 +46,7 @@ void RNModSlice::Simulate(Wz4RenderContext *ctx)
   env->Vector[5].x = Para.Amp;
   env->Vector[5].y = Para.Bias;
   env->Vector[5].z = Para.TexAmp;
-  env->Color[0].InitColor(Para.Color);
+  env->Color[0].InitColor(Para.Colors);
 }
 
 void RNModSlice::Render(Wz4RenderContext *ctx)
