@@ -407,7 +407,7 @@ operator Wz4Mesh Path3D()
     float WeldThreshold(0..1 step 0.000001) = 0.00001;
     flags Flags("-|sharp edges");
     group "Transform";
-    float31 Scale(-65536..65536 step 0.001) = 0.02;
+    float31 Scale(-65536..65536 step 0.0001) = 0.02;
     float30 Rot(-65536..65536 step 0.001) = 0.0;
     float31 Trans(-65536..65536 step 0.001) = 0.0;
     flags Center("-|center") = 1;
@@ -423,7 +423,6 @@ operator Wz4Mesh Path3D()
 
     out->MakePath(cmd->Strings[0],para->Extrude,para->MaxError,para->WeldThreshold,para->Flags);
     out->CalcNormalAndTangents();
-    out->Transform(mat);
 
     Wz4MeshVertex *mv;
 
@@ -439,6 +438,8 @@ operator Wz4Mesh Path3D()
 
       out->Flush();
     }
+
+    out->Transform(mat);
   }
 }
 
