@@ -1136,9 +1136,9 @@ void sGeometry::LoadCube(sU32 c0,sF32 sx,sF32 sy,sF32 sz,sGeometryDuration gd)
           fp++;
           break;
         case sVF_TANGENT|sVF_F3:
+          *fp++ = 1;
           *fp++ = 0;
-          *fp++ = 0;
-          *fp++ = 0;
+          *fp++ = -1;
           break;
         case sVF_TANGENT|sVF_F4:
           *fp++ = 0;
