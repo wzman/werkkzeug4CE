@@ -809,6 +809,7 @@ operator Wz4Particles Sparcle "Sparkle" (Wz4Particles)
     float DirectionSpeed(-1024..1024 step 0.001) = 0.0;
     float Gravity(-1024..1024 step 0.001) = 0;
     int RandomSeed(0..255);
+    float Delay(0..1 step 0.01);
   }
   code
   {

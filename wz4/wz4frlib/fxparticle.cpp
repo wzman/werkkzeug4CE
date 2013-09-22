@@ -3198,6 +3198,8 @@ void RPSparcle::Func(Wz4PartInfo &pinfo,sF32 time,sF32 dt)
   sInt used = 0;
   sF32 il = 1/Para.Lifetime;
 
+  time = time - Para.Delay;
+
   sFORALL(Sparcs,s)
   {
     Wz4Particle *p = pinfo.Parts+_i;
