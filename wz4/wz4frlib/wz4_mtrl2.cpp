@@ -14,7 +14,7 @@
 
 void Wz4MtrlType_::Init()
 {
-  Torus = 0;
+  MaterialPrimitiveGeo = 0;
 
   sClear(Shaders);
   sClear(Formats);
@@ -137,7 +137,7 @@ void Wz4MtrlType_::Init()
 
 void Wz4MtrlType_::Exit()
 {
-  delete Torus;
+  delete MaterialPrimitiveGeo;
   for(sInt i=0;i<sRF_TOTAL;i++)
     delete Shaders[i];
 }
@@ -163,18 +163,42 @@ void Wz4MtrlType_::Show(wObject *obj,wPaintInfo &pi)
     {
       mtrl = (Wz4Mtrl *) obj;
 
-      if(Torus==0 || Torus->GetFormat()!=mtrl->GetFormatHandle(sRF_TARGET_MAIN|sRF_MATRIX_ONE))
+      if(pi.IsMaterialPrimitiveChanged)
       {
-        delete Torus;
-        Torus = new sGeometry(sGF_INDEX16|sGF_TRILIST,mtrl->GetFormatHandle(sRF_TARGET_MAIN|sRF_MATRIX_ONE));
-        Torus->LoadTorus(16,24,2,0.5f);
-         
+        pi.IsMaterialPrimitiveChanged = sFALSE;
+        delete MaterialPrimitiveGeo;
+        MaterialPrimitiveGeo = 0;
+      }
+
+      if(MaterialPrimitiveGeo==0 || MaterialPrimitiveGeo->GetFormat()!=mtrl->GetFormatHandle(sRF_TARGET_MAIN|sRF_MATRIX_ONE))
+      {
+        if(MaterialPrimitiveGeo)
+          delete MaterialPrimitiveGeo;
+
+        switch(pi.MaterialPrimitive)
+        {
+          case sMPT_TORUS:
+            MaterialPrimitiveGeo = new sGeometry(sGF_INDEX16|sGF_TRILIST,mtrl->GetFormatHandle(sRF_TARGET_MAIN|sRF_MATRIX_ONE));
+            MaterialPrimitiveGeo->LoadTorus(16,24,2,0.5f);
+            break;
+
+          case sMPT_CUBE:
+            MaterialPrimitiveGeo = new sGeometry(sGF_INDEX16|sGF_TRILIST,mtrl->GetFormatHandle(sRF_TARGET_MAIN|sRF_MATRIX_ONE));
+            MaterialPrimitiveGeo->LoadCube(0,2.0f,2.0f,2.0f);
+            break;
+
+          case sMPT_SPHERE:
+            MaterialPrimitiveGeo = new sGeometry;
+            MaterialPrimitiveGeo->Init(sGF_TRISTRIP|sGF_INDEX16, sVertexFormatStandard);
+            MaterialPrimitiveGeo->LoadSphere();
+            break;
+        }
       }
 
       Wz4MtrlType->PrepareView(*pi.View);
       mtrl->Set(sRF_TARGET_MAIN|sRF_MATRIX_ONE,0,0,0,0,0);
 
-      Torus->Draw();
+      MaterialPrimitiveGeo->Draw();
     }
   }
 }

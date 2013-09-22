@@ -77,6 +77,8 @@ wPaintInfo::wPaintInfo()
   MTMFlag = 0;
   CacheWarmup = 0;
   CacheWarmupAgain = 0;
+  MaterialPrimitive = sMPT_TORUS;
+  IsMaterialPrimitiveChanged = sFALSE;
 
   ClearMisc();
 

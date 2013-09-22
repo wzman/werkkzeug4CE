@@ -80,6 +80,14 @@ enum wHandleMode
   wHM_PLANE_XY,                   // xy-plane
 };
 
+enum sMaterialPrimitiveType
+{
+  sMPT_TORUS = 0,
+  sMPT_CUBE,
+  sMPT_SPHERE,
+  sMPT_MAX
+};
+
 struct wHandle                    // this structure will be rebuild every frame
 {
   sInt Mode;                      // wHM_???
@@ -152,6 +160,8 @@ public:
   sInt Lod;                       // 0..3 - low / med / high / extra
   sBool CacheWarmup;              // set by player during cache warmup
   sInt CacheWarmupAgain;          // an operator indicates, that he wants the same beat warmed up again. this is used for the mandelbulb op, which needs multiple frames of warmup
+  sInt MaterialPrimitive;         // Material primitive type
+  sBool IsMaterialPrimitiveChanged; // inform that use want to change primitive type
 
   // Handles
 

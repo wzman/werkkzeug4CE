@@ -407,6 +407,7 @@ window View0,View1,View2
     key main.BlackAmbient 'i'|SHIFT;
     key main.WhiteAmbient 'i';
     key QuantizeCamera 'Q'|SHIFT;
+    key MaterialPrimitive 'v';
   }
   sets(base2d)
   {

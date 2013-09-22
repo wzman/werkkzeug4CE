@@ -105,6 +105,7 @@ public:
   void CmdMaximize2();
   void CmdDeleteHandles();
   void CmdQuantizeCamera();
+  void CmdMaterialPrimitive();
 
   // 2d helpers
 
