@@ -3200,6 +3200,9 @@ void RPSparcle::Func(Wz4PartInfo &pinfo,sF32 time,sF32 dt)
 
   time = time - Para.Delay;
 
+  if(Para.Mode==1)
+    time = Para.Time;
+
   sFORALL(Sparcs,s)
   {
     Wz4Particle *p = pinfo.Parts+_i;
@@ -3210,7 +3213,7 @@ void RPSparcle::Func(Wz4PartInfo &pinfo,sF32 time,sF32 dt)
     else 
       used++;
 
-    p->Init(s->Pos+s->Speed*t+g*t*t,tt);
+    p->Init(s->Pos+s->Speed*t+g*t*t,t);
   }
   pinfo.Used = used;
   pinfo.Flags = 0;
