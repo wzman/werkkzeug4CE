@@ -3145,7 +3145,7 @@ void RPSparcle::DelayedInit()
     db = !db;
     sF32 time = sF32(i)/Para.SamplePoints;
     part[db].Reset();
-    Source->Func(part[db],time,0);
+    Source->Func(part[db],time+Para.Delay,0);
 
     for(sInt j=0;j<maxsrc;j++)
     {
