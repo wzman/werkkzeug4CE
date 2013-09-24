@@ -362,7 +362,7 @@ operator ModShaderSampler Const()
 
   parameter
   {
-    layout flags Source("here|env 0|env 1|env 2|env 3|env 4|env 5|env 6|env 7|vertex0|vertex1|instance|depth|shellextrude")=0;
+    layout flags Source("here|color 0|color 1|color 2|color 3|color 4|color 5|color 6|color 7|vertex0|vertex1|instance|depth|shellextrude")=0;
     if(Source==0)
     {
       color Color("rgba")=0;
