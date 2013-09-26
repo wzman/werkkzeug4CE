@@ -156,9 +156,11 @@ operator SphGenerator SphObject(?Wz4Mesh)
     group "Handle options";
     layout flags HandleFlag "Type" ("default|boxLine") = 0;
     if(HandleFlag == 0)
+    {
       layout flags HandleFlagColor "Color" ("custom|theme") = 1;
-        if(HandleFlagColor == 0)
-          nolabel color HandleColor ("rgba") = 0x00880000;
+      if(HandleFlagColor == 0)
+        nolabel color HandleColor ("rgba") = 0x00880000;
+    }
   }
 
   code
@@ -205,9 +207,11 @@ operator SphGenerator SphSource()
     group "Handle options";
     layout flags HandleFlag "Type" ("default|boxLine") = 0;
     if(HandleFlag == 0)
+    {
       layout flags HandleFlagColor "Color" ("custom|theme") = 1;
-        if(HandleFlagColor == 0)
-          nolabel color HandleColor ("rgba") = 0x00880000;
+      if(HandleFlagColor == 0)
+        nolabel color HandleColor ("rgba") = 0x00880000;
+    }
   }
 
   code
@@ -252,9 +256,11 @@ operator SphCollision SphSimpleColl()
     group "Handle options";
     layout flags HandleFlag "Type" ("default|boxLine") = 0;
     if(HandleFlag == 0)
+    {
       layout flags HandleFlagColor "Color" ("custom|theme") = 1;
-        if(HandleFlagColor == 0)
-          nolabel color HandleColor ("rgba") = 0x00880000;
+      if(HandleFlagColor == 0)
+        nolabel color HandleColor ("rgba") = 0x00880000;
+    }
 
   }
 
@@ -295,9 +301,11 @@ operator SphCollision SphPlaneColl()
     group "Handle options";
     layout flags HandleFlag "Type" ("default|boxLine") = 0;
     if(HandleFlag == 0)
+    {
       layout flags HandleFlagColor "Color" ("custom|theme") = 1;
-        if(HandleFlagColor == 0)
-          nolabel color HandleColor ("rgba") = 0x00880000;
+      if(HandleFlagColor == 0)
+        nolabel color HandleColor ("rgba") = 0x00880000;
+    }
   }
 
   code

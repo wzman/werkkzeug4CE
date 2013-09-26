@@ -1607,9 +1607,11 @@ operator Wz4Mesh Select(Wz4Mesh,?GenBitmap)
       group "Handle options";
       layout flags HandleFlag "Type" ("default|boxLine") = 0;
       if(HandleFlag == 0)
+      {
         layout flags HandleFlagColor "Color" ("custom|theme") = 1;
-          if(HandleFlagColor == 0)
-            nolabel color HandleColor ("rgba") = 0x00ffffff;
+        if(HandleFlagColor == 0)
+          nolabel color HandleColor ("rgba") = 0x00ffffff;
+      }
     }
   }
   code
