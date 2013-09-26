@@ -35,7 +35,7 @@ type Wz4Mtrl
   {
   friend class Wz4Mtrl;
   private:
-    sGeometry *Torus;
+    sGeometry *MaterialPrimitiveGeo;
 
     sMaterial *Shaders[sRF_TOTAL];
     sVertexFormatHandle *Formats[sRF_TOTAL];

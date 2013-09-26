@@ -583,7 +583,7 @@ operator GenBitmap TronFont()
   }
 }
 
-operator Wz4Mesh TronPrint(?*GenBitmap)
+operator Wz4Mesh TronPrint(*GenBitmap)
 {
   column = 1;
   parameter

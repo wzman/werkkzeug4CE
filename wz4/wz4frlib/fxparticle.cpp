@@ -3145,7 +3145,7 @@ void RPSparcle::DelayedInit()
     db = !db;
     sF32 time = sF32(i)/Para.SamplePoints;
     part[db].Reset();
-    Source->Func(part[db],time,0);
+    Source->Func(part[db],time+Para.Delay,0);
 
     for(sInt j=0;j<maxsrc;j++)
     {
@@ -3198,6 +3198,11 @@ void RPSparcle::Func(Wz4PartInfo &pinfo,sF32 time,sF32 dt)
   sInt used = 0;
   sF32 il = 1/Para.Lifetime;
 
+  time = time - Para.Delay;
+
+  if(Para.Mode==1)
+    time = Para.Time;
+
   sFORALL(Sparcs,s)
   {
     Wz4Particle *p = pinfo.Parts+_i;
@@ -3208,7 +3213,7 @@ void RPSparcle::Func(Wz4PartInfo &pinfo,sF32 time,sF32 dt)
     else 
       used++;
 
-    p->Init(s->Pos+s->Speed*t+g*t*t,tt);
+    p->Init(s->Pos+s->Speed*t+g*t*t,t);
   }
   pinfo.Used = used;
   pinfo.Flags = 0;

@@ -87,6 +87,7 @@ void WinView::InitWire(const sChar *name)
   sWire->AddDrag(name,L"Zoom2D",sMessage(this,&WinView::DragZoomBitmap));
   sWire->AddDrag(name,L"Scroll2D",sMessage(this,&WinView::DragScrollBitmap,1));
   sWire->AddDrag(name,L"Scroll2DFast",sMessage(this,&WinView::DragScrollBitmap,10));
+   sWire->AddKey(name,L"MaterialPrimitive",sMessage(this,&WinView::CmdMaterialPrimitive));
 
   sWire->AddTool(name,L"Handles",sMessage(this,&WinView::CmdHandles));
   sWire->AddKey(name,L"CalcSlowOps",sMessage(this,&WinView::CmdCalcSlowOps));
@@ -1084,6 +1085,14 @@ void WinView::DragTeleportHandle(const sWindowDrag &dd,sDInt mode)
 void WinView::CmdTeleportAbort(sDInt mode)
 {
   sWire->ChangeCurrentTool(this,0);
+}
+
+void WinView::CmdMaterialPrimitive()
+{
+  pi.MaterialPrimitive++;
+  if(pi.MaterialPrimitive >= sMPT_MAX)
+    pi.MaterialPrimitive = sMPT_TORUS;
+  pi.IsMaterialPrimitiveChanged = sTRUE;
 }
 
 void WinView::CmdQuantizeCamera()
