@@ -1886,6 +1886,7 @@ operator Wz4Mesh Select(Wz4Mesh,?GenBitmap)
 
 operator Wz4Mesh SplitAlongPlane(Wz4Mesh)
 {
+  flags = hide|obsolete;
   column = 2;
   shortcut = 'C';
   parameter
@@ -1903,6 +1904,64 @@ operator Wz4Mesh SplitAlongPlane(Wz4Mesh)
       out->SplitAlongPlane(para->Plane);
       para->Plane.w += para->Distance;
     }
+  }
+}
+
+operator Wz4Mesh SplitAlongPlane2 "SplitAlongPlane" (Wz4Mesh)
+{
+  column = 2;
+  shortcut = 'C';
+  parameter
+  {
+    float31 Rot (-1024..1024 step 0.001) = 0;
+    float31 Trans (-1024..1024 step 0.001) = 0;
+    int Count(1..256)=1;
+    float Distance(-1024..1024 step 0.01);
+
+    group "Handle options";
+    float2 Size (-1024..1024 step 0.01) = 1;
+    layout flags HandleFlag "Type" ("default|boxLine") = 0;
+    if(HandleFlag == 0)
+    {
+      layout flags HandleFlagColor "Color" ("custom|theme") = 1;
+      if(HandleFlagColor == 0)
+        nolabel color HandleColor ("rgba") = 0x00ffffff;
+    }
+  }
+
+  code
+  {
+    sMatrix34 mat;
+    sSRT srt;
+    srt.Scale = sVector31(para->Size.x, 0.01, para->Size.y);
+    srt.Rotate = sVector30(para->Rot);
+    srt.Translate = sVector31(para->Trans);
+    srt.MakeMatrix(mat);
+
+    sVector4 p(0,1,0,0);
+    p.RotatePlane(mat);
+
+    out->CopyFrom(in0);
+    for(int i=0; i<para->Count; i++)
+    {
+      out->SplitAlongPlane(p);
+      p.w += para->Distance / 1000;
+    }
+  }
+
+  handles
+  {
+    sMatrix34 mat;
+    sSRT srt;
+    srt.Scale = sVector31(para->Size.x, 0.01, para->Size.y);
+    srt.Rotate = sVector30(para->Rot);
+    srt.Translate = sVector31(para->Trans);
+    srt.MakeMatrix(mat);
+
+    if(para->HandleFlag==0)
+      pi.Box3D(srt.Scale,srt.Rotate,srt.Translate,para->HandleFlagColor,para->HandleColor);
+    else
+      pi.Box3DLine(srt.Scale,srt.Rotate,srt.Translate);
   }
 }
 

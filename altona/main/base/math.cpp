@@ -365,6 +365,15 @@ void sVector4::InitPlane(sVector31Arg p0,sVector31Arg p1,sVector31Arg p2)
   w = - (p0 ^ norm);
 }
 
+void sVector4::RotatePlane(const sMatrix34 &mat)
+{
+  sVector30 n(x,y,z);
+  sVector31 p(-x*w,-y*w,-z*w);
+  n = n*mat;
+  p = p*mat;
+  InitPlane(p,n);
+}
+
 sBool sVector4::operator==(sVector4Arg v) const
 {
   return  x == v.x &&

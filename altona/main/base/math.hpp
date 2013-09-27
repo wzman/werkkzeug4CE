@@ -263,6 +263,8 @@ public:
 
   sBool operator==(sVector4Arg v)const;
   inline sBool operator!=(sVector4Arg v)const     { return x!=v.x||y!=v.y||z!=v.z; }
+
+  void RotatePlane(const sMatrix34 &mat);
 };
 
 inline sU32 sMakeColorRGBA(sF32 *p) { sVector4 c(p[0],p[1],p[2],p[3]); return c.GetColor(); }
