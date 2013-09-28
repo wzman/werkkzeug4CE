@@ -32,6 +32,7 @@ void RNCamera::Simulate(Wz4RenderContext *ctx)
 {
   Para = ParaBase;
 
+
   ctx->CameraFlag = 1;
   sViewport oldview = ctx->View;
   sInt oldflags = ctx->RenderFlags;
@@ -74,6 +75,30 @@ void RNCamera::Simulate(Wz4RenderContext *ctx)
     case 2:
       mat.EulerXYZ(Para.Rot.x*sPI2F,Para.Rot.y*sPI2F,Para.Rot.z*sPI2F);
       mat.l = Para.Target - mat.k*Para.Distance;
+      break;
+    case 4:
+      {
+        // mirror view
+
+        // get and invert current camera rotation
+        sVector30 rot;
+        Doc->LastView.Camera.FindEulerXYZ(rot.x, rot.y, rot.z);
+        rot.x = -rot.x;
+        rot.z = -rot.z;
+        rot.y = rot.y;
+
+        // get transposed camera pos on -y
+        sVector31 pos = Doc->LastView.Camera.l;
+        pos.y = -pos.y + Para.MirrorBias * 2;
+
+        // get transposed camera target on -y
+        sVector31 target = Doc->LastView.Camera.l + Doc->LastView.Camera.k;
+        target.y = -target.y + Para.MirrorBias * 2;
+
+        // update camera
+        mat.LookAt(target, pos);
+        mat.EulerXYZ(rot.x,rot.y,rot.z);
+      }
       break;
     case 3:
       {
@@ -128,6 +153,8 @@ void RNCamera::Simulate(Wz4RenderContext *ctx)
     view.SetZoom(zoom);
     if(Para.Clear & 16)
       view.Orthogonal = sVO_ORTHOGONAL;
+    if(Para.UpdateLastView)
+      Doc->LastView.Camera = view.Camera;
     view.Prepare();
 
     ctx->DisableShadowFlag = (Para.Clear & 0x80) ? 1 : 0;

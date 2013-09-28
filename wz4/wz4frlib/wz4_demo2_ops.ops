@@ -181,7 +181,7 @@ operator Wz4Render Camera(?Rendertarget2D,?*Wz4Render)
   parameter
   {
     action CopyCam (1);
-    layout flags Mode:13("target|rot|schleuder|spline");
+    layout flags Mode:13("target|rot|schleuder|spline|mirrorX");
     if(Mode==3)
     {
       string Spline:1;
@@ -197,6 +197,8 @@ operator Wz4Render Camera(?Rendertarget2D,?*Wz4Render)
         anim float31 Rot:14(-64..64 step 0.001);
       if(Mode==2)
         anim float Distance:10(-1024..1024 step 0.01) = 5;
+      if(Mode==4)
+        anim float MirrorBias:19 (-1024..1024 step 0.01) = 0;
       anim float Tilt:6 (-16 .. 16 step 0.001) = 0;
     }
     group "Projection";
@@ -213,11 +215,12 @@ operator Wz4Render Camera(?Rendertarget2D,?*Wz4Render)
     continue flags Clear "React to FreeCam"("*6default|off");
     continue flags Clear "Other" ("*7-|Disable Shadows");
 
+    layout flags UpdateLastView:20 ("off|on");
     int Renderpass:12(-127..127); 
     link Rendertarget:0;
     group "Animation Script"; overbox overlabel linenumber lines 5 string Script:0;
 
-    // next:18
+    // next:21
   }
   
   actions
