@@ -733,7 +733,7 @@ void sMain()
 
   sArray<sDirEntry> dirlist;
   sString<1024> wintitle;
-  wintitle.PrintF(L"werkkzeug4 player V%d.%d",WZ4_VERSION,WZ4_REVISION);
+  wintitle.PrintF(L"werkkzeug4 CE player V%d.%d",WZ4_VERSION,WZ4_REVISION);
 
   sSetWindowName(wintitle);
   const sChar *makepack=sGetShellString(L"p",L"-pack");

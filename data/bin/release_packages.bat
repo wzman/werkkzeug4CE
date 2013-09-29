@@ -6,8 +6,8 @@
 set PATH_TO_PHYSX=C:\library\PhysX-3.2.3_PC_SDK_Core\Bin
 
 :: dx9_x86
-7z a -tzip -mx=9 Wz4CE_dx9_x86.zip werkkzeug4_dx9_x32.exe
-7z a -tzip -mx=9 Wz4CE_dx9_x86.zip wz4player_dx9_x32.exe
+7z a -tzip -mx=9 Wz4CE_dx9_x86.zip werkkzeug4_dx9_x86.exe
+7z a -tzip -mx=9 Wz4CE_dx9_x86.zip wz4player_dx9_x86.exe
 7z a -tzip -mx=9 Wz4CE_dx9_x86.zip %PATH_TO_PHYSX%\win32\PhysX3CHECKED_x86.dll
 7z a -tzip -mx=9 Wz4CE_dx9_x86.zip %PATH_TO_PHYSX%\win32\PhysX3CommonCHECKED_x86.dll
 7z a -tzip -mx=9 Wz4CE_dx9_x86.zip %PATH_TO_PHYSX%\win32\PhysX3CookingCHECKED_x86.dll
