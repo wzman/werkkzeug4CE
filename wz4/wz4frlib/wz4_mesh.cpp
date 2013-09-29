@@ -6262,8 +6262,6 @@ void Wz4Mesh::MakeText(const sChar *text,const sChar *font,sF32 height,sF32 extr
       continue;
     }
 
-    Wz4Mesh *tempmesh = new Wz4Mesh;
-
     GLYPHMETRICS gm;
     sU32 size = GetGlyphOutlineW(hDC,text[chr],0x102,&gm,bufSize,buffer,&mat);
     if(!size && !(flags&2))
@@ -6271,6 +6269,8 @@ void Wz4Mesh::MakeText(const sChar *text,const sChar *font,sF32 height,sF32 extr
       xPos += gm.gmCellIncX;
       continue;
     }
+
+    Wz4Mesh *tempmesh = new Wz4Mesh;
 
     gluTessBeginPolygon(tess,tempmesh);
     sU8 *ptr = buffer, *end = buffer + size;
