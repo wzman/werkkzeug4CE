@@ -1167,6 +1167,7 @@ void CustomMtrl::Prepare()
 
   *desc++ = sVF_POSITION|sVF_F3;
   *desc++ = sVF_NORMAL|sVF_F3;
+  *desc++ = sVF_TANGENT|sVF_F3;
   *desc++ = sVF_UV0|sVF_F2;
   *desc = 0;
   Format = sCreateVertexFormat(descdata);
