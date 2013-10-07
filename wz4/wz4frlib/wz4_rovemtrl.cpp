@@ -21,8 +21,8 @@ static const sF32 Det3x3(const sMatrix34CM *mat)
 
 void RoveMtrlType_::Init()
 {
-  for(sInt i=0;i<sMAX_LIGHTENV;i++)
-    LightEnv[i] = new LightEnv_;
+  for(sInt i=0;i<sMAX_ENVNUM;i++)
+    EnvNum[i] = new EnvNum_;
 
   sImageData emptyCube;
   emptyCube.Init2(sTEX_CUBE|sTEX_ARGB8888,0,1,1,1);
@@ -35,39 +35,39 @@ void RoveMtrlType_::Init()
 void RoveMtrlType_::Exit()
 {
   sDelete(EmptyCube);
-  for(sInt i=0;i<sMAX_LIGHTENV;i++)
-    delete LightEnv[i];
+  for(sInt i=0;i<sMAX_ENVNUM;i++)
+    delete EnvNum[i];
 }
 
 void RoveMtrlType_::PrepareViewR(sViewport &view)
 {
-  for(sInt i=0;i<sMAX_LIGHTENV;i++)
+  for(sInt i=0;i<sMAX_ENVNUM;i++)
   {
     sVector30 d;
     d = -view.Camera.k;
     d.Unit();
-    LightEnv[i]->cbv.Data->mvp = view.ModelScreen;
-    LightEnv[i]->cbv.Data->mv = view.ModelView;
-    LightEnv[i]->cbv.Data->EyePos = view.Camera.l;
-    LightEnv[i]->cbv.Modify();
-    LightEnv[i]->cbp.Data->FogColor.InitColor(0x80ffffff);
-    LightEnv[i]->cbp.Data->FogPara.Init(0,0,0,0);
-    LightEnv[i]->cbp.Data->ClipPlane[0].Init(0,0,0,1);
-    LightEnv[i]->cbp.Data->ClipPlane[1].Init(0,0,0,1);
-    LightEnv[i]->cbp.Data->ClipPlane[2].Init(0,0,0,1);
-    LightEnv[i]->cbp.Data->ClipPlane[3].Init(0,0,0,1);
-    LightEnv[i]->cbp.Data->Ambient.Init(0.2f,0.2f,0.2f,0.2f);
-    LightEnv[i]->cbp.Data->LightPos[0].Init(3,0,0,0);
-    LightEnv[i]->cbp.Data->LightPos[1].Init(4,0,0,0);
-    LightEnv[i]->cbp.Data->LightPos[2].Init(5,0,0,0);
-    LightEnv[i]->cbp.Data->LightCol[0].Init(0.8f,0,0,0);
-    LightEnv[i]->cbp.Data->LightCol[1].Init(0.8f,0,0,0);
-    LightEnv[i]->cbp.Data->LightCol[2].Init(0.8f,0,0,0);
-    LightEnv[i]->cbp.Data->LightInvSqRange.Init(0.0f,0.0f,0.0f,0.0f);
-    LightEnv[i]->cbp.Modify();
+    EnvNum[i]->cbv.Data->mvp = view.ModelScreen;
+    EnvNum[i]->cbv.Data->mv = view.ModelView;
+    EnvNum[i]->cbv.Data->EyePos = view.Camera.l;
+    EnvNum[i]->cbv.Modify();
+    EnvNum[i]->cbp.Data->FogColor.InitColor(0x80ffffff);
+    EnvNum[i]->cbp.Data->FogPara.Init(0,0,0,0);
+    EnvNum[i]->cbp.Data->ClipPlane[0].Init(0,0,0,1);
+    EnvNum[i]->cbp.Data->ClipPlane[1].Init(0,0,0,1);
+    EnvNum[i]->cbp.Data->ClipPlane[2].Init(0,0,0,1);
+    EnvNum[i]->cbp.Data->ClipPlane[3].Init(0,0,0,1);
+    EnvNum[i]->cbp.Data->Ambient.Init(0.2f,0.2f,0.2f,0.2f);
+    EnvNum[i]->cbp.Data->LightPos[0].Init(3,0,0,0);
+    EnvNum[i]->cbp.Data->LightPos[1].Init(4,0,0,0);
+    EnvNum[i]->cbp.Data->LightPos[2].Init(5,0,0,0);
+    EnvNum[i]->cbp.Data->LightCol[0].Init(0.8f,0,0,0);
+    EnvNum[i]->cbp.Data->LightCol[1].Init(0.8f,0,0,0);
+    EnvNum[i]->cbp.Data->LightCol[2].Init(0.8f,0,0,0);
+    EnvNum[i]->cbp.Data->LightInvSqRange.Init(0.0f,0.0f,0.0f,0.0f);
+    EnvNum[i]->cbp.Modify();
     
-    LightEnv[i]->LightCube = 0;
-    LightEnv[i]->TexTrans.Init();
+    EnvNum[i]->LightCube = 0;
+    EnvNum[i]->TexTrans.Init();
   }
 
   ViewMatrix = view.View;
@@ -128,7 +128,7 @@ void RoveMtrl::Set(sInt flags,sInt index,const sMatrix34CM *mat,sInt SkinMatCoun
     {
       sMatrix34 tmat,nmat;
 
-      RoveMtrlType_::LightEnv_ *env = RoveMtrlType->LightEnv[index];
+      RoveMtrlType_::EnvNum_ *env = RoveMtrlType->EnvNum[index];
       sCBufferBase *modelcb;
       if(mat)
       {
@@ -280,7 +280,7 @@ sVertexFormatHandle *RoveMtrl::GetFormatHandle(sInt flags)
   }
 }
 
-sBool RoveMtrl::SkipPhase(sInt flags,sInt lightenv)
+sBool RoveMtrl::SkipPhase(sInt flags,sInt EnvNum)
 {
   if( ( (flags & sRF_TARGET_MASK)==sRF_TARGET_ZONLY || 
         (flags & sRF_TARGET_MASK)==sRF_TARGET_ZNORMAL || 
@@ -319,7 +319,7 @@ static sF32 InvSqRange(sF32 x)
 
 void RNRoveMtrlEnv::Render(Wz4RenderContext *ctx)
 {
-  RoveMtrlType_::LightEnv_ *env = RoveMtrlType->LightEnv[Para.Index];
+  RoveMtrlType_::EnvNum_ *env = RoveMtrlType->EnvNum[Para.Index];
   RoveShaderPEnv *cbp = env->cbp.Data;
 
   sVector4 col0,col1,col2,col3;

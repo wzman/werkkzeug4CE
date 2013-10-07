@@ -27,9 +27,9 @@ void RNModSlice::Simulate(Wz4RenderContext *ctx)
 
   SimulateChilds(ctx);
 
-  // initialize lightenvironment
+  // initialize EnvNumironment
 
-  ModLightEnv *env = ModMtrlType->LightEnv[Para.Index];
+  ModEnvNum *env = ModMtrlType->EnvNum[Para.Index];
 
   env->Vector[0] = Para.Pos0;
   env->Vector[1] = Para.Pos1;

@@ -322,7 +322,7 @@ operator ModShader Tex2DSurroundNormal(Texture2D)
     layout flags CoordinateSystem:13("world|model post skin|model pre skin")=2;
     layout continue flags CoordinateSystem "Flags" ("*4-|Major Axis");
     layout flags Aux:0("-|aux| 1-aux|upper half|lower half");
-    layout flags Transform:1("-|Scale|Matrix")=1;//| 0 LightEnv Matrix 0| 1 LightEnv Matrix 1| 2 LightEnv Matrix 2| 3 LightEnv Matrix 3");
+    layout flags Transform:1("-|Scale|Matrix")=1;//| 0 EnvNum Matrix 0| 1 EnvNum Matrix 1| 2 EnvNum Matrix 2| 3 EnvNum Matrix 3");
     if(Transform==1)
       float SimpleScale:2(-1024..1024 step 0.01)=1;
     if(Transform==2)
@@ -1097,9 +1097,9 @@ operator ModShader SphereFog()
     float Radius(0..1000000 step 0.01)= 1;
     flags Animate("all static|radius from ModMisc|all from ModMisc");
     if(Animate >= 1) 
-      flags LightEnvVector "RadiusVector"(" 0| 1| 2| 3| 4| 5| 6| 7");
+      flags EnvNumVector "RadiusVector"(" 0| 1| 2| 3| 4| 5| 6| 7");
     if(Animate >= 2) 
-      continue flags LightEnvVector "CenterVector"("*4 0| 1| 2| 3| 4| 5| 6| 7");
+      continue flags EnvNumVector "CenterVector"("*4 0| 1| 2| 3| 4| 5| 6| 7");
   }
 
   code
@@ -1108,7 +1108,7 @@ operator ModShader SphereFog()
     mod->Center = para->Center;
     mod->Radius = para->Radius;
     mod->Flags = para->Animate;
-    mod->VectorId = para->LightEnvVector;
+    mod->VectorId = para->EnvNumVector;
     out->Add(mod)
   }
 }

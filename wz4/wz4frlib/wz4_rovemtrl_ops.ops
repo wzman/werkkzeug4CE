@@ -30,7 +30,7 @@ type RoveMtrl : Wz4Mtrl
 
     sTextureCube *EmptyCube;
 
-    struct LightEnv_
+    struct EnvNum_
     {
       sCBuffer<RoveShaderVEnv> cbv;
       sCBuffer<RoveShaderPEnv> cbp;
@@ -39,7 +39,7 @@ type RoveMtrl : Wz4Mtrl
       sTextureCube *LightCube; // no ownership
     };
 
-    LightEnv_ *LightEnv[sMAX_LIGHTENV];
+    EnvNum_ *EnvNum[sMAX_ENVNUM];
     sMatrix34 ViewMatrix;
   }
 }
@@ -62,7 +62,7 @@ operator RoveMtrl RoveMaterial(?Texture2D,?Texture2D)
     if(input[1])
     {
       continue flags Extras "Texture Op" ("*2add|mul");
-      nolabel flags UVTrans ("uv|model|world|camera|envi-sphere|envi-reflect|from LightEnv");
+      nolabel flags UVTrans ("uv|model|world|camera|envi-sphere|envi-reflect|from EnvNum");
     }
 
     group "Transforms";
@@ -144,7 +144,7 @@ operator Wz4Render RoveMtrlEnv(?TextureCube)
   column = 1;
   parameter
   {
-    int Index "LightEnv" (0..15);
+    int Index "EnvNum" (0..15);
     int Renderpass (-127..127);
 
     group "Lights";

@@ -1279,7 +1279,7 @@ void RNPhysx::Prepare(Wz4RenderContext *ctx)
     
     // prepare mesh according matrix array
     if(AllActorData[i].MeshPtr)
-      AllActorData[i].MeshPtr->BeforeFrame(Para.LightEnv,am.Matrices.GetCount(),am.Matrices.GetData());   
+      AllActorData[i].MeshPtr->BeforeFrame(Para.EnvNum,am.Matrices.GetCount(),am.Matrices.GetData());   
 
     // advance to next unique actor
     i+=AllActorData[i].InstanceCount;
@@ -1291,7 +1291,7 @@ void RNPhysx::Render(Wz4RenderContext *ctx)
   for(sInt i=0; i<MatricesActors.GetCount(); i++)
   {
     if(MatricesActors[i].MeshPtr)
-      MatricesActors[i].MeshPtr->RenderInst(ctx->RenderMode,Para.LightEnv, MatricesActors[i].Matrices.GetCount(), MatricesActors[i].Matrices.GetData());
+      MatricesActors[i].MeshPtr->RenderInst(ctx->RenderMode,Para.EnvNum, MatricesActors[i].Matrices.GetCount(), MatricesActors[i].Matrices.GetData());
   }
 }
 

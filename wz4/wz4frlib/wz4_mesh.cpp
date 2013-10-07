@@ -4959,7 +4959,7 @@ void Wz4Mesh::Charge()
 
 // render single mesh or single boned mesh
 
-void Wz4Mesh::BeforeFrame(sInt lightenv,sInt matcount,const sMatrix34CM *mat)
+void Wz4Mesh::BeforeFrame(sInt EnvNum,sInt matcount,const sMatrix34CM *mat)
 {
   Wz4MeshCluster *cl;
 
@@ -4969,7 +4969,7 @@ void Wz4Mesh::BeforeFrame(sInt lightenv,sInt matcount,const sMatrix34CM *mat)
   {
     if(cl->Mtrl)
     {
-      cl->Mtrl->BeforeFrame(lightenv,1,&cl->Bounds,matcount,mat);
+      cl->Mtrl->BeforeFrame(EnvNum,1,&cl->Bounds,matcount,mat);
     }
   }
 }

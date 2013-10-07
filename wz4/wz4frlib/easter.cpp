@@ -203,8 +203,8 @@ void RNCubeTrees::MakeBranch(sInt depth, sInt seed, sF32 time, sF32 width, sVect
 
 void RNCubeTrees::Prepare(Wz4RenderContext *ctx)
 {
-  if(TreeMtrl) TreeMtrl->BeforeFrame(Para.LightEnv);
-  if(CubeMtrl) CubeMtrl->BeforeFrame(Para.LightEnv);
+  if(TreeMtrl) TreeMtrl->BeforeFrame(Para.EnvNum);
+  if(CubeMtrl) CubeMtrl->BeforeFrame(Para.EnvNum);
 
   sVertexStandard *vp;
   sU16 *ip;
@@ -291,17 +291,17 @@ void RNCubeTrees::Render(Wz4RenderContext *ctx)
 {
   if(ctx->IsCommonRendermode())
   {
-    if(TreeMtrl->SkipPhase(ctx->RenderMode,Para.LightEnv&15)) return;
+    if(TreeMtrl->SkipPhase(ctx->RenderMode,Para.EnvNum&15)) return;
 
     sMatrix34CM *model;
     sFORALL(Matrices, model)
     {
-      TreeMtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.LightEnv&15,model,0,0,0);
+      TreeMtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.EnvNum&15,model,0,0,0);
       if (TreeOk)
        TreeGeo->Draw();
 
       if (CubeMtrl) // use treemtrl if no cubemtrl supplied
-        CubeMtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.LightEnv&15,model,0,0,0);
+        CubeMtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.EnvNum&15,model,0,0,0);
 
       if (CubeOk)
         CubeGeo->Draw();
@@ -541,7 +541,7 @@ void RNJulia4D::Render(Wz4RenderContext *ctx)
     cbp2.Data->Params1=view2model.k/ctx->View.ClipFar;
     cbp2.Data->mv=mv;
 
-    ModLightEnv *mle=ModMtrlType->LightEnv[0];
+    ModEnvNum *mle=ModMtrlType->EnvNum[0];
     if (mle)
     {
       cbp2.Data->ldir_vs = mle->Lights[0].ws_Dir*ctx->View.View;

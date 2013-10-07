@@ -702,7 +702,7 @@ operator Wz4Render Physx (*WpxActor)
   parameter
   {    
     action Restart(1);
-    anim int LightEnv (0..15);
+    anim int EnvNum (0..15);
     int Renderpass(-127..127);    
     int NumThreads (0..16) = 1;
     anim flags Enable ("-|Enable") = 1;

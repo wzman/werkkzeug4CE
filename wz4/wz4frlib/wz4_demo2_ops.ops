@@ -331,7 +331,7 @@ operator Wz4Render RenderMesh(Wz4Mesh)
   flags = conversion;
   parameter
   {
-    anim int LightEnv (0..15);
+    anim int EnvNum (0..15);
     anim float BoneTime (0..1024 step 0.001);
     int Renderpass(-127..127);
     flags Instances("off|on");
@@ -362,7 +362,7 @@ operator Wz4Render MultiplyMesh(Wz4Mesh)
   parameter
   {
     flags Flags ("-|Center:*1-|reverse");
-    anim int LightEnv:40 (0..15);
+    anim int EnvNum:40 (0..15);
     int Renderpass(-127..127);
     group "Pre-Transform"; 
     anim float31 Scale:1 (-1024..1024 step 0.01) = 1;
@@ -1387,7 +1387,7 @@ operator Wz4Render BoneTrain(Wz4Mesh)
     string SplineName:1;
 
     int Renderpass(-127..127);
-    anim int LightEnv(0..15) = 0;
+    anim int EnvNum(0..15) = 0;
 
     anim float Start(-4..4 step 0.01);
     anim float Length(-4..4 step 0.01)= 1;

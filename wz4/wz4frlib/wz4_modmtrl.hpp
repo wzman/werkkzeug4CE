@@ -71,7 +71,7 @@ struct ModShaderPEnv
 };
 
 
-struct ModLightEnv                // light environment
+struct ModEnvNum                // var environment
 {
   sCBuffer<ModShaderVEnv> cbv;
   sCBuffer<ModShaderPEnv> cbp;
@@ -79,7 +79,7 @@ struct ModLightEnv                // light environment
 
   void Init();
   void Calc(sViewport &view);
-  ModLightEnv();
+  ModEnvNum();
 
   // parameters modified by operator
 
@@ -188,10 +188,10 @@ struct ModLightEnv                // light environment
 struct CachedModInfo
 {
   CachedModInfo();
-  CachedModInfo(sInt matmode,class ModMtrl *,sInt lightenv);
+  CachedModInfo(sInt matmode,class ModMtrl *,sInt EnvNum);
   sInt Features;
   sInt FeatureFlags;
-  sU8 LightEnv;
+  sU8 EnvNum;
   sU8 MatrixMode;
   sU8 RenderTarget;
   sU8 DirLight;
@@ -343,11 +343,11 @@ public:
 
   void Set(sInt flags,sInt index,const sMatrix34CM *mat,sInt SkinMatCount,const sMatrix34CM *SkinMats,sInt *SkinMatMap);
   void Prepare();
-  void BeforeFrame(sInt lightenv,sInt boxcount,const sAABBoxC *boxes,sInt matcount,const sMatrix34CM *matrices);
+  void BeforeFrame(sInt EnvNum,sInt boxcount,const sAABBoxC *boxes,sInt matcount,const sMatrix34CM *matrices);
 
 
   sVertexFormatHandle *GetFormatHandle(sInt flags);
-  sBool SkipPhase(sInt flags,sInt lightenv);
+  sBool SkipPhase(sInt flags,sInt EnvNum);
 
   sArray<MtrlModule *> ModulesUser;         // modules registered by user
   sArray<MtrlModule *> ModulesTotal;        // plus some modules from system

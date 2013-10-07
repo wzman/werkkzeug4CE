@@ -752,11 +752,11 @@ void RNMarchingCubesBase<T>::Render(Wz4RenderContext *ctx)
 {
   if(ctx->IsCommonRendermode() && PInfo.Used>0)
   {
-    if(Mtrl->SkipPhase(ctx->RenderMode,Para.LightEnv&15)) return;
+    if(Mtrl->SkipPhase(ctx->RenderMode,Para.EnvNum&15)) return;
     sMatrix34CM *model;
     sFORALL(Matrices,model)
     {
-      Mtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.LightEnv&15,model,0,0,0);
+      Mtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.EnvNum&15,model,0,0,0);
       MC.Draw();
     }
   } 

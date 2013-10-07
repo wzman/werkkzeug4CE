@@ -32,7 +32,7 @@ operator Wz4Render CubeExample(Wz4Mtrl)
     anim float31 Scale:1 (-1024..1024 step 0.01) = 1;
     anim float30 Rot (-16..16 step 0.01) = 0;
     anim float31 Trans (-0x10000..0x10000 step 0.01) = { 0,0,0 } ;
-    int LightEnv(0..15)=0;
+    int EnvNum(0..15)=0;
     int Renderpass(-127..127);
 
     group "Animation Script"; overbox overlabel linenumber lines 5 string Script;
@@ -91,7 +91,7 @@ operator Wz4Render Ribbons(?Wz4Mtrl)
     anim float Freq  [3](-1024..1024 step 0.001) = { 2,3,4 };
     anim float Spread[3](-1024..1024 step 0.001) = 0.1;
     anim float Start [3](-1024..1024 step 0.0001);
-    int LightEnv(0..15)=0;
+    int EnvNum(0..15)=0;
     int Renderpass(-127..127);
 
     group "Animation Script"; overbox overlabel linenumber lines 5 string Script;
@@ -130,7 +130,7 @@ operator Wz4Render Ribbons2(?Wz4Mtrl)
     float30 Spread(-16..16 step 0.1) = 1;
     anim float Forward (0..4 step 0.001) = 0.1;
     anim float Side (0..4 step 0.001) = 0.05;
-    int LightEnv(0..15)=0;
+    int EnvNum(0..15)=0;
     group "Sources";
     float31 Source0(-16..16 step 0.01);
     nolabel float Power0(-16..16 step 0.001);
@@ -182,7 +182,7 @@ operator Wz4Render BlowNoise(Wz4Mtrl/* = Wz4Mtrl SimpleMaterial*/)  // warum geh
     int Tess[2](4..1024)=64;
     anim float Scale(0..64 step 0.01) = 16;
     anim float Scroll(-1024..1024 step 0.01) = 0;
-    int LightEnv(0..15)=0;
+    int EnvNum(0..15)=0;
     int Renderpass(-127..127);
     array
     {
@@ -225,7 +225,7 @@ operator Wz4Render DebrisClassic "Debris" (Wz4Mesh,BitmapBase,?BitmapBase,?Bitma
   parameter 
   {
     int Renderpass:0(-127..127);
-    anim int LightEnv:1(0..15) = 0;
+    anim int EnvNum:1(0..15) = 0;
     layout flags Mode:38("chunks|instances")=0;
     group "Projection A";
     flags Flags:4("*3-|enable:xy|yz|xz:*2plane|circular:*4border|tile|clamp")=10;
@@ -323,7 +323,7 @@ operator Wz4Render BoneVibrate(Wz4Mesh)
   parameter
   {
     int Renderpass(-127..127);
-    anim int LightEnv(0..15) = 0;
+    anim int EnvNum(0..15) = 0;
     group "Vibrate";
     int Seed(0..255);
     anim float Freq(0..1024 step 0.01) = 1;

@@ -38,7 +38,7 @@ operator Wz4Render FR063_Mandelbulb(Wz4Mtrl)
     float Scale(0..1024 step 0.01) = 1;
 
     group "Render";
-    int LightEnv(0..15)=0;
+    int EnvNum(0..15)=0;
     int Renderpass(-127..127);
     group "new paras";
     flags ShadowLevel"directional shadow level"(" 0| 1| 2| 3| 4| 5| 6| 7")=0;
@@ -105,7 +105,7 @@ operator Wz4Render FR063_MandelbulbIso(Wz4Mtrl,MandelbulbIsoData=MandelbulbIsoDa
     if(0) anim float Scale_(0..1024 step 0.01) = 1;
     if(0) flags OctreeDivisions_(" 0| 1| 2| 3| 4| 5| 6| 7")=2;
     group "Render";
-    int LightEnv(0..15)=0;
+    int EnvNum(0..15)=0;
     int Renderpass(-127..127);
     flags Flags ("dynamic|static");
     flags Multithreading("-|limited");

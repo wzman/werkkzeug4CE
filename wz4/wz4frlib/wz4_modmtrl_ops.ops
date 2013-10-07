@@ -43,8 +43,8 @@ type ModMtrl : Wz4Mtrl
     void EndRenderR(Wz4RenderContext *ctx);
     void BeginShow(wPaintInfo &pi);
 
-    ModLightEnv *LightEnv[sMAX_LIGHTENV];
-    sInt RenderShadowsForLightEnv;
+    ModEnvNum *EnvNum[sMAX_ENVNUM];
+    sInt RenderShadowsForEnvNum;
 //    sMatrix34 ViewMatrix;
     sFrustum ViewFrustum;
     sAABBox ShadowCaster;
@@ -106,7 +106,7 @@ operator ModMtrl ModMaterial(?*ModShader)
     flags AllowFeatures("-|Fog:*1-|GroundFog:*2-|ClipPlanes")=0xffffffff;
     flags FeatureFlags("-|FogIsBlack:*1CastShadow|-:*2Ambient|-:*3-|swap fogs:*8-|fog alpha");
     continue flags FeatureFlags "Emissive"("*4Add|Screen:*6-|suppress reflection rim|supress reflection center");
-    continue flags FeatureFlags "Cast Shaodw in LightEnvironment"("*9my own|all");
+    continue flags FeatureFlags "Cast Shadow in EnvNum"("*9my own|all");
     continue flags FeatureFlags "Normals"("*10precise|compact:*11-|double sided");
     group "debug";
     action Shadercode(1);
@@ -234,7 +234,7 @@ operator Wz4Render ModLight (?Wz4Render)
     action Swap_RG(1);
     action Swap_RB(2);
     action Swap_GB(3);
-    int Index "LightEnv" (0..15);
+    int Index "EnvNum" (0..15);
     int Renderpass (-127..127);
 
     color Ambient("rgb");
@@ -905,7 +905,7 @@ operator Wz4Render ModMisc(?Wz4Render)
   column = 1;
   parameter
   {
-    int Index "LightEnv" (0..15);
+    int Index "EnvNum" (0..15);
     int Renderpass (-127..127);
     group "misc colors";
     anim color Color0("rgb"); nolabel float Amp0(0..1024 step 0.01) = 1;
@@ -957,27 +957,27 @@ operator Wz4Render ModMisc(?Wz4Render)
 
 header_end
 {
-  class RNModLightEnv : public Wz4RenderNode
+  class RNModEnvNum : public Wz4RenderNode
   {
   public:
-    Wz4RenderParaModLightEnv Para,ParaBase;
-    Wz4RenderAnimModLightEnv Anim;
+    Wz4RenderParaModEnvNum Para,ParaBase;
+    Wz4RenderAnimModEnvNum Anim;
 
-    RNModLightEnv();
-    ~RNModLightEnv();
+    RNModEnvNum();
+    ~RNModEnvNum();
 
     void Simulate(Wz4RenderContext *);
     void Render(Wz4RenderContext *);
   };
 }
 
-operator Wz4Render ModLightEnv(?Wz4Render)
+operator Wz4Render ModEnvNum(?Wz4Render)
 {
   tab = Wz4Mtrl;
   column = 1;
   parameter
   {
-    int Index "LightEnv" (0..15);
+    int Index "EnvNum" (0..15);
     int Renderpass (-127..127);
 
     layout flags Features ("-|Fog:*1-|GroundFog:*2-|Clip Planes");
@@ -1024,7 +1024,7 @@ operator Wz4Render ModLightEnv(?Wz4Render)
   }
   code
   {
-    RNModLightEnv *node = new RNModLightEnv;
+    RNModEnvNum *node = new RNModEnvNum;
     node->ParaBase = *para;
     out->RootNode = node;
     out->AddChilds(cmd,para->Renderpass);
@@ -1055,7 +1055,7 @@ operator Wz4Render ModClipTwister(?Wz4Render)
   column = 1;
   parameter
   {
-    int Index "LightEnv" (0..15);
+    int Index "EnvNum" (0..15);
     int Renderpass (-127..127);
 
     group "Clip Planes";

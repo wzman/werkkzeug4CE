@@ -20,7 +20,7 @@
 
 #define WZ4ONLYONEGEO 0    // don't use seperate vertex buffers in zonly and main passes
 
-#define sMAX_LIGHTENV 16
+#define sMAX_ENVNUM 16
 
 enum Wz4MtrlFlags
 {
@@ -51,11 +51,11 @@ class Wz4Mtrl : public wObject
 {
 public:
   Wz4Mtrl();
-  virtual void BeforeFrame(sInt lightenv,sInt boxcount=0,const sAABBoxC *boxes=0,sInt matcount=0,const sMatrix34CM *mats=0) {}
+  virtual void BeforeFrame(sInt EnvNum,sInt boxcount=0,const sAABBoxC *boxes=0,sInt matcount=0,const sMatrix34CM *mats=0) {}
   virtual void Prepare()=0;
   virtual sVertexFormatHandle *GetFormatHandle(sInt flags)=0;
   virtual void Set(sInt flags,sInt index,const sMatrix34CM *mat,sInt SkinMatCount,const sMatrix34CM *SkinMats,sInt *SkinMatMap)=0;
-  virtual sBool SkipPhase(sInt flags,sInt lightenv)=0;
+  virtual sBool SkipPhase(sInt flags,sInt EnvNum)=0;
 
   virtual void Serialize(sReader &stream) { sFatal(L"no serialize for this material type yet"); }
   virtual void Serialize(sWriter &stream) { sFatal(L"no serialize for this material type yet"); }
@@ -92,13 +92,13 @@ public:
   void SetAlphaTest(sInt cmp,sInt ref);
 //  void SetTexMatrix(sInt stage,const sMatrix34 &mat);
 
-  sInt DetailTexSpace;            // bit 8..10 switch to lightenv-matrix
+  sInt DetailTexSpace;            // bit 8..10 switch to EnvNum-matrix
   sMatrix34 TexTrans[3];
   sF32 VertexScale;
 
   void Prepare();
   sVertexFormatHandle *GetFormatHandle(sInt flags);
-  sBool SkipPhase(sInt flags,sInt lightenv);
+  sBool SkipPhase(sInt flags,sInt EnvNum);
 
   template <class streamer> void Serialize_(streamer &stream);
   virtual void Serialize(sReader &stream) { Serialize_(stream); }
@@ -135,7 +135,7 @@ public:
   sShader *CompileShader(sInt shadertype, const sChar *source);
 
   sVertexFormatHandle *GetFormatHandle(sInt flags);
-  sBool SkipPhase(sInt flags, sInt lightenv);
+  sBool SkipPhase(sInt flags, sInt EnvNum);
 
   sTextBuffer Log;
 

@@ -39,7 +39,7 @@ operator Wz4Render FR063_Water(Wz4Mtrl)
 
     group "Render";
     action Reset(1);
-    int LightEnv(0..15)=0;
+    int EnvNum(0..15)=0;
     int Renderpass(-127..127);
 
     group "Animation Script"; overbox overlabel linenumber lines 5 string Script;

@@ -1290,7 +1290,7 @@ void RNFR063ClothGridSimRender::Render(Wz4RenderContext *ctx)
      (ctx->RenderMode & sRF_TARGET_MASK)==sRF_TARGET_DIST)
   {
     // here the material can decline to render itself
-    if(Mtrl->SkipPhase(ctx->RenderMode,Para.LightEnv)) return;
+    if(Mtrl->SkipPhase(ctx->RenderMode,Para.EnvNum)) return;
 
     // the effect may be placed multple times in the render graph.
     // this loop will get all the matrices:
@@ -1301,7 +1301,7 @@ void RNFR063ClothGridSimRender::Render(Wz4RenderContext *ctx)
       sMatrix34CM mat1 = sMatrix34CM(sMatrix34(*mat));
 
       // render it once
-      Mtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.LightEnv,&mat1,0,0,0);
+      Mtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.EnvNum,&mat1,0,0,0);
       Geo->Draw();
     }
   }
@@ -1309,7 +1309,7 @@ void RNFR063ClothGridSimRender::Render(Wz4RenderContext *ctx)
   if((ctx->RenderMode & sRF_TARGET_MASK)==sRF_TARGET_MAIN)
   {
     // here the material can decline to render itself
-    if(Mtrl->SkipPhase(ctx->RenderMode,Para.LightEnv)) return;
+    if(Mtrl->SkipPhase(ctx->RenderMode,Para.EnvNum)) return;
 
     // the effect may be placed multple times in the render graph.
     // this loop will get all the matrices:
@@ -1320,7 +1320,7 @@ void RNFR063ClothGridSimRender::Render(Wz4RenderContext *ctx)
       sMatrix34CM mat1 = sMatrix34CM(sMatrix34(*mat));
 
       // render it once
-      Mtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.LightEnv,&mat1,0,0,0);
+      Mtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.EnvNum,&mat1,0,0,0);
       Geo->Draw();
     }
   }
@@ -2692,7 +2692,7 @@ void RNFR063AermelKanal::Simulate(Wz4RenderContext *ctx)
 void RNFR063AermelKanal::Prepare(Wz4RenderContext *ctx)
 {
   if (Mesh)
-    Mesh->BeforeFrame(Para.LightEnv,Matrices.GetCount(),Matrices.GetData());
+    Mesh->BeforeFrame(Para.EnvNum,Matrices.GetCount(),Matrices.GetData());
 }
 
 void RNFR063AermelKanal::Transform(Wz4RenderContext *ctx,const sMatrix34 &mat)
@@ -2720,7 +2720,7 @@ void RNFR063AermelKanal::Render(Wz4RenderContext *ctx)
      (ctx->RenderMode & sRF_TARGET_MASK)==sRF_TARGET_DIST)
   {
     // here the material can decline to render itself
-    if(Mtrl->SkipPhase(ctx->RenderMode,Para.LightEnv)) return;
+    if(Mtrl->SkipPhase(ctx->RenderMode,Para.EnvNum)) return;
 
     // the effect may be placed multple times in the render graph.
     // this loop will get all the matrices:  
@@ -2730,7 +2730,7 @@ void RNFR063AermelKanal::Render(Wz4RenderContext *ctx)
       sMatrix34CM mat1 = sMatrix34CM(sMatrix34(*mat)*Matrix);
 
       // render it once
-      Mtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.LightEnv,&mat1,0,0,0);
+      Mtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.EnvNum,&mat1,0,0,0);
       if (PathSpline && FixGeo)
       {
         sGeometryDrawInfo di;
@@ -2745,7 +2745,7 @@ void RNFR063AermelKanal::Render(Wz4RenderContext *ctx)
   if((ctx->RenderMode & sRF_TARGET_MASK)==sRF_TARGET_MAIN)
   {
     // here the material can decline to render itself
-    if(Mtrl->SkipPhase(ctx->RenderMode,Para.LightEnv)) return;
+    if(Mtrl->SkipPhase(ctx->RenderMode,Para.EnvNum)) return;
     
     // the effect may be placed multple times in the render graph.
     // this loop will get all the matrices:    
@@ -2758,7 +2758,7 @@ void RNFR063AermelKanal::Render(Wz4RenderContext *ctx)
       
       
       // render it once
-      Mtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.LightEnv,&mat1,0,0,0);
+      Mtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.EnvNum,&mat1,0,0,0);
       if (PathSpline && FixGeo && DynGeo) 
       {
         sGeometryDrawInfo di;
@@ -2776,7 +2776,7 @@ void RNFR063AermelKanal::Render(Wz4RenderContext *ctx)
     sFORALL(Matrices,mat)
     {
       *mat=sMatrix34CM(ObjMat*sMatrix34(*mat));
-      Mesh->Render(ctx->RenderMode,Para.LightEnv,mat,0,ctx->Frustum);
+      Mesh->Render(ctx->RenderMode,Para.EnvNum,mat,0,ctx->Frustum);
     }
   }
   

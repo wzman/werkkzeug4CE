@@ -180,7 +180,7 @@ operator Wz4Render ModSlice(?Wz4Render)
   column = 1;
   parameter
   {
-    int Index "LightEnv" (0..15);
+    int Index "EnvNum" (0..15);
     int Renderpass (-127..127);
     anim float30 Pos0(-1000000..1000000 step 0.01);
     nolabel anim float Size0(-1000..1000 step 0.01) = 0;

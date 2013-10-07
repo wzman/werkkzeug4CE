@@ -1124,7 +1124,7 @@ void RNChunks::Prepare(Wz4RenderContext *ctx)
 
   Wz4Mesh *mesh;
   sFORALL(Meshes,mesh)
-    if(mesh) mesh->BeforeFrame(Para.LightEnv);
+    if(mesh) mesh->BeforeFrame(Para.EnvNum);
 
   PInfo[0].Reset();
   Source->Func(PInfo[0],Time,0);
@@ -1264,7 +1264,7 @@ void RNChunks::Render(Wz4RenderContext *ctx)
             if(_i%animdifferent==0)
             {
               if(n>0)
-                Meshes[i]->RenderBoneInst(ctx->RenderMode,Para.LightEnv,bc,basemat,n,imat);
+                Meshes[i]->RenderBoneInst(ctx->RenderMode,Para.EnvNum,bc,basemat,n,imat);
               n = 0;
               Meshes[i]->Skeleton->EvaluateCM(p->Anim,bonemat,basemat);
             }
@@ -1274,7 +1274,7 @@ void RNChunks::Render(Wz4RenderContext *ctx)
             }
           }
           if(n>0)
-            Meshes[i]->RenderBoneInst(ctx->RenderMode,Para.LightEnv,bc,basemat,n,imat);
+            Meshes[i]->RenderBoneInst(ctx->RenderMode,Para.EnvNum,bc,basemat,n,imat);
         }
         delete[] bonemat;
         delete[] basemat;
@@ -1288,7 +1288,7 @@ void RNChunks::Render(Wz4RenderContext *ctx)
             sFORALL(Matrices,matp)
             {
               mat = p->Mat*sMatrix34(*matp);
-              Meshes[i]->Render(ctx->RenderMode,Para.LightEnv,&sMatrix34CM(mat),p->Anim,ctx->Frustum);
+              Meshes[i]->Render(ctx->RenderMode,Para.EnvNum,&sMatrix34CM(mat),p->Anim,ctx->Frustum);
             }
           }
         }
@@ -1326,7 +1326,7 @@ void RNChunks::Render(Wz4RenderContext *ctx)
     while(left>0)
     {
       sInt batch = sMin(BoneCount,left);
-      Meshes[0]->RenderBone(ctx->RenderMode,Para.LightEnv,BoneCount,mats+done,batch);
+      Meshes[0]->RenderBone(ctx->RenderMode,Para.EnvNum,BoneCount,mats+done,batch);
       done += batch;
       left -= batch;
     }
@@ -1347,7 +1347,7 @@ void RNChunks::Render(Wz4RenderContext *ctx)
               mats[n++] = p->Mat*sMatrix34(*matp);
         sVERIFY(n <= PInfo[0].Used*Matrices.GetCount());
 
-        Meshes[i]->RenderInst(ctx->RenderMode,Para.LightEnv,n,mats,(Para.Direction & 0x20) ? PInfo[0].Colors : 0);
+        Meshes[i]->RenderInst(ctx->RenderMode,Para.EnvNum,n,mats,(Para.Direction & 0x20) ? PInfo[0].Colors : 0);
       }
     }
   }
@@ -1405,7 +1405,7 @@ void RNDebris::Prepare(Wz4RenderContext *ctx)
 {
   if(PInfo.Alloc)
   {
-    if(Mesh) Mesh->BeforeFrame(Para.LightEnv);
+    if(Mesh) Mesh->BeforeFrame(Para.EnvNum);
 
     PInfo.Reset();
     Source->Func(PInfo,Time,0);
@@ -1446,7 +1446,7 @@ void RNDebris::Render(Wz4RenderContext *ctx)
       for(sInt i=0;i<count;i++)
         mats[i] = Parts[i]*sMatrix34(*model);
 
-      Mesh->RenderBone(ctx->RenderMode,Para.LightEnv,count,mats);
+      Mesh->RenderBone(ctx->RenderMode,Para.EnvNum,count,mats);
     }
   }
 }
@@ -2218,7 +2218,7 @@ void RNTrails::Prepare(Wz4RenderContext *ctx)
 
   if(PInfos[0].Alloc==0 || TrailCount<2) return;
 
-  if(Mtrl) Mtrl->BeforeFrame(Para.LightEnv);
+  if(Mtrl) Mtrl->BeforeFrame(Para.EnvNum);
 
   sF32 delta = Para.Delta/(TrailCount-1);
   PInfos[0].Reset();
@@ -2619,11 +2619,11 @@ void RNTrails::Render(Wz4RenderContext *ctx)
 {
   if(ctx->IsCommonRendermode() && PInfos[0].Used>0)
   {
-    if(Mtrl->SkipPhase(ctx->RenderMode,Para.LightEnv&15)) return;
+    if(Mtrl->SkipPhase(ctx->RenderMode,Para.EnvNum&15)) return;
     sMatrix34CM *model;
     sFORALL(Matrices,model)
     {
-      Mtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.LightEnv&15,model,0,0,0);
+      Mtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.EnvNum&15,model,0,0,0);
       Geo->Draw();
     }
   } 

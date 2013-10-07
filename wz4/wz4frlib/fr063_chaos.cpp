@@ -431,7 +431,7 @@ void RNFR063_Water::Simulate(Wz4RenderContext *ctx)
 
 void RNFR063_Water::Prepare(Wz4RenderContext *ctx)
 {
-  if(Mtrl) Mtrl->BeforeFrame(Para.LightEnv);
+  if(Mtrl) Mtrl->BeforeFrame(Para.EnvNum);
 }
 
 
@@ -439,12 +439,12 @@ void RNFR063_Water::Render(Wz4RenderContext *ctx)
 {
   if(ctx->IsCommonRendermode())
   {
-    if(Mtrl->SkipPhase(ctx->RenderMode,Para.LightEnv)) return;
+    if(Mtrl->SkipPhase(ctx->RenderMode,Para.EnvNum)) return;
 
     sMatrix34CM *mat;
     sFORALL(Matrices,mat)
     {
-      Mtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.LightEnv,mat,0,0,0);
+      Mtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.EnvNum,mat,0,0,0);
       MC->Draw();
     }
   }
@@ -557,7 +557,7 @@ void RNFR063_MultiProgress::Render(Wz4RenderContext *ctx)
 {
   if(ctx->IsCommonRendermode())
   {
-//    if(Mtrl->SkipPhase(ctx->RenderMode,Para.LightEnv)) return;
+//    if(Mtrl->SkipPhase(ctx->RenderMode,Para.EnvNum)) return;
 
     sViewport view;
     view.Orthogonal = sVO_PIXELS;

@@ -28,7 +28,7 @@ operator Wz4Render CubeTrees "Easter_CubeTrees" (Wz4Mtrl, ?Wz4Mtrl)
   parameter
   {
     int Renderpass(-127..127);
-    anim int LightEnv(0..15) = 0;
+    anim int EnvNum(0..15) = 0;
     group "Materials";
     link TreeMaterial : 0 (both);
     link CubeMaterial : 1 (both);

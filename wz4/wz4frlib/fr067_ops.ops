@@ -25,7 +25,7 @@ operator Wz4Render FR067_IsoSplash(Wz4Mtrl,?Wz4Mtrl,?Wz4Mtrl,?Wz4Mtrl)
   parameter
   {
     group "Render";
-    int LightEnv(0..15)=0;
+    int EnvNum(0..15)=0;
     int Renderpass(-127..127);
     flags Multithreading("-|limited");
     group "para";

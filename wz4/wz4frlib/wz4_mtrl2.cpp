@@ -414,59 +414,59 @@ Wz4Mtrl::Wz4Mtrl()
 
 void SimpleMtrlType_::Init()
 {
-  for(sInt i=0;i<sMAX_LIGHTENV;i++)
-    LightEnv[i] = new LightEnv_;
+  for(sInt i=0;i<sMAX_ENVNUM;i++)
+    EnvNum[i] = new EnvNum_;
   Wz4MtrlType->RegisterMtrl(this);
 }
 
 void SimpleMtrlType_::Exit()
 {
-  for(sInt i=0;i<sMAX_LIGHTENV;i++)
-    delete LightEnv[i];
+  for(sInt i=0;i<sMAX_ENVNUM;i++)
+    delete EnvNum[i];
 }
 
 void SimpleMtrlType_::BeginShow(wPaintInfo &pi)
 {
-  for(sInt i=0;i<sMAX_LIGHTENV;i++)
+  for(sInt i=0;i<sMAX_ENVNUM;i++)
   {
-    LightEnv[i]->cbv.Data->mvp.Init();
-    LightEnv[i]->cbv.Data->mv.Init();
-    LightEnv[i]->cbv.Data->la.InitColor(0xffc0c0c0);
-    LightEnv[i]->cbv.Data->lc[0].InitColor(0);
-    LightEnv[i]->cbv.Data->lc[1].InitColor(0);
-    LightEnv[i]->cbv.Data->lc[2].InitColor(0);
-    LightEnv[i]->cbv.Data->lc[3].InitColor(0);
-    LightEnv[i]->cbv.Data->ld[0].Init(0,0,0,0);
-    LightEnv[i]->cbv.Data->ld[1].Init(0,0,0,0);
-    LightEnv[i]->cbv.Data->ld[2].Init(0,0,0,0);
-    LightEnv[i]->cbv.Data->EyePos.Init(0,0,0,0);
-    LightEnv[i]->cbv.Modify();
-    LightEnv[i]->cbp.Data->FogColor.InitColor(0x80ffffff);
-    LightEnv[i]->cbp.Data->FogPara.Init(0,0,0,0);
-    LightEnv[i]->cbp.Data->ClipPlane[0].Init(0,0,0,1);
-    LightEnv[i]->cbp.Data->ClipPlane[1].Init(0,0,0,1);
-    LightEnv[i]->cbp.Data->ClipPlane[2].Init(0,0,0,1);
-    LightEnv[i]->cbp.Data->ClipPlane[3].Init(0,0,0,1);
-    LightEnv[i]->cbp.Modify();
+    EnvNum[i]->cbv.Data->mvp.Init();
+    EnvNum[i]->cbv.Data->mv.Init();
+    EnvNum[i]->cbv.Data->la.InitColor(0xffc0c0c0);
+    EnvNum[i]->cbv.Data->lc[0].InitColor(0);
+    EnvNum[i]->cbv.Data->lc[1].InitColor(0);
+    EnvNum[i]->cbv.Data->lc[2].InitColor(0);
+    EnvNum[i]->cbv.Data->lc[3].InitColor(0);
+    EnvNum[i]->cbv.Data->ld[0].Init(0,0,0,0);
+    EnvNum[i]->cbv.Data->ld[1].Init(0,0,0,0);
+    EnvNum[i]->cbv.Data->ld[2].Init(0,0,0,0);
+    EnvNum[i]->cbv.Data->EyePos.Init(0,0,0,0);
+    EnvNum[i]->cbv.Modify();
+    EnvNum[i]->cbp.Data->FogColor.InitColor(0x80ffffff);
+    EnvNum[i]->cbp.Data->FogPara.Init(0,0,0,0);
+    EnvNum[i]->cbp.Data->ClipPlane[0].Init(0,0,0,1);
+    EnvNum[i]->cbp.Data->ClipPlane[1].Init(0,0,0,1);
+    EnvNum[i]->cbp.Data->ClipPlane[2].Init(0,0,0,1);
+    EnvNum[i]->cbp.Data->ClipPlane[3].Init(0,0,0,1);
+    EnvNum[i]->cbp.Modify();
   }
 }
 
 void SimpleMtrlType_::PrepareViewR(sViewport &view)
 {
-  for(sInt i=0;i<sMAX_LIGHTENV;i++)
+  for(sInt i=0;i<sMAX_ENVNUM;i++)
   {
     sVector30 d;
     d = -view.Camera.k;
     d.Unit();
-    LightEnv[i]->cbv.Data->mvp = view.ModelScreen;
-    LightEnv[i]->cbv.Data->mv = view.ModelView;
-    LightEnv[i]->cbv.Data->la.InitColor(0xff404040);
-    LightEnv[i]->cbv.Data->lc[0].InitColor(0xffc0c0c0);
-    LightEnv[i]->cbv.Data->ld[0].Init(d.x,0,0,0);
-    LightEnv[i]->cbv.Data->ld[1].Init(d.y,0,0,0);
-    LightEnv[i]->cbv.Data->ld[2].Init(d.z,0,0,0);
-    LightEnv[i]->cbv.Data->EyePos = view.Camera.l;
-    LightEnv[i]->cbv.Modify();
+    EnvNum[i]->cbv.Data->mvp = view.ModelScreen;
+    EnvNum[i]->cbv.Data->mv = view.ModelView;
+    EnvNum[i]->cbv.Data->la.InitColor(0xff404040);
+    EnvNum[i]->cbv.Data->lc[0].InitColor(0xffc0c0c0);
+    EnvNum[i]->cbv.Data->ld[0].Init(d.x,0,0,0);
+    EnvNum[i]->cbv.Data->ld[1].Init(d.y,0,0,0);
+    EnvNum[i]->cbv.Data->ld[2].Init(d.z,0,0,0);
+    EnvNum[i]->cbv.Data->EyePos = view.Camera.l;
+    EnvNum[i]->cbv.Modify();
   }
   ViewMatrix = view.View;
 }
@@ -541,7 +541,7 @@ void SimpleMtrl::Set(sInt flags,sInt index,const sMatrix34CM *mat,sInt SkinMatCo
     {
       sMatrix34 tmat,nmat;
 
-      SimpleMtrlType_::LightEnv_ *env = SimpleMtrlType->LightEnv[index];
+      SimpleMtrlType_::EnvNum_ *env = SimpleMtrlType->EnvNum[index];
       sCBufferBase *modelcb;
       if(mat)
       {
@@ -790,7 +790,7 @@ sVertexFormatHandle *SimpleMtrl::GetFormatHandle(sInt flags)
   }
 }
 
-sBool SimpleMtrl::SkipPhase(sInt flags,sInt lightenv)
+sBool SimpleMtrl::SkipPhase(sInt flags,sInt EnvNum)
 {
   if( ( (flags & sRF_TARGET_MASK)==sRF_TARGET_ZONLY || 
         (flags & sRF_TARGET_MASK)==sRF_TARGET_ZNORMAL || 
@@ -843,8 +843,8 @@ void RNSimpleMtrlEnv::Simulate(Wz4RenderContext *ctx)
 
 void RNSimpleMtrlEnv::Render(Wz4RenderContext *ctx)
 {
-  SimpleShaderVEnv *cbv = SimpleMtrlType->LightEnv[Para.Index]->cbv.Data;
-  SimpleShaderPEnv *cbp = SimpleMtrlType->LightEnv[Para.Index]->cbp.Data;
+  SimpleShaderVEnv *cbv = SimpleMtrlType->EnvNum[Para.Index]->cbv.Data;
+  SimpleShaderPEnv *cbp = SimpleMtrlType->EnvNum[Para.Index]->cbp.Data;
 
   sVector30 d0,d1,d2,d3;
   d0 = Para.Dir0;
@@ -932,14 +932,14 @@ void RNSimpleMtrlEnv::Render(Wz4RenderContext *ctx)
     cbp->FogPara.Init(0,0,0,0);
   }
 
-  SimpleMtrlType->LightEnv[Para.Index]->cbv.Modify();
-  SimpleMtrlType->LightEnv[Para.Index]->cbp.Modify();
+  SimpleMtrlType->EnvNum[Para.Index]->cbv.Modify();
+  SimpleMtrlType->EnvNum[Para.Index]->cbp.Modify();
 
   sSRT srt;
   srt.Scale = Para.TexScale;
   srt.Rotate = Para.TexRot;
   srt.Translate = Para.TexTrans;
-  srt.MakeMatrix(SimpleMtrlType->LightEnv[Para.Index]->TexTrans);
+  srt.MakeMatrix(SimpleMtrlType->EnvNum[Para.Index]->TexTrans);
 }
 
 /****************************************************************************/
@@ -950,13 +950,13 @@ void CustomMtrlType_::Init()
   Wz4MtrlType->RegisterMtrl(this);
   Viewport=0;
 
-  for(sInt i=0;i<sMAX_LIGHTENV;i++)
+  for(sInt i=0;i<sMAX_ENVNUM;i++)
     CustomMtrlEnv[i] = new CustomMtrlEnv_;
 }
 
 void CustomMtrlType_::Exit()
 {
-  for(sInt i=0;i<sMAX_LIGHTENV;i++)
+  for(sInt i=0;i<sMAX_ENVNUM;i++)
     delete CustomMtrlEnv[i];
 }
 
@@ -1204,7 +1204,7 @@ sVertexFormatHandle *CustomMtrl::GetFormatHandle(sInt flags)
   }
 }
 
-sBool CustomMtrl::SkipPhase(sInt flags,sInt lightenv)
+sBool CustomMtrl::SkipPhase(sInt flags,sInt EnvNum)
 {
   if( (flags & sRF_TARGET_MASK)==sRF_TARGET_ZONLY || 
       (flags & sRF_TARGET_MASK)==sRF_TARGET_ZNORMAL || 

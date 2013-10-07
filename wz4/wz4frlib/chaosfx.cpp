@@ -124,7 +124,7 @@ void RNCubeExample::Prepare(Wz4RenderContext *ctx)
   srt.Translate = Para.Trans;
   srt.MakeMatrix(Matrix);
 
-  if(Mtrl) Mtrl->BeforeFrame(Para.LightEnv);
+  if(Mtrl) Mtrl->BeforeFrame(Para.EnvNum);
 }
 
 // called for each rendering: once for ZOnly, once for MAIN, may be for shadows...
@@ -137,7 +137,7 @@ void RNCubeExample::Render(Wz4RenderContext *ctx)
   {
     // here the material can decline to render itself
 
-    if(Mtrl->SkipPhase(ctx->RenderMode,Para.LightEnv)) return;
+    if(Mtrl->SkipPhase(ctx->RenderMode,Para.EnvNum)) return;
 
     // the effect may be placed multple times in the render graph.
     // this loop will get all the matrices:
@@ -151,7 +151,7 @@ void RNCubeExample::Render(Wz4RenderContext *ctx)
 
       // render it once
 
-      Mtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.LightEnv,&mat1,0,0,0);
+      Mtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.EnvNum,&mat1,0,0,0);
       Geo->Draw();
     }
   }
@@ -315,7 +315,7 @@ void RNRibbons::Render(Wz4RenderContext *ctx)
     }
     else
     {
-      if(MtrlEx->SkipPhase(ctx->RenderMode,Para.LightEnv)) return;
+      if(MtrlEx->SkipPhase(ctx->RenderMode,Para.EnvNum)) return;
     }
 
     sMatrix34CM *mat;
@@ -331,7 +331,7 @@ void RNRibbons::Render(Wz4RenderContext *ctx)
         Mtrl->Set(&cb);
       }
       else
-        MtrlEx->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.LightEnv,mat,0,0,0);
+        MtrlEx->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.EnvNum,mat,0,0,0);
 
       Geo->Draw();
     }
@@ -486,7 +486,7 @@ void RNRibbons2::Render(Wz4RenderContext *ctx)
     }
     else
     {
-      if(MtrlEx->SkipPhase(ctx->RenderMode,Para.LightEnv)) return;
+      if(MtrlEx->SkipPhase(ctx->RenderMode,Para.EnvNum)) return;
     }
 
     sMatrix34CM *mat;
@@ -502,7 +502,7 @@ void RNRibbons2::Render(Wz4RenderContext *ctx)
         Mtrl->Set(&cb);
       }
       else
-        MtrlEx->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.LightEnv,mat,0,0,0);
+        MtrlEx->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.EnvNum,mat,0,0,0);
 
       Geo->Draw();
     }
@@ -649,7 +649,7 @@ void RNBlowNoise::Prepare(Wz4RenderContext *ctx)
   sVector31 p00,p01,p10,p11;
   sVector30 dx,dy,dz;
 
-  if(Mtrl) Mtrl->BeforeFrame(Para.LightEnv);
+  if(Mtrl) Mtrl->BeforeFrame(Para.EnvNum);
 
   // perputate
 
@@ -770,11 +770,11 @@ void RNBlowNoise::Render(Wz4RenderContext *ctx)
 {
   if(ctx->IsCommonRendermode())
   {
-    if(Mtrl->SkipPhase(ctx->RenderMode,Para.LightEnv)) return;
+    if(Mtrl->SkipPhase(ctx->RenderMode,Para.EnvNum)) return;
     sMatrix34CM *mat;
     sFORALL(Matrices,mat)
     {
-      Mtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.LightEnv,mat,0,0,0);
+      Mtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.EnvNum,mat,0,0,0);
       Geo->Draw();
     }
   }
@@ -1011,11 +1011,11 @@ void RNDebrisClassic::Render(Wz4RenderContext *ctx)
 
     if(Para.Mode&1)
     {
-      Mesh->RenderInst(ctx->RenderMode,Para.LightEnv,max,mats0);
+      Mesh->RenderInst(ctx->RenderMode,Para.EnvNum,max,mats0);
     }
     else
     {
-      Mesh->RenderBone(ctx->RenderMode,Para.LightEnv,max,mats0,max);
+      Mesh->RenderBone(ctx->RenderMode,Para.EnvNum,max,mats0,max);
     }
   }
 
@@ -1072,7 +1072,7 @@ void RNBoneVibrate::Prepare(Wz4RenderContext *ctx)
   {
     sInt max = Count;
 
-    Mesh->BeforeFrame(Para.LightEnv);
+    Mesh->BeforeFrame(Para.EnvNum);
     Mesh->Skeleton->Evaluate(0,mate,mats);
     sRandom rnd;
     rnd.Seed(Para.Seed);
@@ -1104,7 +1104,7 @@ void RNBoneVibrate::Render(Wz4RenderContext *ctx)
       for(sInt i=0;i<max;i++)
         mats0[i] = sMatrix34CM(mats[i])*(*matp);
 
-      Mesh->RenderBone(ctx->RenderMode,Para.LightEnv,max,mats0,max);
+      Mesh->RenderBone(ctx->RenderMode,Para.EnvNum,max,mats0,max);
     }
   }
 }

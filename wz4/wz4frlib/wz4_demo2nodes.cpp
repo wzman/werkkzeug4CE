@@ -431,20 +431,20 @@ void RNRenderMesh::Simulate(Wz4RenderContext *ctx)
 
 void RNRenderMesh::Prepare(Wz4RenderContext *ctx)
 {
-  Mesh->BeforeFrame(Para.LightEnv,Matrices.GetCount(),Matrices.GetData());
+  Mesh->BeforeFrame(Para.EnvNum,Matrices.GetCount(),Matrices.GetData());
 }
 
 void RNRenderMesh::Render(Wz4RenderContext *ctx)
 {
   if(Para.Instances)
   {
-    Mesh->RenderInst(ctx->RenderMode,Para.LightEnv,Matrices.GetCount(),Matrices.GetData());
+    Mesh->RenderInst(ctx->RenderMode,Para.EnvNum,Matrices.GetCount(),Matrices.GetData());
   }
   else
   {
     sMatrix34CM *mat;
     sFORALL(Matrices,mat)
-      Mesh->Render(ctx->RenderMode,Para.LightEnv,mat,Para.BoneTime,ctx->Frustum);
+      Mesh->Render(ctx->RenderMode,Para.EnvNum,mat,Para.BoneTime,ctx->Frustum);
   }
 }
 
@@ -548,9 +548,9 @@ void RNMultiplyMesh::Prepare(Wz4RenderContext *ctx)
     sReverse(Mats);
 
   if(total<10)
-    Mesh->BeforeFrame(Para.LightEnv,Mats.GetCount(),Mats.GetData());
+    Mesh->BeforeFrame(Para.EnvNum,Mats.GetCount(),Mats.GetData());
   else
-    Mesh->BeforeFrame(Para.LightEnv);
+    Mesh->BeforeFrame(Para.EnvNum);
 }
 
 
@@ -558,7 +558,7 @@ void RNMultiplyMesh::Render(Wz4RenderContext *ctx)
 {
   if(Mesh)
   {
-    Mesh->RenderInst(ctx->RenderMode,Para.LightEnv,Mats.GetCount(),Mats.GetData());
+    Mesh->RenderInst(ctx->RenderMode,Para.EnvNum,Mats.GetCount(),Mats.GetData());
   }
 }
 
@@ -1797,7 +1797,7 @@ void RNBoneTrain::Prepare(Wz4RenderContext *ctx)
 {
   if(Mesh->Skeleton && Mesh->Skeleton->Joints.GetCount()==Count)
   {
-    Mesh->BeforeFrame(Para.LightEnv);
+    Mesh->BeforeFrame(Para.EnvNum);
   }
 }
 
@@ -1815,11 +1815,11 @@ void RNBoneTrain::Render(Wz4RenderContext *ctx)
       for(sInt i=0;i<max;i++)
         mats0[i] = sMatrix34CM(mats[i])*(*matp);
 
-      Mesh->RenderBone(ctx->RenderMode,Para.LightEnv,max,mats0,max);
+      Mesh->RenderBone(ctx->RenderMode,Para.EnvNum,max,mats0,max);
       */
       for(sInt i=0;i<max;i++)
         mats0[i] = sMatrix34CM(mats[i]);
-      Mesh->RenderBone(ctx->RenderMode,Para.LightEnv,max,mats0,max,matp);
+      Mesh->RenderBone(ctx->RenderMode,Para.EnvNum,max,mats0,max,matp);
     }
   }
 }

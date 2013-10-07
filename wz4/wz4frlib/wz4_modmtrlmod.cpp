@@ -2154,7 +2154,7 @@ void MM_BakedShadow::Render(Wz4Mesh *meshin)
   RNRenderMesh *node = new RNRenderMesh;
   node->Para.BoneTime = 0;
   node->Para.Instances = 0;
-  node->Para.LightEnv = 0;
+  node->Para.EnvNum = 0;
   node->Para.Renderpass = 0;
   node->ParaBase = node->Para;
   node->Mesh = mesh; mesh->AddRef();
@@ -2171,13 +2171,13 @@ void MM_BakedShadow::Render(Wz4Mesh *meshin)
 
   if(pcf)
   {
-    ModMtrlType->LightEnv[0]->ZShaderSlopeBias = 0;
-    ModMtrlType->LightEnv[0]->ZShaderBaseBiasOverClipFar = 0;
+    ModMtrlType->EnvNum[0]->ZShaderSlopeBias = 0;
+    ModMtrlType->EnvNum[0]->ZShaderBaseBiasOverClipFar = 0;
   }
   else
   {
-    ModMtrlType->LightEnv[0]->ZShaderSlopeBias = ZShaderSlopeBias;
-    ModMtrlType->LightEnv[0]->ZShaderBaseBiasOverClipFar = ZShaderBaseBiasOverClipFar;
+    ModMtrlType->EnvNum[0]->ZShaderSlopeBias = ZShaderSlopeBias;
+    ModMtrlType->EnvNum[0]->ZShaderBaseBiasOverClipFar = ZShaderBaseBiasOverClipFar;
   }
 
   ctx.RenderControlZ(node,spec);

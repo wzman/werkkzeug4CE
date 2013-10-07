@@ -21,12 +21,12 @@
 
 void ModMtrlType_::Init()
 {
-  for(sInt i=0;i<sMAX_LIGHTENV;i++)
+  for(sInt i=0;i<sMAX_ENVNUM;i++)
   {
-    LightEnv[i] = new ModLightEnv;
-    LightEnv[i]->Ambient.InitColor(0xff204060);
+    EnvNum[i] = new ModEnvNum;
+    EnvNum[i]->Ambient.InitColor(0xff204060);
   }
-  RenderShadowsForLightEnv = -1;
+  RenderShadowsForEnvNum = -1;
 
   Wz4MtrlType->RegisterMtrl(this);
   sc=new ShaderCreator;
@@ -59,81 +59,81 @@ void ModMtrlType_::Init()
 
   // register all parameter.
 
-  sc->RegPara(L"FogMul",SCT_FLOAT,sOFFSET(ModLightEnv,FogMul));
-  sc->RegPara(L"FogAdd",SCT_FLOAT,sOFFSET(ModLightEnv,FogAdd));
-  sc->RegPara(L"FogDensity",SCT_FLOAT,sOFFSET(ModLightEnv,FogDensity));
-  sc->RegPara(L"FogColor",SCT_FLOAT3,sOFFSET(ModLightEnv,FogColor));
+  sc->RegPara(L"FogMul",SCT_FLOAT,sOFFSET(ModEnvNum,FogMul));
+  sc->RegPara(L"FogAdd",SCT_FLOAT,sOFFSET(ModEnvNum,FogAdd));
+  sc->RegPara(L"FogDensity",SCT_FLOAT,sOFFSET(ModEnvNum,FogDensity));
+  sc->RegPara(L"FogColor",SCT_FLOAT3,sOFFSET(ModEnvNum,FogColor));
 
-  sc->RegPara(L"GroundFogMul",SCT_FLOAT,sOFFSET(ModLightEnv,GroundFogMul));
-  sc->RegPara(L"GroundFogAdd",SCT_FLOAT,sOFFSET(ModLightEnv,GroundFogAdd));
-  sc->RegPara(L"GroundFogDensity",SCT_FLOAT,sOFFSET(ModLightEnv,GroundFogDensity));
-  sc->RegPara(L"GroundFogColor",SCT_FLOAT3,sOFFSET(ModLightEnv,GroundFogColor));
-  sc->RegPara(L"ws_GroundFogPlane",SCT_FLOAT4,sOFFSET(ModLightEnv,ws_GroundFogPlane));
-  sc->RegPara(L"Clip0",SCT_FLOAT4,sOFFSET(ModLightEnv,Clip0));
-  sc->RegPara(L"Clip1",SCT_FLOAT4,sOFFSET(ModLightEnv,Clip1));
-  sc->RegPara(L"Clip2",SCT_FLOAT4,sOFFSET(ModLightEnv,Clip2));
-  sc->RegPara(L"Clip3",SCT_FLOAT4,sOFFSET(ModLightEnv,Clip3));
-  sc->RegPara(L"cs_GroundFogPlane",SCT_FLOAT4,sOFFSET(ModLightEnv,cs_GroundFogPlane));
-  sc->RegPara(L"cs_Clip0",SCT_FLOAT4,sOFFSET(ModLightEnv,cs_Clip0));
-  sc->RegPara(L"cs_Clip1",SCT_FLOAT4,sOFFSET(ModLightEnv,cs_Clip1));
-  sc->RegPara(L"cs_Clip2",SCT_FLOAT4,sOFFSET(ModLightEnv,cs_Clip2));
-  sc->RegPara(L"cs_Clip3",SCT_FLOAT4,sOFFSET(ModLightEnv,cs_Clip3));
+  sc->RegPara(L"GroundFogMul",SCT_FLOAT,sOFFSET(ModEnvNum,GroundFogMul));
+  sc->RegPara(L"GroundFogAdd",SCT_FLOAT,sOFFSET(ModEnvNum,GroundFogAdd));
+  sc->RegPara(L"GroundFogDensity",SCT_FLOAT,sOFFSET(ModEnvNum,GroundFogDensity));
+  sc->RegPara(L"GroundFogColor",SCT_FLOAT3,sOFFSET(ModEnvNum,GroundFogColor));
+  sc->RegPara(L"ws_GroundFogPlane",SCT_FLOAT4,sOFFSET(ModEnvNum,ws_GroundFogPlane));
+  sc->RegPara(L"Clip0",SCT_FLOAT4,sOFFSET(ModEnvNum,Clip0));
+  sc->RegPara(L"Clip1",SCT_FLOAT4,sOFFSET(ModEnvNum,Clip1));
+  sc->RegPara(L"Clip2",SCT_FLOAT4,sOFFSET(ModEnvNum,Clip2));
+  sc->RegPara(L"Clip3",SCT_FLOAT4,sOFFSET(ModEnvNum,Clip3));
+  sc->RegPara(L"cs_GroundFogPlane",SCT_FLOAT4,sOFFSET(ModEnvNum,cs_GroundFogPlane));
+  sc->RegPara(L"cs_Clip0",SCT_FLOAT4,sOFFSET(ModEnvNum,cs_Clip0));
+  sc->RegPara(L"cs_Clip1",SCT_FLOAT4,sOFFSET(ModEnvNum,cs_Clip1));
+  sc->RegPara(L"cs_Clip2",SCT_FLOAT4,sOFFSET(ModEnvNum,cs_Clip2));
+  sc->RegPara(L"cs_Clip3",SCT_FLOAT4,sOFFSET(ModEnvNum,cs_Clip3));
 
   // light
 
-  sc->RegPara(L"Ambient",SCT_FLOAT3,sOFFSET(ModLightEnv,Ambient));
+  sc->RegPara(L"Ambient",SCT_FLOAT3,sOFFSET(ModEnvNum,Ambient));
   for(sInt i=0;i<MM_MaxLight;i++)
   {
-    sc->RegPara(sPoolF(L"LightColFront%d",i),SCT_FLOAT3,sOFFSET(ModLightEnv,Lights[i].ColFront));
-    sc->RegPara(sPoolF(L"LightColMiddle%d",i),SCT_FLOAT3,sOFFSET(ModLightEnv,Lights[i].ColMiddle));
-    sc->RegPara(sPoolF(L"LightColBack%d",i),SCT_FLOAT3,sOFFSET(ModLightEnv,Lights[i].ColBack));
-    sc->RegPara(sPoolF(L"ws_LightPos%d",i),SCT_FLOAT3,sOFFSET(ModLightEnv,Lights[i].ws_Pos));
-    sc->RegPara(sPoolF(L"ws_LightDir%d",i),SCT_FLOAT3,sOFFSET(ModLightEnv,Lights[i].ws_Dir));
+    sc->RegPara(sPoolF(L"LightColFront%d",i),SCT_FLOAT3,sOFFSET(ModEnvNum,Lights[i].ColFront));
+    sc->RegPara(sPoolF(L"LightColMiddle%d",i),SCT_FLOAT3,sOFFSET(ModEnvNum,Lights[i].ColMiddle));
+    sc->RegPara(sPoolF(L"LightColBack%d",i),SCT_FLOAT3,sOFFSET(ModEnvNum,Lights[i].ColBack));
+    sc->RegPara(sPoolF(L"ws_LightPos%d",i),SCT_FLOAT3,sOFFSET(ModEnvNum,Lights[i].ws_Pos));
+    sc->RegPara(sPoolF(L"ws_LightDir%d",i),SCT_FLOAT3,sOFFSET(ModEnvNum,Lights[i].ws_Dir));
 
-    sc->RegPara(sPoolF(L"LightRange%d",i),SCT_FLOAT,sOFFSET(ModLightEnv,Lights[i].Range));
-    sc->RegPara(sPoolF(L"LightInner%d",i),SCT_FLOAT,sOFFSET(ModLightEnv,Lights[i].Inner));
-    sc->RegPara(sPoolF(L"LightOuter%d",i),SCT_FLOAT,sOFFSET(ModLightEnv,Lights[i].Outer));
-    sc->RegPara(sPoolF(L"LightFalloff%d",i),SCT_FLOAT,sOFFSET(ModLightEnv,Lights[i].Falloff));
-    sc->RegPara(sPoolF(L"SM_BaseBias%d",i),SCT_FLOAT,sOFFSET(ModLightEnv,Lights[i].SM_BaseBias));
-    sc->RegPara(sPoolF(L"SM_Filter%d",i),SCT_FLOAT,sOFFSET(ModLightEnv,Lights[i].SM_Filter));
-    sc->RegPara(sPoolF(L"SM_SlopeBias%d",i),SCT_FLOAT,sOFFSET(ModLightEnv,Lights[i].SM_SlopeBias));
-    sc->RegPara(sPoolF(L"SM_BaseBiasOverClipFar%d",i),SCT_FLOAT,sOFFSET(ModLightEnv,Lights[i].SM_BaseBiasOverClipFar));
-    sc->RegPara(sPoolF(L"SM_SlopeBiasOverClipFar%d",i),SCT_FLOAT,sOFFSET(ModLightEnv,Lights[i].SM_SlopeBiasOverClipFar));
+    sc->RegPara(sPoolF(L"LightRange%d",i),SCT_FLOAT,sOFFSET(ModEnvNum,Lights[i].Range));
+    sc->RegPara(sPoolF(L"LightInner%d",i),SCT_FLOAT,sOFFSET(ModEnvNum,Lights[i].Inner));
+    sc->RegPara(sPoolF(L"LightOuter%d",i),SCT_FLOAT,sOFFSET(ModEnvNum,Lights[i].Outer));
+    sc->RegPara(sPoolF(L"LightFalloff%d",i),SCT_FLOAT,sOFFSET(ModEnvNum,Lights[i].Falloff));
+    sc->RegPara(sPoolF(L"SM_BaseBias%d",i),SCT_FLOAT,sOFFSET(ModEnvNum,Lights[i].SM_BaseBias));
+    sc->RegPara(sPoolF(L"SM_Filter%d",i),SCT_FLOAT,sOFFSET(ModEnvNum,Lights[i].SM_Filter));
+    sc->RegPara(sPoolF(L"SM_SlopeBias%d",i),SCT_FLOAT,sOFFSET(ModEnvNum,Lights[i].SM_SlopeBias));
+    sc->RegPara(sPoolF(L"SM_BaseBiasOverClipFar%d",i),SCT_FLOAT,sOFFSET(ModEnvNum,Lights[i].SM_BaseBiasOverClipFar));
+    sc->RegPara(sPoolF(L"SM_SlopeBiasOverClipFar%d",i),SCT_FLOAT,sOFFSET(ModEnvNum,Lights[i].SM_SlopeBiasOverClipFar));
   }
   for(sInt i=0;i<8;i++)
   {
-    sc->RegPara(sPoolF(L"Color%d",i),SCT_FLOAT3,sOFFSET(ModLightEnv,Color[i]));
-    sc->RegPara(sPoolF(L"Vector%d",i),SCT_FLOAT4,sOFFSET(ModLightEnv,Vector[i]));
+    sc->RegPara(sPoolF(L"Color%d",i),SCT_FLOAT3,sOFFSET(ModEnvNum,Color[i]));
+    sc->RegPara(sPoolF(L"Vector%d",i),SCT_FLOAT4,sOFFSET(ModEnvNum,Vector[i]));
   }
   for(sInt i=0;i<4;i++)
   {
-    sc->RegPara(sPoolF(L"Matrix%d",i),SCT_FLOAT3x4,sOFFSET(ModLightEnv,Matrix[i]));
+    sc->RegPara(sPoolF(L"Matrix%d",i),SCT_FLOAT3x4,sOFFSET(ModEnvNum,Matrix[i]));
   }
   for(sInt i=0;i<sMTRL_MAXTEX;i++)
   {
-    sc->RegPara(sPoolF(L"LightProj%d",i),SCT_FLOAT4x4,sOFFSET(ModLightEnv,LightProj[i]));
-    sc->RegPara(sPoolF(L"LightMatZ%d",i),SCT_FLOAT4,sOFFSET(ModLightEnv,LightMatZ[i]));
-    sc->RegPara(sPoolF(L"LightFarR%d",i),SCT_FLOAT,sOFFSET(ModLightEnv,LightFarR[i]));
+    sc->RegPara(sPoolF(L"LightProj%d",i),SCT_FLOAT4x4,sOFFSET(ModEnvNum,LightProj[i]));
+    sc->RegPara(sPoolF(L"LightMatZ%d",i),SCT_FLOAT4,sOFFSET(ModEnvNum,LightMatZ[i]));
+    sc->RegPara(sPoolF(L"LightFarR%d",i),SCT_FLOAT,sOFFSET(ModEnvNum,LightFarR[i]));
   }
   
   // internal
 
-  sc->RegPara(L"ws_ss",SCT_FLOAT4x4,sOFFSET(ModLightEnv,ws_ss));
-  sc->RegPara(L"ws_cs",SCT_FLOAT3x4,sOFFSET(ModLightEnv,ws_cs));
-  sc->RegPara(L"ws_campos",SCT_FLOAT3,sOFFSET(ModLightEnv,ws_campos));
-  sc->RegPara(L"ClipFarR",SCT_FLOAT,sOFFSET(ModLightEnv,ClipFarR));
-  sc->RegPara(L"ZShaderSlopeBias",SCT_FLOAT,sOFFSET(ModLightEnv,ZShaderSlopeBias));
-  sc->RegPara(L"ZShaderBaseBiasOverClipFar",SCT_FLOAT,sOFFSET(ModLightEnv,ZShaderBaseBiasOverClipFar));
-  sc->RegPara(L"ZShaderProjA",SCT_FLOAT,sOFFSET(ModLightEnv,ZShaderProjA));
-  sc->RegPara(L"ZShaderProjB",SCT_FLOAT,sOFFSET(ModLightEnv,ZShaderProjB));
-  sc->RegPara(L"RandomDisc",SCT_FLOAT4A4,sOFFSET(ModLightEnv,RandomDisc));
-  sc->RegPara(L"ShellExtrude",SCT_FLOAT,sOFFSET(ModLightEnv,ShellExtrude));
+  sc->RegPara(L"ws_ss",SCT_FLOAT4x4,sOFFSET(ModEnvNum,ws_ss));
+  sc->RegPara(L"ws_cs",SCT_FLOAT3x4,sOFFSET(ModEnvNum,ws_cs));
+  sc->RegPara(L"ws_campos",SCT_FLOAT3,sOFFSET(ModEnvNum,ws_campos));
+  sc->RegPara(L"ClipFarR",SCT_FLOAT,sOFFSET(ModEnvNum,ClipFarR));
+  sc->RegPara(L"ZShaderSlopeBias",SCT_FLOAT,sOFFSET(ModEnvNum,ZShaderSlopeBias));
+  sc->RegPara(L"ZShaderBaseBiasOverClipFar",SCT_FLOAT,sOFFSET(ModEnvNum,ZShaderBaseBiasOverClipFar));
+  sc->RegPara(L"ZShaderProjA",SCT_FLOAT,sOFFSET(ModEnvNum,ZShaderProjA));
+  sc->RegPara(L"ZShaderProjB",SCT_FLOAT,sOFFSET(ModEnvNum,ZShaderProjB));
+  sc->RegPara(L"RandomDisc",SCT_FLOAT4A4,sOFFSET(ModEnvNum,RandomDisc));
+  sc->RegPara(L"ShellExtrude",SCT_FLOAT,sOFFSET(ModEnvNum,ShellExtrude));
 }
 
 void ModMtrlType_::Exit()
 {
-  for(sInt i=0;i<sMAX_LIGHTENV;i++)
-    delete LightEnv[i];
+  for(sInt i=0;i<sMAX_ENVNUM;i++)
+    delete EnvNum[i];
   sRelease(DummyTex2D);
   sRelease(DummyTexCube);
   sRelease(SinCosTex);
@@ -143,9 +143,9 @@ void ModMtrlType_::Exit()
 
 void ModMtrlType_::PrepareViewR(sViewport &view)
 {
-  for(sInt i=0;i<sMAX_LIGHTENV;i++)
+  for(sInt i=0;i<sMAX_ENVNUM;i++)
   {
-    ModLightEnv *le = LightEnv[i];
+    ModEnvNum *le = EnvNum[i];
     le->Calc(view);
     le->cbv.Modify();
     le->cbp.Modify();
@@ -156,28 +156,28 @@ void ModMtrlType_::PrepareViewR(sViewport &view)
 
 void ModMtrlType_::PrepareRenderR(Wz4RenderContext *ctx)
 {
-  for(sInt i=0;i<sMAX_LIGHTENV;i++)
+  for(sInt i=0;i<sMAX_ENVNUM;i++)
   {
-    LightEnv[i]->RequireShadow = 0;
+    EnvNum[i]->RequireShadow = 0;
     for(sInt j=0;j<MM_MaxLight;j++)
-      LightEnv[i]->Lights[j].ShadowReceiver.Clear();
-    LightEnv[i]->ShadowCaster.Clear();
+      EnvNum[i]->Lights[j].ShadowReceiver.Clear();
+    EnvNum[i]->ShadowCaster.Clear();
   }
 
-  RenderShadowsForLightEnv = -1;
+  RenderShadowsForEnvNum = -1;
   ShadowCaster.Clear();
   ViewFrustum = ctx->Frustum;
 }
 
 void ModMtrlType_::BeginRenderR(Wz4RenderContext *ctx)
 {
-  for(sInt i=0;i<sMAX_LIGHTENV;i++)
+  for(sInt i=0;i<sMAX_ENVNUM;i++)
   {
-    RenderShadowsForLightEnv = i;
-    ModLightEnv *le = LightEnv[i];
+    RenderShadowsForEnvNum = i;
+    ModEnvNum *le = EnvNum[i];
     for(sInt j=0;j<MM_MaxLight;j++)
     {
-      ModLightEnv::Light *l = &le->Lights[j];
+      ModEnvNum::Light *l = &le->Lights[j];
       sInt bit = 1<<j;
       if((le->Shadow & bit) && (le->RequireShadow & bit))
       {
@@ -383,19 +383,19 @@ void ModMtrlType_::BeginRenderR(Wz4RenderContext *ctx)
       }
     }
   }
-  RenderShadowsForLightEnv = -1;
+  RenderShadowsForEnvNum = -1;
 }
 
 void ModMtrlType_::EndRenderR(Wz4RenderContext *ctx)
 {
-  for(sInt i=0;i<sMAX_LIGHTENV;i++)
+  for(sInt i=0;i<sMAX_ENVNUM;i++)
   {
     for(sInt j=0;j<MM_MaxLight;j++)
     {
-      sRTMan->Release(LightEnv[i]->Lights[j].ShadowMap);
-      LightEnv[i]->Lights[j].ShadowMap = 0;
-      sRTMan->Release(LightEnv[i]->Lights[j].ShadowCube);
-      LightEnv[i]->Lights[j].ShadowCube = 0;
+      sRTMan->Release(EnvNum[i]->Lights[j].ShadowMap);
+      EnvNum[i]->Lights[j].ShadowMap = 0;
+      sRTMan->Release(EnvNum[i]->Lights[j].ShadowCube);
+      EnvNum[i]->Lights[j].ShadowCube = 0;
     }
   }
 }
@@ -404,18 +404,18 @@ void ModMtrlType_::BeginShow(wPaintInfo &pi)
 {
   if(pi.View)   // sometimes, there is no viewport!
   {
-    for(sInt i=0;i<sMAX_LIGHTENV;i++)
+    for(sInt i=0;i<sMAX_ENVNUM;i++)
     {
-      LightEnv[i]->Init();
+      EnvNum[i]->Init();
   //    if(pi.CamOverride)
-        LightEnv[i]->Lights[0].ws_Dir = -pi.View->Camera.k;
+        EnvNum[i]->Lights[0].ws_Dir = -pi.View->Camera.k;
     }
   }
 }
 
 /****************************************************************************/
 
-ModLightEnv::ModLightEnv()
+ModEnvNum::ModEnvNum()
 {
   Init();
 
@@ -447,7 +447,7 @@ ModLightEnv::ModLightEnv()
 
 // initialize everything again that is not initialized by Calc()
 
-void ModLightEnv::Init()        
+void ModEnvNum::Init()        
 {
   FogAdd = 0;
   FogMul = 0;
@@ -530,7 +530,7 @@ void ModLightEnv::Init()
   ShellExtrude = 0;
 }
 
-void ModLightEnv::Calc(sViewport &view)
+void ModEnvNum::Calc(sViewport &view)
 {
   ws_ss = view.ModelScreen;
   ws_cs = view.View;
@@ -584,14 +584,14 @@ CachedModInfo::CachedModInfo()
   sClear(*this);
 }
 
-CachedModInfo::CachedModInfo(sInt renderflags,class ModMtrl *mtrl,sInt lightenv)
+CachedModInfo::CachedModInfo(sInt renderflags,class ModMtrl *mtrl,sInt EnvNum)
 {
   sClear(*this);
-  ModLightEnv *le = ModMtrlType->LightEnv[lightenv];
+  ModEnvNum *le = ModMtrlType->EnvNum[EnvNum];
 
   MatrixMode = renderflags & sRF_MATRIX_MASK;
   RenderTarget = renderflags & sRF_TARGET_MASK;
-  LightEnv = lightenv;
+  EnvNum = EnvNum;
   FeatureFlags = mtrl->FeatureFlags;
 
   Features = le->Features        & mtrl->KillFeatures;
@@ -752,9 +752,9 @@ ModMtrl::~ModMtrl()
   sDeleteAll(Cache);
 }
 
-void ModMtrl::BeforeFrame(sInt lightenv,sInt boxcount,const sAABBoxC *boxes,sInt matcount=0,const sMatrix34CM *mats=0)
+void ModMtrl::BeforeFrame(sInt EnvNum,sInt boxcount,const sAABBoxC *boxes,sInt matcount=0,const sMatrix34CM *mats=0)
 {
-  ModLightEnv *le = ModMtrlType->LightEnv[lightenv];
+  ModEnvNum *le = ModMtrlType->EnvNum[EnvNum];
   le->RequireShadow |= KillShadow;
   sFrustum fr;
 
@@ -841,7 +841,7 @@ void ModMtrl::Set(sInt flags,sInt index,const sMatrix34CM *mat,sInt SkinMatCount
     }
     else
     {
-      ModLightEnv *env = ModMtrlType->LightEnv[index];
+      ModEnvNum *env = ModMtrlType->EnvNum[index];
 
       env->ShellExtrude = ShellExtrude;
 
@@ -868,7 +868,7 @@ void ModMtrl::Set(sInt flags,sInt index,const sMatrix34CM *mat,sInt SkinMatCount
       {
         if(cm->UpdateTex[i].Enable)
         {
-          ModLightEnv::Light *l = &env->Lights[cm->UpdateTex[i].Light];
+          ModEnvNum::Light *l = &env->Lights[cm->UpdateTex[i].Light];
           env->LightProj[i] = l->LightProj;
           env->LightMatZ[i] = l->LightMatZ;
           env->LightFarR[i] = l->LightFarR;
@@ -896,7 +896,7 @@ void ModMtrl::Set(sInt flags,sInt index,const sMatrix34CM *mat,sInt SkinMatCount
       {
         if(cm->UpdateTex[i].Enable)
         {
-          ModLightEnv::Light *l = &env->Lights[cm->UpdateTex[i].Light];
+          ModEnvNum::Light *l = &env->Lights[cm->UpdateTex[i].Light];
           cm->UpdateTex[i].Save = shader->Texture[i];
           if(l->ShadowMap)
             shader->Texture[i] = l->ShadowMap;
@@ -975,7 +975,7 @@ sVertexFormatHandle *ModMtrl::GetFormatHandle(sInt flags)
   }
 }
 
-sBool ModMtrl::SkipPhase(sInt flags,sInt lightenv)
+sBool ModMtrl::SkipPhase(sInt flags,sInt EnvNum)
 {
   if( ( (flags & sRF_TARGET_MASK)==sRF_TARGET_ZONLY || 
         (flags & sRF_TARGET_MASK)==sRF_TARGET_ZNORMAL || 
@@ -987,7 +987,7 @@ sBool ModMtrl::SkipPhase(sInt flags,sInt lightenv)
   {
     if(FeatureFlags & MMFF_ShadowCastOff)
       return 1;
-    if(!(FeatureFlags & MMFF_ShadowCastToAll) && lightenv!=ModMtrlType->RenderShadowsForLightEnv)
+    if(!(FeatureFlags & MMFF_ShadowCastToAll) && EnvNum!=ModMtrlType->RenderShadowsForEnvNum)
       return 1;
       
   }
@@ -1937,7 +1937,7 @@ void RNModLight::Simulate(Wz4RenderContext *ctx)
   }
 
 
-  ModLightEnv *env = ModMtrlType->LightEnv[Para.Index];
+  ModEnvNum *env = ModMtrlType->EnvNum[Para.Index];
   env->Ambient.InitColor(Para.Ambient);
 
   struct fake
@@ -2060,7 +2060,7 @@ void RNModMisc::Simulate(Wz4RenderContext *ctx)
 
   SimulateChilds(ctx);
 
-  ModLightEnv *env = ModMtrlType->LightEnv[Para.Index];
+  ModEnvNum *env = ModMtrlType->EnvNum[Para.Index];
 
   for(sInt i=0;i<8;i++)
   {
@@ -2101,16 +2101,16 @@ void RNModMisc::Render(Wz4RenderContext *ctx)
 
 /****************************************************************************/
 
-RNModLightEnv::RNModLightEnv()
+RNModEnvNum::RNModEnvNum()
 {
   Anim.Init(Wz4RenderType->Script);
 }
 
-RNModLightEnv::~RNModLightEnv()
+RNModEnvNum::~RNModEnvNum()
 {
 }
 
-void RNModLightEnv::Simulate(Wz4RenderContext *ctx)
+void RNModEnvNum::Simulate(Wz4RenderContext *ctx)
 {
   Para = ParaBase;
   Anim.Bind(ctx->Script,&Para);
@@ -2119,10 +2119,10 @@ void RNModLightEnv::Simulate(Wz4RenderContext *ctx)
 
   SimulateChilds(ctx);
 
-  // initialize lightenvironment
+  // initialize EnvNumironment
 
   sVector30 n;
-  ModLightEnv *env = ModMtrlType->LightEnv[Para.Index];
+  ModEnvNum *env = ModMtrlType->EnvNum[Para.Index];
 
   env->Features = Para.Features;
 
@@ -2179,7 +2179,7 @@ void RNModLightEnv::Simulate(Wz4RenderContext *ctx)
   }
 }
 
-void RNModLightEnv::Render(Wz4RenderContext *ctx)
+void RNModEnvNum::Render(Wz4RenderContext *ctx)
 {
 }
 
@@ -2214,10 +2214,10 @@ void RNModClipTwister::Simulate(Wz4RenderContext *ctx)
 
   SimulateChilds(ctx);
 
-  // initialize lightenvironment
+  // initialize EnvNumironment
 
   sVector30 n;
-  ModLightEnv *env = ModMtrlType->LightEnv[Para.Index];
+  ModEnvNum *env = ModMtrlType->EnvNum[Para.Index];
 
   env->Features |= MMF_ClipPlanes;
 

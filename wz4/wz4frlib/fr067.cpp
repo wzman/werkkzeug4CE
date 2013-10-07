@@ -68,7 +68,7 @@ void RNFR067_IsoSplash::Prepare(Wz4RenderContext *ctx)
   for(sInt i=0;i<4;i++)
   {
     if(Mtrl[i]) 
-      Mtrl[i]->BeforeFrame(Para.LightEnv);
+      Mtrl[i]->BeforeFrame(Para.EnvNum);
   }
 
   SphereEnable = (Para.SphereAmp!=0.0f);
@@ -149,7 +149,7 @@ void RNFR067_IsoSplash::Prepare(Wz4RenderContext *ctx)
   box.Center.Init(0,0,0);
   for(sInt i=0;i<4;i++)
     if(Mtrl[i])
-      Mtrl[i]->BeforeFrame(Para.LightEnv,1,&box,Matrices.GetCount(),Matrices.GetData());
+      Mtrl[i]->BeforeFrame(Para.EnvNum,1,&box,Matrices.GetCount(),Matrices.GetData());
 }
 
 void RNFR067_IsoSplash::MakeNodes()
@@ -401,13 +401,13 @@ void RNFR067_IsoSplash::Render(Wz4RenderContext *ctx)
   {
     for(sInt i=0;i<4;i++)
     {
-      if(Mtrl[i] && !Mtrl[i]->SkipPhase(ctx->RenderMode,Para.LightEnv))
+      if(Mtrl[i] && !Mtrl[i]->SkipPhase(ctx->RenderMode,Para.EnvNum))
       {
         sInt n = sClamp(Para.Shells[i],1,256);
         for(sInt j=0;j<n;j++)
         {
           Mtrl[i]->ShellExtrude = j/sF32(n);
-          Mtrl[i]->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.LightEnv,model,0,0,0);
+          Mtrl[i]->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.EnvNum,model,0,0,0);
           MC.Draw();
         }
       }

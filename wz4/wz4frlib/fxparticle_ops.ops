@@ -569,7 +569,7 @@ operator Wz4Render Chunks(Wz4Particles,*Wz4Mesh)
       anim float SpiralRandSpeed(-1024..1024 step 0.01) = 0;
     }
     int Renderpass(-127..127);
-    int LightEnv(0..15);
+    int EnvNum(0..15);
 
     layout continue flags Direction "Flags" ("*4-|animated (SLOW):*5-|Color:*6-|NoRandom");
     if(Direction & 16)
@@ -615,7 +615,7 @@ operator Wz4Render Debris "ExplodeChunks" (Wz4Particles,Wz4Mesh)
   parameter
   {
     int Renderpass(-127..127);
-    anim int LightEnv(0..15) = 0;
+    anim int EnvNum(0..15) = 0;
 
     group "Animation Script"; overbox overlabel linenumber lines 5 string Script;
   }
@@ -647,7 +647,7 @@ operator Wz4Render Trails(Wz4Particles,Wz4Mtrl)
     int Count(3..255) = 5;
     anim float Delta(-1024..1024 step 0.001) = 0.05;
     anim float Width(0..1024 step 0.001) = 0.125;
-    anim int LightEnv(0..15) = 0;
+    anim int EnvNum(0..15) = 0;
     padding(1); 
     layout flags Orientation("camera|x|y|z|fly");
     continue flags Orientation "Faces" ("*4flat|round|square");
@@ -713,7 +713,7 @@ operator Wz4Render MarchingCubes(Wz4Particles,Wz4Mtrl)
     flags Subdivide:6(" 0| 1")=0;
 
     group "render";
-    int LightEnv:3(0..15);
+    int EnvNum:3(0..15);
     int Renderpass:4(-127..127);
     flags Multithreading:7("off|limited on|pipelined on");
 
@@ -746,7 +746,7 @@ operator Wz4Render MarchingCubesColor(Wz4Particles,Wz4Mtrl)
     flags Subdivide:6(" 0| 1")=0;
 
     group "render";
-    int LightEnv:3(0..15);
+    int EnvNum:3(0..15);
     int Renderpass:4(-127..127);
     flags Multithreading:7("off|limited on|pipelined on");
 

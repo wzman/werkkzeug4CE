@@ -176,7 +176,7 @@ public:
   sImageI16 Bitmap[3];
 
   void Simulate(Wz4RenderContext *ctx);
-  void Prepare(Wz4RenderContext *ctx) { if(Mesh) Mesh->BeforeFrame(Para.LightEnv); }
+  void Prepare(Wz4RenderContext *ctx) { if(Mesh) Mesh->BeforeFrame(Para.EnvNum); }
   void Render(Wz4RenderContext *ctx);
 };
 

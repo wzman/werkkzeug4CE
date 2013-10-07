@@ -84,7 +84,7 @@ void RNFR063_Mandelbulb::Simulate(Wz4RenderContext *ctx)
 
 void RNFR063_Mandelbulb::Prepare(Wz4RenderContext *ctx)
 {
-  if(Mtrl) Mtrl->BeforeFrame(Para.LightEnv);
+  if(Mtrl) Mtrl->BeforeFrame(Para.EnvNum);
 
   OctMan->NewFrame();
 
@@ -244,7 +244,7 @@ void RNFR063_Mandelbulb::Prepare(Wz4RenderContext *ctx)
     sF32 s = 1.5f * Para.Scale;
     bbox.Center.Init(0,0,0);
     bbox.Radius.Init(s,s,s);
-    Mtrl->BeforeFrame(Para.LightEnv,1,&bbox,1,&m0);
+    Mtrl->BeforeFrame(Para.EnvNum,1,&bbox,1,&m0);
   }
 
   if(ctx->PaintInfo->CacheWarmup)
@@ -259,7 +259,7 @@ void RNFR063_Mandelbulb::Render(Wz4RenderContext *ctx)
 {
   if(ctx->PaintInfo->CacheWarmup && ctx->PaintInfo->CacheWarmupAgain!=0) return;   // don't need to do this during precalc in every iteration
   if(!ctx->IsCommonRendermode()) return;
-  if(Mtrl->SkipPhase(ctx->RenderMode,Para.LightEnv)) return;
+  if(Mtrl->SkipPhase(ctx->RenderMode,Para.EnvNum)) return;
 
 //  sSetTarget(sTargetPara(0,0,ctx->RTSpec));
   
@@ -269,7 +269,7 @@ void RNFR063_Mandelbulb::Render(Wz4RenderContext *ctx)
     Root->DrawShadow(ctx->Frustum,sMin(2,Para.ShadowLevel));
   else
     Root->Draw(ctx->Frustum,Para.LodDraw*lodfactor,1.0f);
-  Mtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.LightEnv,0,0,0,0);
+  Mtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.EnvNum,0,0,0,0);
 
   OctMan->Draw();
 }
@@ -2413,7 +2413,7 @@ static void MarchIsoT(sStsManager *,sStsThread *thread,sInt start,sInt count,voi
 
 void RNFR063_MandelbulbIso::Prepare(Wz4RenderContext *ctx)
 {
-  if(Mtrl) Mtrl->BeforeFrame(Para.LightEnv);
+  if(Mtrl) Mtrl->BeforeFrame(Para.EnvNum);
 
   if(!(Para.Flags & 1))
     March();
@@ -2451,12 +2451,12 @@ void RNFR063_MandelbulbIso::March()
 void RNFR063_MandelbulbIso::Render(Wz4RenderContext *ctx)
 {
   if(!ctx->IsCommonRendermode()) return;
-  if(Mtrl->SkipPhase(ctx->RenderMode,Para.LightEnv)) return;
+  if(Mtrl->SkipPhase(ctx->RenderMode,Para.EnvNum)) return;
 
   sMatrix34CM *model;
   sFORALL(Matrices,model)
   {
-    Mtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.LightEnv,model,0,0,0);
+    Mtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.EnvNum,model,0,0,0);
     MC.Draw();
   }
 }

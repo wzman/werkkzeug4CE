@@ -42,7 +42,7 @@ public:
 
   void Prepare();
   sVertexFormatHandle *GetFormatHandle(sInt flags);
-  sBool SkipPhase(sInt flags,sInt lightenv);
+  sBool SkipPhase(sInt flags,sInt EnvNum);
 };
 
 /****************************************************************************/
