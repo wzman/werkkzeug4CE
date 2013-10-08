@@ -2101,16 +2101,16 @@ void RNModMisc::Render(Wz4RenderContext *ctx)
 
 /****************************************************************************/
 
-RNModEnvNum::RNModEnvNum()
+RNModLightEnv::RNModLightEnv()
 {
   Anim.Init(Wz4RenderType->Script);
 }
 
-RNModEnvNum::~RNModEnvNum()
+RNModLightEnv::~RNModLightEnv()
 {
 }
 
-void RNModEnvNum::Simulate(Wz4RenderContext *ctx)
+void RNModLightEnv::Simulate(Wz4RenderContext *ctx)
 {
   Para = ParaBase;
   Anim.Bind(ctx->Script,&Para);
@@ -2179,7 +2179,57 @@ void RNModEnvNum::Simulate(Wz4RenderContext *ctx)
   }
 }
 
-void RNModEnvNum::Render(Wz4RenderContext *ctx)
+void RNModLightEnv::Render(Wz4RenderContext *ctx)
+{
+}
+
+/****************************************************************************/
+
+RNModFog::RNModFog()
+{
+  Anim.Init(Wz4RenderType->Script);
+}
+
+RNModFog::~RNModFog()
+{
+}
+
+void RNModFog::Simulate(Wz4RenderContext *ctx)
+{
+  Para = ParaBase;
+  Anim.Bind(ctx->Script,&Para);
+  SimulateCalc(ctx);
+//  Anim.UnBind(ctx->Script,&Para);
+
+  SimulateChilds(ctx);
+
+  // initialize EnvNumironment
+
+  sVector30 n;
+  ModEnvNum *env = ModMtrlType->EnvNum[Para.Index];
+
+  env->Features = Para.Features;
+
+  // fogging
+
+  env->FogAdd = -Para.FogNear;
+  env->FogMul = 1/sMax(0.001f,Para.FogFar);
+  env->FogDensity = Para.FogDensity;
+  env->FogColor.InitColor(Para.FogColor);
+
+  // depth fog
+
+  env->GroundFogAdd = -Para.GroundFogNear;
+  env->GroundFogMul = 1/sMax(0.001f,Para.GroundFogFar-Para.GroundFogNear);
+  env->GroundFogDensity = Para.GroundFogDensity;
+  env->GroundFogColor.InitColor(Para.GroundFogColor);
+
+  n.Init(Para.GroundFogPlane.x,Para.GroundFogPlane.y,Para.GroundFogPlane.z);
+  n.Unit();
+  env->ws_GroundFogPlane.Init(n.x,n.y,n.z,Para.GroundFogPlane.w);
+}
+
+void RNModFog::Render(Wz4RenderContext *ctx)
 {
 }
 

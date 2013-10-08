@@ -957,24 +957,25 @@ operator Wz4Render ModMisc(?Wz4Render)
 
 header_end
 {
-  class RNModEnvNum : public Wz4RenderNode
+  class RNModLightEnv : public Wz4RenderNode
   {
   public:
-    Wz4RenderParaModEnvNum Para,ParaBase;
-    Wz4RenderAnimModEnvNum Anim;
+    Wz4RenderParaModLightEnv Para,ParaBase;
+    Wz4RenderAnimModLightEnv Anim;
 
-    RNModEnvNum();
-    ~RNModEnvNum();
+    RNModLightEnv();
+    ~RNModLightEnv();
 
     void Simulate(Wz4RenderContext *);
     void Render(Wz4RenderContext *);
   };
 }
 
-operator Wz4Render ModEnvNum(?Wz4Render)
+operator Wz4Render ModLightEnv(?Wz4Render)
 {
   tab = Wz4Mtrl;
   column = 1;
+  flags = hide|obsolete;
   parameter
   {
     int Index "EnvNum" (0..15);
@@ -1024,7 +1025,68 @@ operator Wz4Render ModEnvNum(?Wz4Render)
   }
   code
   {
-    RNModEnvNum *node = new RNModEnvNum;
+    RNModLightEnv *node = new RNModLightEnv;
+    node->ParaBase = *para;
+    out->RootNode = node;
+    out->AddChilds(cmd,para->Renderpass);
+  }
+}
+
+/****************************************************************************/
+
+header_end
+{
+  class RNModFog : public Wz4RenderNode
+  {
+  public:
+    Wz4RenderParaModFog Para,ParaBase;
+    Wz4RenderAnimModFog Anim;
+
+    RNModFog();
+    ~RNModFog();
+
+    void Simulate(Wz4RenderContext *);
+    void Render(Wz4RenderContext *);
+  };
+}
+
+operator Wz4Render ModFog(?Wz4Render)
+{
+  tab = Wz4Mtrl;
+  column = 1;
+  parameter
+  {
+    int Index "EnvNum" (0..15);
+    int Renderpass (-127..127);
+
+    layout flags Features ("-|Fog:*1-|GroundFog");
+
+    if(Features & 1)
+    {
+      group "Fog";
+      anim float FogNear(-1000000..1000000 step 0.01) = 0;
+      anim float FogFar(-1000000..1000000 step 4) = 1000;
+      anim float FogDensity(0..1 step 0.002) = 1;
+      anim color FogColor("rgb")=0xffffff;
+      if(0) int dummya[2];
+    }
+
+    if(Features & 2)
+    {
+      group "Ground Fog";
+      anim float GroundFogNear(-1000000..1000000 step 0.01) = 0;
+      anim float GroundFogFar(-1000000..1000000 step 4) = 12;
+      anim float GroundFogDensity(0..1 step 0.002) = 1;
+      anim color GroundFogColor("rgb")=0xffffff;
+      anim float4 GroundFogPlane(-1000000..1000000 step 0.01) = { 0,1,0,0 };
+      if(0) int dummyb[2];
+    }
+
+    group "Animation Script"; overbox overlabel linenumber lines 5 string Script;
+  }
+  code
+  {
+    RNModFog *node = new RNModFog;
     node->ParaBase = *para;
     out->RootNode = node;
     out->AddChilds(cmd,para->Renderpass);
