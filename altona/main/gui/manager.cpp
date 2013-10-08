@@ -494,7 +494,7 @@ void sGui_::OnPaint(const sRect &client,const sRect &update)
 #endif
   colortimer = (colortimer+12)&63;
 
-  if(Client!=client)
+  if(Client!=client && client!=sRect(0,0))
   {
     LayoutFlag = 1;
     Client = client;
