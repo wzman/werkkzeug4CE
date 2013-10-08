@@ -102,7 +102,7 @@ void ModMtrlType_::Init()
   }
   for(sInt i=0;i<8;i++)
   {
-    sc->RegPara(sPoolF(L"Color%d",i),SCT_FLOAT3,sOFFSET(ModEnvNum,Color[i]));
+    sc->RegPara(sPoolF(L"Color%d",i),SCT_FLOAT4,sOFFSET(ModEnvNum,Color[i]));
     sc->RegPara(sPoolF(L"Vector%d",i),SCT_FLOAT4,sOFFSET(ModEnvNum,Vector[i]));
   }
   for(sInt i=0;i<4;i++)
@@ -510,7 +510,7 @@ void ModEnvNum::Init()
 
   for(sInt i=0;i<8;i++)
   {
-    Color[i].Init(0,0,0);
+    Color[i].Init(0,0,0,0);
     Vector[i].Init(0,0,0,0);
     Matrix[i].Init();
   }

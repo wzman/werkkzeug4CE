@@ -1635,7 +1635,7 @@ sPoolString MM_Const::Get(ShaderCreator *sc)
     case 7:
     case 8:
       sc->Para(sPoolF(L"Color%d",Source-1));
-      sc->TB.PrintF(L"  float4 %s = float4(Color%d,1);\n",VarName,Source-1);
+      sc->TB.PrintF(L"  float4 %s = float4(Color%d);\n",VarName,Source-1);
       break;
     case 9:
       sc->InputPS(L"color0",SCT_FLOAT4);

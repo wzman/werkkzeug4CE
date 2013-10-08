@@ -161,7 +161,7 @@ struct ModEnvNum                // var environment
 
   // misc
 
-  sVector30 Color[8];
+  sVector4 Color[8];
   sVector4 Vector[8];
   sMatrix34CM Matrix[4];
 
