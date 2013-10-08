@@ -899,7 +899,7 @@ header_end
   };
 }
 
-operator Wz4Render ModMisc(?Wz4Render)
+operator Wz4Render ModMisc "ModMtrlEnv" (?Wz4Render)
 {
   tab = Wz4Mtrl;
   column = 1;
