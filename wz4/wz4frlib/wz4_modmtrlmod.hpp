@@ -368,6 +368,19 @@ public:
   void VS(ShaderCreator *sc);
 };
 
+class MM_DisplaceTwist : public MtrlModule
+{
+public:
+  const sChar *Swizzle;
+  sInt Source;
+  sF32 Twist;
+  sF32 AngleMax;
+  sF32 Height;
+
+  MM_DisplaceTwist();
+  void VS(ShaderCreator *sc);
+};
+
 class MM_ExtrudeNormal : public MtrlModule
 {
 public:

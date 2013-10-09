@@ -1923,6 +1923,64 @@ void MM_DisplaceSinWave::VS(ShaderCreator *sc)
 
 /****************************************************************************/
 
+MM_DisplaceTwist::MM_DisplaceTwist()
+{
+  Name = L"displace twist";
+  Phase = MMP_Pre;
+  Source = 0;
+  Shaders = 1;
+}
+
+void MM_DisplaceTwist::VS(ShaderCreator *sc)
+{
+  sc->FragBegin(Name);
+
+  sc->Require(L"ms_normal",SCT_FLOAT3);
+  sc->FragModify(L"ms_pos");
+
+  // get temp variable name
+  const sChar * angle_rad = sc->GetTemp();
+  const sChar * ang = sc->GetTemp();
+  const sChar * st = sc->GetTemp();
+  const sChar * ct = sc->GetTemp();
+  const sChar * new_pos = sc->GetTemp();
+
+  if(Source>0)
+  {
+    sInt vectorIndex = Source-1;
+    sc->Para(sPoolF(L"Vector%d", vectorIndex));
+    sc->TB.PrintF(L"  float %s = Vector%d.y * sin(Vector%d.x);\n", angle_rad, vectorIndex, vectorIndex);
+    sc->TB.PrintF(L"  float %s = (Vector%d.z*0.5 + ms_pos.%s)/Vector%d.z * %s;\n", ang, vectorIndex, Swizzle, vectorIndex, angle_rad);
+  }
+  else
+  {
+    if(Height==0) Height=0.001;
+    sc->TB.PrintF(L"  float %s = %f*sin(%f);\n", angle_rad, AngleMax, Twist);
+    sc->TB.PrintF(L"  float %s = (%f*0.5 + ms_pos.%s)/%f * %s;\n", ang, Height, Swizzle, Height, angle_rad);
+  }
+
+  // compute angle
+  sc->TB.PrintF(L"  float %s = sin(%s);\n", st, ang);
+  sc->TB.PrintF(L"  float %s = cos(%s);\n", ct, ang);
+  sc->TB.PrintF(L"  float4 %s;\n", new_pos);
+
+  // position
+  sc->TB.PrintF(L"  %s.x = ms_pos.x*%s - ms_pos.z*%s;\n", new_pos,ct,st);
+  sc->TB.PrintF(L"  %s.z = ms_pos.x*%s + ms_pos.z*%s;\n", new_pos,st,ct);
+  sc->TB.PrintF(L"  %s.y = ms_pos.y;\n", new_pos);
+  sc->TB.PrintF(L"  ms_pos = %s;\n", new_pos);
+
+  // normal
+  sc->TB.PrintF(L"  %s.x = ms_normal.x*%s - ms_normal.z*%s;\n", new_pos,ct,st);
+  sc->TB.PrintF(L"  %s.z = ms_normal.x*%s + ms_normal.z*%s;\n", new_pos,st,ct);
+  sc->TB.PrintF(L"  %s.y = ms_normal.y;\n", new_pos);
+  sc->TB.PrintF(L"  ms_normal = %s;\n", new_pos);
+
+  sc->FragEnd();
+}
+
+/****************************************************************************/
+
 MM_ExtrudeNormal::MM_ExtrudeNormal()
 {
   Name = L"ExtrudeNormal";

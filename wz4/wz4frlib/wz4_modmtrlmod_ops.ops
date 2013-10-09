@@ -709,6 +709,41 @@ operator ModShader DisplaceSinWave()
 
 /****************************************************************************/
 
+operator ModShader DisplaceTwist()
+{
+  tab = Wz4Mtrl;
+  column = 7;
+
+  parameter
+  {
+    flags Channel("x|y|z") = 1;
+    flags Source("here|Vector0|Vector1|Vector2|Vector3|Vector4|Vector5|Vector6|Vector7") = 0;
+    float Twist(-1024..1024 step 0.01) = 1.0;
+    float AngleMax(-1024..1024 step 0.01) = 1.0;
+    float Height(-1024..1024 step 0.01) = 1.0;
+  }
+  code
+  {
+    MM_DisplaceTwist *mod = new MM_DisplaceTwist;
+
+    switch(para->Channel)
+    {
+    default:
+    case 0: mod->Swizzle = L"x"; break;
+    case 1: mod->Swizzle = L"y"; break;
+    case 2: mod->Swizzle = L"z"; break;
+    }
+
+    mod->Source = para->Source;
+    mod->Twist = para->Twist;
+    mod->Height = para->Height;
+    mod->AngleMax = para->AngleMax;
+    out->Add(mod);
+  }
+}
+
+/****************************************************************************/
+
 operator ModShader ExtrudeNormal()
 { 
   tab = Wz4Mtrl;
