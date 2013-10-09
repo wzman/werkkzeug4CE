@@ -482,6 +482,8 @@ sShader *ShaderCreator::Compile(sTextBuffer &log)
   }
   delete[] data;
 
+  if(sh)
+  {
   cs = CompiledShaders.AddMany(1);
   cs->Hash = hash;
   cs->ShaderType = ShaderType;
@@ -489,6 +491,7 @@ sShader *ShaderCreator::Compile(sTextBuffer &log)
   cs->Source = new sChar[len];
   sCopyMem(cs->Source,tb.Get(),(len+1)*sizeof(sChar));
   sh->AddRef();
+  }
 
   return sh;
 }
