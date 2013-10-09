@@ -1890,6 +1890,39 @@ void MM_Displace::VS(ShaderCreator *sc)
 
 /****************************************************************************/
 
+MM_DisplaceSinWave::MM_DisplaceSinWave()
+{
+  Name = L"displace sinus wave";
+  Phase = MMP_Pre;
+  Source = 0;
+  Shaders = 1;
+}
+
+void MM_DisplaceSinWave::VS(ShaderCreator *sc)
+{
+  sc->FragBegin(Name);
+
+  sc->Require(L"ms_normal",SCT_FLOAT3);
+  sc->FragModify(L"ms_pos");
+
+  if(Source>0)
+  {
+    sInt vectorIndex = Source-1;
+    sc->Para(sPoolF(L"Vector%d",Source-1));
+    sc->TB.PrintF(L"  ms_pos.%s += sin(ms_pos.%s * Vector%d.x + Vector%d.y) * Vector%d.z;\n", SwizzleDest, SwizzleSource, vectorIndex, vectorIndex, vectorIndex);
+    sc->TB.PrintF(L"  ms_normal.%s += sin(ms_normal.%s * Vector%d.x + Vector%d.y) * Vector%d.z;\n", SwizzleDest, SwizzleSource, vectorIndex, vectorIndex, vectorIndex);
+  }
+  else
+  {
+    sc->TB.PrintF(L"  ms_pos.%s += sin(ms_pos.%s * %f + %f) * %f;\n", SwizzleDest, SwizzleSource, Frequency, Speed, Amplitude);
+    sc->TB.PrintF(L"  ms_normal.%s += sin(ms_normal.%s * %f + %f) * %f;\n", SwizzleDest, SwizzleSource, Frequency, Speed, Amplitude);
+  }
+
+  sc->FragEnd();
+}
+
+/****************************************************************************/
+
 MM_ExtrudeNormal::MM_ExtrudeNormal()
 {
   Name = L"ExtrudeNormal";

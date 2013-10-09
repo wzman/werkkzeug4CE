@@ -354,6 +354,20 @@ public:
   void VS(ShaderCreator *sc);
 };
 
+class MM_DisplaceSinWave : public MtrlModule
+{
+public:
+  const sChar *SwizzleSource;
+  const sChar *SwizzleDest;
+  sInt Source;
+  sF32 Frequency;
+  sF32 Speed;
+  sF32 Amplitude;
+
+  MM_DisplaceSinWave();
+  void VS(ShaderCreator *sc);
+};
+
 class MM_ExtrudeNormal : public MtrlModule
 {
 public:

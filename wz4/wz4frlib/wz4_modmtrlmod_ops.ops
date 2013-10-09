@@ -665,6 +665,50 @@ operator ModShader Displace(ModShaderSampler)
 
 /****************************************************************************/
 
+operator ModShader DisplaceSinWave()
+{
+  tab = Wz4Mtrl;
+  column = 7;
+
+  parameter
+  {
+    flags ChannelSource("x|y|z") = 0;
+    flags ChannelDest("x|y|z") = 1;
+    flags Source ("here|Vector0|Vector1|Vector2|Vector3|Vector4|Vector5|Vector6|Vector7") = 0;
+    float Frequency(-1024..1024 step 0.01) = 1.0;
+    float Speed(-1024..1024 step 0.01) = 1.0;
+    float Amplitude(-1024..1024 step 0.01) = 1.0;
+  }
+  code
+  {
+    MM_DisplaceSinWave *mod = new MM_DisplaceSinWave;
+
+    switch(para->ChannelSource)
+    {
+    default:
+    case 0: mod->SwizzleSource = L"x"; break;
+    case 1: mod->SwizzleSource = L"y"; break;
+    case 2: mod->SwizzleSource = L"z"; break;
+    }
+
+    switch(para->ChannelDest)
+    {
+    default:
+    case 0: mod->SwizzleDest = L"x"; break;
+    case 1: mod->SwizzleDest = L"y"; break;
+    case 2: mod->SwizzleDest = L"z"; break;
+    }
+
+    mod->Source = para->Source;
+    mod->Frequency = para->Frequency;
+    mod->Speed = para->Speed;
+    mod->Amplitude = para->Amplitude;
+    out->Add(mod);
+  }
+}
+
+/****************************************************************************/
+
 operator ModShader ExtrudeNormal()
 { 
   tab = Wz4Mtrl;
