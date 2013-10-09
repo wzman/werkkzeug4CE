@@ -366,6 +366,38 @@ public:
 
 /****************************************************************************/
 
+class RPCloud2New : public Wz4ParticleNode
+{
+  struct Part
+  {
+    sF32 StartX;
+    sF32 StartY;
+    sF32 Phase;
+    sF32 Speed;
+    sInt ClusterId;
+  };
+  struct Cluster
+  {
+    sMatrix34 Matrix;
+    sF32 Speed;
+  };
+
+  sArray<Part> Parts;
+  sArray<Cluster> Clusters;
+public:
+  RPCloud2New();
+  ~RPCloud2New();
+  void Init(Wz4ParticlesArrayCloud2New *Array,sInt ArrayCount);
+
+  Wz4ParticlesParaCloud2New Para,ParaBase;
+
+  sInt GetPartCount();
+  sInt GetPartFlags();
+  void Func(Wz4PartInfo &pinfo,sF32 time,sF32 dt);
+};
+
+/****************************************************************************/
+
 class RPWobble : public Wz4ParticleNode
 {
   sArray<sF32> Random;

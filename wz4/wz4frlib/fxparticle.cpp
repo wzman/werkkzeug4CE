@@ -1753,7 +1753,7 @@ void RPCloud2::Init(Wz4ParticlesArrayCloud2 *Array,sInt ArrayCount)
   for(sInt i=0;i<ac;i++)
   {
     mat.Init();
-    FastEulerXYZ(mat,Array[i].Rot.x,Array[i].Rot.y,Array[i].Rot.z);
+    FastEulerXYZ(mat,0,Array[i].Rot,0);
     mat.Scale(Array[i].Scale.x,Array[i].Scale.y,Array[i].Scale.z);
     mat.l += Array[i].Pos;
     mat.i *= 0.5f;
@@ -1801,6 +1801,116 @@ sInt RPCloud2::GetPartFlags()
 }
 
 void RPCloud2::Func(Wz4PartInfo &pinfo,sF32 time,sF32 dt)
+{
+  sInt life = 0;
+  Part *src;
+  sVector31 pos;
+  Cluster *cl;
+  sF32 ptime,dist;
+
+  sFORALL(Parts,src)
+  {
+    cl = &Clusters[src->ClusterId];
+    ptime = sAbsMod(src->Phase+time*src->Speed,1.0f);
+    pos.x = (ptime+dt*src->Speed)*2-1;
+    pos.y = src->StartY;
+    pos.z = src->StartX;
+    dist = sSqrt(pos.x*pos.x+pos.y*pos.y+pos.z*pos.z);
+    pos = pos * cl->Matrix;
+
+    if(dist<1)
+    {
+      ptime = 1-dist;
+      life++;
+    }
+    else
+    {
+      ptime = -1;
+    }
+
+    pinfo.Parts[_i].Init(pos,ptime);
+  }
+  pinfo.Used = life;
+}
+
+/****************************************************************************/
+
+RPCloud2New::RPCloud2New()
+{
+  InitSinTable();
+}
+
+RPCloud2New::~RPCloud2New()
+{
+}
+
+void RPCloud2New::Init(Wz4ParticlesArrayCloud2New *Array,sInt ArrayCount)
+{
+  sInt max = 0;
+  Part *p;
+  sRandomMT rnd;
+  sVector30 v;
+  sMatrix34 mat;
+  sInt ac = ArrayCount;
+
+  for(sInt i=0;i<ac;i++)
+    max += Array[i].Count;
+
+  Para = ParaBase;
+
+  Parts.HintSize(max);
+  Clusters.Resize(ac);
+  for(sInt i=0;i<ac;i++)
+  {
+    mat.Init();
+    FastEulerXYZ(mat,Array[i].Rot.x,Array[i].Rot.y,Array[i].Rot.z);
+    mat.Scale(Array[i].Scale.x,Array[i].Scale.y,Array[i].Scale.z);
+    mat.l += Array[i].Pos;
+    mat.i *= 0.5f;
+    mat.j *= 0.5f;
+    mat.k *= 0.5f;
+    Clusters[i].Matrix = mat;
+    Clusters[i].Speed = Array[i].Speed/sMax<sF32>(sAbs(Array[i].Scale.z),0.125f);
+  }
+
+  for(sInt i=0;i<ac;i++)
+  {
+    p = Parts.AddMany(Array[i].Count);
+    for(sInt j=0;j<Array[i].Count;j++)
+    {
+      p->ClusterId = i;
+      p++;
+    }
+  }
+
+  sFORALL(Parts,p)
+  {
+    sF32 x,y;
+    do
+    {
+      x = rnd.Float(2)-1;
+      y = rnd.Float(2)-1;
+    }
+    while(x*x+y*y>1);
+    p->StartX = x;
+    p->StartY = y;
+    p->Phase = rnd.Float(1);
+    p->Speed = Para.Speed + Clusters[p->ClusterId].Speed;
+    p->Speed *= 1+((rnd.Float(2)-1.0f)*Para.SpeedSpread);
+  }
+}
+
+
+sInt RPCloud2New::GetPartCount()
+{
+  return Parts.GetCount();
+}
+sInt RPCloud2New::GetPartFlags()
+{
+  return 0;
+}
+
+void RPCloud2New::Func(Wz4PartInfo &pinfo,sF32 time,sF32 dt)
 {
   sInt life = 0;
   Part *src;
