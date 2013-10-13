@@ -192,7 +192,7 @@ operator ModShaderSampler Tex2D(Texture2D)
   {
     layout flags Flags("*0trilinear|aniso|point|bilinear:*4tile|clamp|mirror|border_black|border_white:*30old buggy rotation|-")=0x40000000;
     layout flags UV("uv0|uv1|model|world|camera|envi-sphere|envi-reflect|envi-sphere (per pixel)|envi-reflect (per pixel)");
-    layout flags Transform("-|Scale|Matrix| ModMisc Matrix 0| ModMisc Matrix 1| ModMisc Matrix 2| ModMisc Matrix 3");
+    layout flags Transform("-|Scale|Matrix| ModMtrlEnv Matrix 0| ModMtrlEnv Matrix 1| ModMtrlEnv Matrix 2| ModMtrlEnv Matrix 3");
     layout flags Aux("-|aux| 1-aux|upper half|lower half");
     if(Transform == 1)
       float SimpleScale(-1024..1024 step 0.01)=1;
@@ -232,7 +232,7 @@ operator ModShaderSampler Tex2DAnim(Texture2D)
   {
     layout flags Flags("*0trilinear|aniso|point|bilinear")=0x00000000;
     layout flags UV("uv0|uv1|model|world|camera|envi-sphere|envi-reflect|envi-sphere (per pixel)|envi-reflect (per pixel)");
-    layout flags Transform("-|Scale|Matrix| ModMisc Matrix 0| ModMisc Matrix 1| ModMisc Matrix 2| ModMisc Matrix 3");
+    layout flags Transform("-|Scale|Matrix| ModMtrlEnv Matrix 0| ModMtrlEnv Matrix 1| ModMtrlEnv Matrix 2| ModMtrlEnv Matrix 3");
     layout flags Aux("-|aux| 1-aux|upper half|lower half");
     flags AtlasAnim("Vector0|Vector1|Vector2|Vector3|Vector4|Vector5|Vector6|Vector7")=0;
 
@@ -277,7 +277,7 @@ operator ModShaderSampler Tex2DSurround(Texture2D)
     layout flags CoordinateSystem:13("world|model post skin|model pre skin")=2;
     layout continue flags CoordinateSystem "Flags" ("*4-|Major Axis");
     layout flags Aux:0("-|aux| 1-aux|upper half|lower half");
-    layout flags Transform:1("-|Scale|Matrix| ModMisc Matrix 0| ModMisc Matrix 1| ModMisc Matrix 2| ModMisc Matrix 3");
+    layout flags Transform:1("-|Scale|Matrix| ModMtrlEnv Matrix 0| ModMtrlEnv Matrix 1| ModMtrlEnv Matrix 2| ModMtrlEnv Matrix 3");
     if(Transform==1)
       float SimpleScale:2(-1024..1024 step 0.01)=1;
     if(Transform==2)
