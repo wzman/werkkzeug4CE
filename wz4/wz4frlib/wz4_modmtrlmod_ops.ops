@@ -948,7 +948,7 @@ operator ModShader Tint()
   column = 7;
   parameter
   {
-    layout flags Select ("here| 0| 1| 2| 3| 4| 5| 6| 7");
+    layout flags Select ("here| ModMtrlEnv Color0| ModMtrlEnv Color1| ModMtrlEnv Color2| ModMtrlEnv Color3| ModMtrlEnv Color4| ModMtrlEnv Color5| ModMtrlEnv Color6| ModMtrlEnv Color7");
     if(Select==0)
     {
       color Color("rgb")=0xffffffff;
