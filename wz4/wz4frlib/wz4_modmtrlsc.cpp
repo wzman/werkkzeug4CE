@@ -211,7 +211,7 @@ void ShaderCreator::SortBinds()
   sSortUp(Binds,&Reg::Temp);
 }
 
-sShader *ShaderCreator::Compile(sTextBuffer &log)
+sShader *ShaderCreator::Compile(sTextBuffer &log, sTextBuffer &code, sBool getCode, sBool manualCompil)
 {
   sTextBuffer tb;
   Reg *r;
@@ -443,6 +443,17 @@ sShader *ShaderCreator::Compile(sTextBuffer &log)
   ResolveDepend(tb);
 
   tb.PrintF(L"}\n");
+
+  // get shader code for custom compil
+  if(getCode)
+    code.PrintF(L"%s", tb.Get());
+
+  // if custom shader mode is enabled, replace shader code with user one
+  if(manualCompil)
+  {
+    tb.Clear();
+    tb = code.Get();
+  }
 
   // compile
 

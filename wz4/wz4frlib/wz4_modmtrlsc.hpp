@@ -120,7 +120,7 @@ public:
   void Shift(ModMtrlParaAssign *ass,ModMtrlParaAssign *assi,sInt scs_shadertype);
   void RegPara(sPoolString name,sInt type,sInt offset);
   void SortBinds();
-  sShader *Compile(sTextBuffer &log);
+  sShader *Compile(sTextBuffer &log, sTextBuffer &code, sBool getCode,sBool manualCompil);
   void SetTextures(sMaterial *mtrl);
 
   void Output(sPoolString name,sInt type,sInt bind,sInt bindindex=0);

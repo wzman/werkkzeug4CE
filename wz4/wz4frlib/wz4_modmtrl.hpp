@@ -355,6 +355,12 @@ public:
   sBool Error;
   sTextBuffer ShaderLog;
 
+  sBool isCustomPixelShader;
+  sBool isCustomVertexShader;
+  sBool GetPixelCode;
+  sTextBuffer ShaderPixelCode;              // pixel shader code used in manual mode
+  sTextBuffer ShaderVertexCode;             // vertex shader code...
+
   wDocName PageName;
   sInt PageX;
   sInt PageY;

@@ -108,9 +108,32 @@ operator ModMtrl ModMaterial(?*ModShader)
     continue flags FeatureFlags "Emissive"("*4Add|Screen:*6-|suppress reflection rim|supress reflection center");
     continue flags FeatureFlags "Cast Shadow in EnvNum"("*9my own|all");
     continue flags FeatureFlags "Normals"("*10precise|compact:*11-|double sided");
-    group "debug";
-    action Shadercode(1);
+    group "Debug";
+    action Shaderlog(1);
     action FlushShaders(2);
+
+    group "Shader Editor";
+    layout flags EditShader("-|vertex shader|pixel shader|both")=0;
+    if(EditShader != 0)
+    {
+      layout flags CustomCode("-|enabled")=0;
+
+      if(EditShader&1)
+      {
+        group "Vertex shader";
+        if(CustomCode == 0)
+          action GetVS(5);
+        lines 20 string VertexShader;
+      }
+
+      if(EditShader&2)
+      {
+        group "Pixel shader";
+        if(CustomCode == 0)
+          action GetPS(6);
+        lines 20 string PixelShader;
+      }
+    }
   }
   code
   {
@@ -145,6 +168,14 @@ operator ModMtrl ModMaterial(?*ModShader)
     out->FeatureFlags = para->FeatureFlags;
     out->SetMtrl(para->Flags,blendc,blenda);
     out->SetAlphaTest(para->AlphaTest,para->AlphaRef);
+
+    out->ShaderVertexCode = cmd->Strings[0];
+    out->ShaderPixelCode = cmd->Strings[1];
+
+    if(para->CustomCode && para->EditShader&1)
+      out->isCustomVertexShader = 1;
+    if(para->CustomCode && para->EditShader&2)
+      out->isCustomPixelShader = 1;
 
     // for debugging, log where the op is
 
@@ -197,6 +228,36 @@ operator ModMtrl ModMaterial(?*ModShader)
       else para->AllowShadow = 0;
       return 1;
     }
+
+    // get vertex shader code
+    if(code==5)
+    {
+      if(op->RefObj)
+      {
+        ModMtrl *mtrl = (ModMtrl*) op->RefObj;
+        if(mtrl && mtrl->ShaderVertexCode.GetCount())
+        {
+          *op->EditString[0] = mtrl->ShaderVertexCode.Get();
+        }
+      }
+      return 0;
+    }
+
+    // get pixel shader code
+    if(code==6)
+    {
+      if(op->RefObj)
+      {
+        ModMtrl *mtrl = (ModMtrl*) op->RefObj;
+        if(mtrl && mtrl->ShaderVertexCode.GetCount())
+        {
+          op->EditString[1]->Clear();
+          *op->EditString[1] = mtrl->ShaderPixelCode.Get();
+        }
+      }
+      return 0;
+    }
+
 
     return 0;
   }

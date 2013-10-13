@@ -744,6 +744,10 @@ ModMtrl::ModMtrl()
   PageX = 0;
   PageY = 0;
   PageName = L"unknown";
+
+  isCustomPixelShader = sFALSE;
+  isCustomVertexShader = sFALSE;
+  GetPixelCode = sFALSE;
 }
 
 ModMtrl::~ModMtrl()
@@ -1328,8 +1332,28 @@ CachedModShader *ModMtrl::CreateShader(const CachedModInfo &info)
     break;
   }
 
+  // custom compilation flags
 
-  ps = sc->Compile(ShaderLog);
+  sBool getCode = sFALSE;
+  sBool customCompil = sFALSE;
+
+  if(info.RenderTarget==sRF_TARGET_MAIN)
+    getCode = sTRUE;
+
+  if(isCustomPixelShader)
+  {
+    if(info.RenderTarget==sRF_TARGET_MAIN)
+    {
+      customCompil = sTRUE;
+      getCode = sFALSE;
+    }
+  }
+  else
+    ShaderPixelCode.Clear();
+
+  // compile pixel shader
+
+  ps = sc->Compile(ShaderLog, ShaderPixelCode, getCode, customCompil);
   if(ps==0)
     sDPrintF(L"compilation failed!\n");
   sc->SetTextures(mtrl);
@@ -1730,7 +1754,29 @@ CachedModShader *ModMtrl::CreateShader(const CachedModInfo &info)
 
   sc->SortBinds();
 
-  vs = sc->Compile(ShaderLog);
+
+  // custom compilation flags
+
+  getCode = sFALSE;
+  customCompil = sFALSE;
+
+  if(info.RenderTarget==sRF_TARGET_MAIN)
+    getCode = sTRUE;
+
+  if(isCustomVertexShader)
+  {
+    if(info.RenderTarget==sRF_TARGET_MAIN)
+    {
+      customCompil = sTRUE;
+      getCode = sFALSE;
+    }
+  }
+  else
+    ShaderVertexCode.Clear();
+
+  // compile vertex shader
+
+  vs = sc->Compile(ShaderLog, ShaderVertexCode, getCode, customCompil);
   sc->SetTextures(mtrl);
   if(vs==0)
     sDPrintF(L"vs compilation failed!\n");
