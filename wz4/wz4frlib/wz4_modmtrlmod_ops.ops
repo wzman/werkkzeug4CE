@@ -1174,11 +1174,11 @@ operator ModShader SphereFog()
   {
     float31 Center(-1000000..1000000 step 0.01);
     float Radius(0..1000000 step 0.01)= 1;
-    flags Animate("all static|radius from ModMisc|all from ModMisc");
+    layout flags Animate("all static|radius from ModMtrlEnv|all from ModMtrlEnv");
     if(Animate >= 1) 
-      flags EnvNumVector "RadiusVector"(" 0| 1| 2| 3| 4| 5| 6| 7");
+      flags EnvNumVector "RadiusVector"(" Vector0| Vector1| Vector2| Vector3| Vector4| Vector5| Vector6| Vector7");
     if(Animate >= 2) 
-      continue flags EnvNumVector "CenterVector"("*4 0| 1| 2| 3| 4| 5| 6| 7");
+      continue flags EnvNumVector "CenterVector"("*4 Vector0| Vector1| Vector2| Vector3| Vector4| Vector5| Vector6| Vector7");
   }
 
   code
