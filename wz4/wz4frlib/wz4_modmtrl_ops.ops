@@ -960,23 +960,24 @@ header_end
   };
 }
 
-operator Wz4Render ModMisc "ModMtrlEnv" (?Wz4Render)
+operator Wz4Render ModMisc (?Wz4Render)
 {
   tab = Wz4Mtrl;
   column = 1;
+  flags = obsolete|hide;
   parameter
   {
     int Index "EnvNum" (0..15);
     int Renderpass (-127..127);
     group "misc colors";
-    anim color Color0("rgba"); nolabel float Amp0(0..1024 step 0.01) = 1;
-    anim color Color1("rgba"); nolabel float Amp1(0..1024 step 0.01) = 1;
-    anim color Color2("rgba"); nolabel float Amp2(0..1024 step 0.01) = 1;
-    anim color Color3("rgba"); nolabel float Amp3(0..1024 step 0.01) = 1;
-    anim color Color4("rgba"); nolabel float Amp4(0..1024 step 0.01) = 1;
-    anim color Color5("rgba"); nolabel float Amp5(0..1024 step 0.01) = 1;
-    anim color Color6("rgba"); nolabel float Amp6(0..1024 step 0.01) = 1;
-    anim color Color7("rgba"); nolabel float Amp7(0..1024 step 0.01) = 1;
+    anim color Color0("rgb"); nolabel float Amp0(0..1024 step 0.01) = 1;
+    anim color Color1("rgb"); nolabel float Amp1(0..1024 step 0.01) = 1;
+    anim color Color2("rgb"); nolabel float Amp2(0..1024 step 0.01) = 1;
+    anim color Color3("rgb"); nolabel float Amp3(0..1024 step 0.01) = 1;
+    anim color Color4("rgb"); nolabel float Amp4(0..1024 step 0.01) = 1;
+    anim color Color5("rgb"); nolabel float Amp5(0..1024 step 0.01) = 1;
+    anim color Color6("rgb"); nolabel float Amp6(0..1024 step 0.01) = 1;
+    anim color Color7("rgb"); nolabel float Amp7(0..1024 step 0.01) = 1;
     group "misc vectors";
     anim float30 Vector0(-1000000..1000000 step 0.01);
     anim float30 Vector1(-1000000..1000000 step 0.01);
@@ -1008,6 +1009,78 @@ operator Wz4Render ModMisc "ModMtrlEnv" (?Wz4Render)
   code
   {
     RNModMisc *node = new RNModMisc;
+    node->ParaBase = *para;
+    out->RootNode = node;
+    out->AddChilds(cmd,para->Renderpass);
+  }
+}
+
+/****************************************************************************/
+
+header_end
+{
+  class RNModMtrlEnv : public Wz4RenderNode
+  {
+  public:
+    Wz4RenderParaModMtrlEnv Para,ParaBase;
+    Wz4RenderAnimModMtrlEnv Anim;
+
+    RNModMtrlEnv();
+    ~RNModMtrlEnv();
+
+    void Simulate(Wz4RenderContext *);
+    void Render(Wz4RenderContext *);
+  };
+}
+
+operator Wz4Render ModMtrlEnv (?Wz4Render)
+{
+  tab = Wz4Mtrl;
+  column = 1;
+  parameter
+  {
+    int Index "EnvNum" (0..15);
+    int Renderpass (-127..127);
+    group "misc colors";
+    anim color Color0("rgba"); nolabel float Amp0(0..1024 step 0.01) = 1;
+    anim color Color1("rgba"); nolabel float Amp1(0..1024 step 0.01) = 1;
+    anim color Color2("rgba"); nolabel float Amp2(0..1024 step 0.01) = 1;
+    anim color Color3("rgba"); nolabel float Amp3(0..1024 step 0.01) = 1;
+    anim color Color4("rgba"); nolabel float Amp4(0..1024 step 0.01) = 1;
+    anim color Color5("rgba"); nolabel float Amp5(0..1024 step 0.01) = 1;
+    anim color Color6("rgba"); nolabel float Amp6(0..1024 step 0.01) = 1;
+    anim color Color7("rgba"); nolabel float Amp7(0..1024 step 0.01) = 1;
+    group "misc vectors";
+    anim float4 Vector0(-1000000..1000000 step 0.01);
+    anim float4 Vector1(-1000000..1000000 step 0.01);
+    anim float4 Vector2(-1000000..1000000 step 0.01);
+    anim float4 Vector3(-1000000..1000000 step 0.01);
+    anim float4 Vector4(-1000000..1000000 step 0.01);
+    anim float4 Vector5(-1000000..1000000 step 0.01);
+    anim float4 Vector6(-1000000..1000000 step 0.01);
+    anim float4 Vector7(-1000000..1000000 step 0.01);
+    group "misc matrix 0";
+    anim float31 Scale0(-1024..1024 step 0.01) = 1;
+    anim float30 Rot0(-16..16 step 0.001);
+    anim float31 Trans0(-1024..1024 step 0.01);
+    group "misc matrix 1";
+    anim float31 Scale1(-1024..1024 step 0.01) = 1;
+    anim float30 Rot1(-16..16 step 0.001);
+    anim float31 Trans1(-1024..1024 step 0.01);
+    group "misc matrix 2";
+    anim float31 Scale2(-1024..1024 step 0.01) = 1;
+    anim float30 Rot2(-16..16 step 0.001);
+    anim float31 Trans2(-1024..1024 step 0.01);
+    group "misc matrix 3";
+    anim float31 Scale3(-1024..1024 step 0.01) = 1;
+    anim float30 Rot3(-16..16 step 0.001);
+    anim float31 Trans3(-1024..1024 step 0.01);
+
+    group "Animation Script"; overbox overlabel linenumber lines 5 string Script;
+  }
+  code
+  {
+    RNModMtrlEnv *node = new RNModMtrlEnv;
     node->ParaBase = *para;
     out->RootNode = node;
     out->AddChilds(cmd,para->Renderpass);

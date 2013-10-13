@@ -2088,6 +2088,65 @@ void RNModLight::Render(Wz4RenderContext *ctx)
 
 /****************************************************************************/
 
+RNModMtrlEnv::RNModMtrlEnv()
+{
+  Anim.Init(Wz4RenderType->Script);
+}
+
+RNModMtrlEnv::~RNModMtrlEnv()
+{
+}
+
+void RNModMtrlEnv::Simulate(Wz4RenderContext *ctx)
+{
+  Para = ParaBase;
+  Anim.Bind(ctx->Script,&Para);
+  SimulateCalc(ctx);
+//  Anim.UnBind(ctx->Script,&Para);
+
+  SimulateChilds(ctx);
+
+  ModEnvNum *env = ModMtrlType->EnvNum[Para.Index];
+
+  for(sInt i=0;i<8;i++)
+  {
+    env->Vector[i] = (&Para.Vector0)[i];
+  }
+  env->Color[0].InitColor(Para.Color0,Para.Amp0);
+  env->Color[1].InitColor(Para.Color1,Para.Amp1);
+  env->Color[2].InitColor(Para.Color2,Para.Amp2);
+  env->Color[3].InitColor(Para.Color3,Para.Amp3);
+  env->Color[4].InitColor(Para.Color4,Para.Amp4);
+  env->Color[5].InitColor(Para.Color5,Para.Amp5);
+  env->Color[6].InitColor(Para.Color6,Para.Amp6);
+  env->Color[7].InitColor(Para.Color7,Para.Amp7);
+
+  struct fake
+  {
+    sVector31 s;
+    sVector30 r;
+    sVector31 t;
+  };
+  fake *fp = (fake *) (&Para.Scale0.x);
+  for(sInt i=0;i<4;i++)
+  {
+    sSRT srt;
+    srt.Scale     = fp->s;
+    srt.Rotate    = fp->r;
+    srt.Translate = fp->t;
+    fp++;
+    sMatrix34 mat;
+    srt.MakeMatrix(mat);
+    env->Matrix[i] = mat;
+  }
+}
+
+void RNModMtrlEnv::Render(Wz4RenderContext *ctx)
+{
+}
+
+/****************************************************************************/
+
 RNModMisc::RNModMisc()
 {
   Anim.Init(Wz4RenderType->Script);
