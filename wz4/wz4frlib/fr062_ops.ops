@@ -76,7 +76,7 @@ code
         sc->TB.PrintF(L"    float3 c3 = float3(%f,%f,%f); float r3 = %f;\n",Para.Sphere3.x,Para.Sphere3.y,Para.Sphere3.z,Para.Sphere3.w);
         sc->TB.PrintF(L"    float clipmin=%f,clipmax=%f,colmin=%f,colmax=%f;\n",Para.ClipMin,Para.ClipMax,Para.ColMin,Para.ColMax);
         sc->TB.PrintF(L"    float3 col=float3(%f,%f,%f);\n",col.x,col.y,col.z);
-        sc->TB.PrintF(L"    float amp=%f; bias=%f; tamp=%f;\n",Para.Amp,Para.Bias,Para.TexAmp);
+        sc->TB.PrintF(L"    float amp=%f; float bias=%f; float tamp=%f;\n",Para.Amp,Para.Bias,Para.TexAmp);
       }
 
       // slice
