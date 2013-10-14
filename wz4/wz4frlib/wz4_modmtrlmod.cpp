@@ -1981,6 +1981,65 @@ void MM_DisplaceTwist::VS(ShaderCreator *sc)
 
 /****************************************************************************/
 
+MM_ShaderParam::MM_ShaderParam()
+{
+  Name = L"shader param";
+  Phase = MMP_Pre;
+  Shaders = 1;
+}
+
+void MM_ShaderParam::PS(ShaderCreator *sc)
+{
+  sc->FragBegin(Name);
+  if(PSvar>0)
+  {
+    if(PSvar&1)
+      sc->Para(sPoolF(L"Vector%d",0));
+    if(PSvar&2)
+      sc->Para(sPoolF(L"Vector%d",1));
+    if(PSvar&4)
+      sc->Para(sPoolF(L"Vector%d",2));
+    if(PSvar&8)
+      sc->Para(sPoolF(L"Vector%d",3));
+    if(PSvar&16)
+      sc->Para(sPoolF(L"Vector%d",4));
+    if(PSvar&32)
+      sc->Para(sPoolF(L"Vector%d",5));
+    if(PSvar&64)
+      sc->Para(sPoolF(L"Vector%d",6));
+    if(PSvar&128)
+      sc->Para(sPoolF(L"Vector%d",7));
+  }
+  sc->FragEnd();
+}
+
+void MM_ShaderParam::VS(ShaderCreator *sc)
+{
+  sc->FragBegin(Name);
+  if(VSvar>0)
+  {
+    if(VSvar&1)
+      sc->Para(sPoolF(L"Vector%d",0));
+    if(VSvar&2)
+      sc->Para(sPoolF(L"Vector%d",1));
+    if(VSvar&4)
+      sc->Para(sPoolF(L"Vector%d",2));
+    if(VSvar&8)
+      sc->Para(sPoolF(L"Vector%d",3));
+    if(VSvar&16)
+      sc->Para(sPoolF(L"Vector%d",4));
+    if(VSvar&32)
+      sc->Para(sPoolF(L"Vector%d",5));
+    if(VSvar&64)
+      sc->Para(sPoolF(L"Vector%d",6));
+    if(VSvar&128)
+      sc->Para(sPoolF(L"Vector%d",7));
+  }
+  sc->FragEnd();
+}
+
+/****************************************************************************/
+
 MM_ExtrudeNormal::MM_ExtrudeNormal()
 {
   Name = L"ExtrudeNormal";

@@ -391,6 +391,17 @@ public:
   void VS(ShaderCreator *sc);
 };
 
+class MM_ShaderParam : public MtrlModule
+{
+public:
+  sU8 VSvar;
+  sU8 PSvar;
+
+  MM_ShaderParam();
+  void VS(ShaderCreator *sc);
+  void PS(ShaderCreator *sc);
+};
+
 class MM_NormalMap : public MtrlModule
 {
 public:

@@ -763,6 +763,43 @@ operator ModShader ExtrudeNormal()
   }
 }
 
+/****************************************************************************/
+
+operator ModShader ShaderParam()
+{
+  tab = Wz4Mtrl;
+  column = 7;
+
+  parameter
+  {
+    narrow flags VertexShaderVar ("-| Vertex0:*1-| Vertex1:*2-| Vertex2:*3-| Vertex3:*4-| Vertex4:*5-| Vertex5:*6-| Vertex6:*7-| Vertex7")=0x00000000;
+    narrow action All(1);
+    narrow flags PixelShaderVar ("-| Vertex0:*1-| Vertex1:*2-| Vertex2:*3-| Vertex3:*4-| Vertex4:*5-| Vertex5:*6-| Vertex6:*7-| Vertex7")=0x00000000;
+    narrow action All(2);
+  }
+  code
+  {
+    MM_ShaderParam *mod = new MM_ShaderParam;
+    mod->VSvar = sU8(para->VertexShaderVar);
+    mod->PSvar = sU8(para->PixelShaderVar);
+    out->Add(mod);
+  }
+  actions
+  {
+    if(code==1)
+    {
+      if(para->VertexShaderVar==0) para->VertexShaderVar=~0;
+      else para->VertexShaderVar = 0;
+      return 1;
+    }
+    if(code==2)
+    {
+      if(para->PixelShaderVar==0) para->PixelShaderVar=~0;
+      else para->PixelShaderVar = 0;
+      return 1;
+    }
+  }
+}
 
 /****************************************************************************/
 
