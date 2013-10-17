@@ -798,6 +798,7 @@ operator ModShader ShaderParam()
       else para->PixelShaderVar = 0;
       return 1;
     }
+    return 0;
   }
 }
 
