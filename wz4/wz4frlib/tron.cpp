@@ -1553,7 +1553,7 @@ void FR033_WaterSimRender::Init()
 
   sU16 *ip=0;
   sInt nbfaces = WaterMesh.Faces.GetCount();
-  WaterGeo->BeginLoadIB(nbfaces*6,sGD_FRAME,&ip);
+  WaterGeo->BeginLoadIB(nbfaces*6,sGD_STATIC,&ip);
   for (i=0;i<nbfaces;i++)
   {  
     sQuad(ip,0, WaterMesh.Faces[i].Vertex[0], WaterMesh.Faces[i].Vertex[1], WaterMesh.Faces[i].Vertex[2], WaterMesh.Faces[i].Vertex[3]);
