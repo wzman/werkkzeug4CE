@@ -175,7 +175,7 @@ operator Wz4Mesh Retexturizer(Wz4Mesh, Wz4Mesh)
 
 /****************************************************************************/
 
-operator Wz4Particles FR033_MeteorShowerSim(GroupType)
+operator Wz4Particles FR033_MeteorShowerSim(?GroupType)
 {
   tab = Wz4Render;
   column = 3;
@@ -198,8 +198,13 @@ operator Wz4Particles FR033_MeteorShowerSim(GroupType)
   {			
     FR033_MeteorShowerSim *node = new FR033_MeteorShowerSim();
     node->ParaBase = *para;
-    in0->AddRef();
-    node->GroupLogos = in0;
+
+    if(in0)
+    {
+      in0->AddRef();
+      node->GroupLogos = in0;
+    }
+
     out->RootNode = node;
     out->AddCode(cmd); 
     node->Init();  
@@ -229,7 +234,7 @@ operator Wz4Render FR033_WaterSimRender(Wz4Mtrl, Texture2D, Wz4Particles)
     
     group "Dancer Para";
     int DP_Seed(10..1000 step 1) = 100;
-    int DP_Count(1..10000 step 1) = 100;
+    int DP_Count(0..10000 step 1) = 100;
     float DP_Scale[2](0.001..1024 step 0.001) = {1.0,1.0};
     float DP_RandScale[2](0.001..1024 step 0.001) = {0.0,0.0};
     float DP_StartPos[3](0.001..1024 step 0.001) = {0.0,0.0,0.0};

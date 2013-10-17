@@ -130,6 +130,7 @@ class FR033_MeteorShowerSim : public Wz4ParticleNode
     Wz4Mesh   *Mesh;
     sVector31 Pos;
     sVector30 Speed;
+    tMeteor() { CollTime=0; Enable=sFALSE; Mesh=0; StartPos=Pos=sVector31(0); Speed=sVector30(0); }
   };
   
   public:
@@ -163,6 +164,7 @@ class FR033_WaterSimRender : public Wz4RenderNode
   {
     sF32     Time;
     sVector2 Pos;   
+    tWave() { Time=0; Pos=sVector2(0,0); }
   };
 
   struct PartUVRect

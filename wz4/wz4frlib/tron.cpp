@@ -1396,7 +1396,8 @@ FR033_MeteorShowerSim::FR033_MeteorShowerSim()
 
 FR033_MeteorShowerSim::~FR033_MeteorShowerSim()
 {
-  GroupLogos->Release();  
+  if(GroupLogos)
+    GroupLogos->Release();
 }
 
 void FR033_MeteorShowerSim::Init()
@@ -1404,7 +1405,10 @@ void FR033_MeteorShowerSim::Init()
   int i=0;
   Para=ParaBase;
 
-  sInt nblogos=GroupLogos->Members.GetCount();
+  sInt nblogos = 0;
+  if(GroupLogos)
+    nblogos=GroupLogos->Members.GetCount();
+
   sInt nbmeteors=Para.MF_Count;  
   
   //Init Asteroids
@@ -1413,12 +1417,20 @@ void FR033_MeteorShowerSim::Init()
      
   for (i=0;i<nbmeteors;i++)
   {
-    Meteors[i].Mesh = (Wz4Mesh *)(GroupLogos->Members[rg.Int(nblogos)]);
+    Wz4Mesh * mesh = 0;
+    if(nblogos>0)
+    {
+      mesh = static_cast<Wz4Mesh *>(GroupLogos->Members[rg.Int(nblogos)]);
+      if(mesh->Type != Wz4MeshType)
+        mesh = 0;
+    }
+
+    Meteors[i].Mesh = mesh;
     Meteors[i].Speed = (sVector30)(Para.MF_StartSpeed)+sVector30(rg.Float(Para.MF_RandSpeed.x),rg.Float(Para.MF_RandSpeed.y),rg.Float(Para.MF_RandSpeed.z));
     Meteors[i].StartPos = Para.MF_StartPos+sVector30(rg.Float(Para.MF_RandPos.x)-Para.MF_RandPos.x/2.0f,rg.Float(Para.MF_RandPos.y)-Para.MF_RandPos.y/2.0f,rg.Float(Para.MF_RandPos.z)-Para.MF_RandPos.z/2.0f);        
     Meteors[i].StartPos -= Meteors[i].Speed*(Para.MF_StartTime + rg.Float(Para.MF_RandTime));
-    Meteors[i].CollTime = -Meteors[i].StartPos.y / Meteors[i].Speed.y;
-    Meteors[i].Enable = true;
+    Meteors[i].CollTime = (Meteors[i].Speed.y == 0) ? 0 : -Meteors[i].StartPos.y / Meteors[i].Speed.y;
+    Meteors[i].Enable = (nblogos>0) ? sTRUE : sFALSE;
   } 
 }
 
@@ -1523,7 +1535,7 @@ void FR033_WaterSimRender::Init()
    
   FR033_MeteorShowerSim *ms=(FR033_MeteorShowerSim *)(MeteorSim->RootNode);     
   Waves.Resize(ms->Meteors.GetCount());
-  PosY.Resize(Para.DP_Count*POSY_TABLE_CNT);
+  PosY.Resize(sMax(1,Para.DP_Count)*POSY_TABLE_CNT);
 
   WaterMesh.MakeGrid(xc-1,zc-1);
   
@@ -1773,7 +1785,7 @@ void FR033_WaterSimRender::Render(Wz4RenderContext *ctx)
         mat2 = mat4*mat2;
         mat3=(sMatrix34CM )(mat2*mat1);
 
-        if (ms->Meteors[i].Enable)
+        if (ms->Meteors[i].Enable && ms->Meteors[i].Mesh)
           ms->Meteors[i].Mesh->Render(sRF_TARGET_MAIN,0,&mat3,ctx->GetTime(),ctx->Frustum);
       }         
     }
@@ -1796,8 +1808,11 @@ void FR033_WaterSimRender::Render(Wz4RenderContext *ctx)
       cb0.Data->dj = mat2.j;
       cb0.Modify();
 
-      DancerMtrl->Set(&cb0,&cb1);
-      DancerGeo->Draw(0,0,ParaBase.DP_Count,0);
+      if(ParaBase.DP_Count > 0)
+      {
+        DancerMtrl->Set(&cb0,&cb1);
+        DancerGeo->Draw(0,0,ParaBase.DP_Count,0);
+      }
     }
   }
 }
@@ -1829,6 +1844,8 @@ void FR033_WaterSimRender::Simulate(sF32 time)
   sF32 treshtime = 0.90*maxtime;   // fade out after 75% of ontime
   sF32 resttime = 1.0f/(0.10f*maxtime);
 
+  sInt posyCount = PosY.GetCount();
+
   for (i=0;i<POSY_TABLE_CNT;i++)
   {
     for (int j=0;j<cnt;j++)
@@ -1839,7 +1856,8 @@ void FR033_WaterSimRender::Simulate(sF32 time)
       if (a<0.0f) a=0.0f;
       if(Waves[j].Time>treshtime)
         b *= (maxtime-Waves[j].Time)*resttime;
-      PosY[j*1024+i]= -sin(a*ParaBase.WS_Freq)*b;
+      if(j*1024+i < posyCount)
+          PosY[j*1024+i]= -sin(a*ParaBase.WS_Freq)*b;
     }
   }
 
@@ -1856,7 +1874,8 @@ void FR033_WaterSimRender::Simulate(sF32 time)
       sF32 fl=sFrac(l);
       int il=l;
 
-      WaterMesh.Vertices[i].Pos.y -= (PosY[j*POSY_TABLE_CNT+il]*(1.0f-fl)) + (PosY[j*POSY_TABLE_CNT+(il+1)]*fl);
+      if(j*POSY_TABLE_CNT+il < posyCount)
+        WaterMesh.Vertices[i].Pos.y -= (PosY[j*POSY_TABLE_CNT+il]*(1.0f-fl)) + (PosY[j*POSY_TABLE_CNT+(il+1)]*fl);
     }        
   }
 }
