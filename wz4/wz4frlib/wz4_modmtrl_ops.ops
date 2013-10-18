@@ -1249,6 +1249,7 @@ operator Wz4Render ModClipTwister(?Wz4Render)
 {
   tab = Wz4Mtrl;
   column = 1;
+  flags = hide|obsolete;
   parameter
   {
     int Index "EnvNum" (0..15);
@@ -1282,6 +1283,143 @@ operator Wz4Render ModClipTwister(?Wz4Render)
     node->ParaBase = *para;
     out->RootNode = node;
     out->AddChilds(cmd,para->Renderpass);
+  }
+}
+
+/****************************************************************************/
+
+header_end
+{
+  class RNModClipTwister2 : public Wz4RenderNode
+  {
+  public:
+    Wz4RenderParaModClipTwister2 Para,ParaBase;
+    Wz4RenderAnimModClipTwister2 Anim;
+
+    RNModClipTwister2();
+    ~RNModClipTwister2();
+
+    void Simulate(Wz4RenderContext *);
+    void Render(Wz4RenderContext *);
+  };
+}
+
+operator Wz4Render ModClipTwister2 "ModClipTwister" (?Wz4Render)
+{
+  tab = Wz4Mtrl;
+  column = 1;
+  parameter
+  {
+    int Index "EnvNum" (0..15);
+    int Renderpass (-127..127);
+
+    group "Clip Planes";
+    layout flags ClipEnable "Clip0" ("-|on");
+    if(ClipEnable & 1)
+    {
+      float2 HandleSize0 (-1024..1024 step 0.001) = 4.0;
+      float31 Rot0 (-1024..1024 step 0.001) = 0;
+      float31 Trans0 (-1024..1024 step 0.001) = 0;
+    }
+    layout continue flags ClipEnable "Clip1" ("*1-|on");
+    if(ClipEnable & 2)
+    {
+      float2 HandleSize1 (-1024..1024 step 0.001) = 4.0;
+      float31 Rot1 (-1024..1024 step 0.001) = 0;
+      float31 Trans1 (-1024..1024 step 0.001) = 0;
+    }
+    layout continue flags ClipEnable "Clip2" ("*2-|on");
+    if(ClipEnable & 4)
+    {
+      float2 HandleSize2 (-1024..1024 step 0.001) = 4.0;
+      float31 Rot2 (-1024..1024 step 0.001) = 0;
+      float31 Trans2 (-1024..1024 step 0.001) = 0;
+    }
+    layout continue flags ClipEnable "Clip3" ("*3-|on");
+    if(ClipEnable & 8)
+    {
+      float2 HandleSize3 (-1024..1024 step 0.001) = 4.0;
+      float31 Rot3 (-1024..1024 step 0.001) = 0;
+      float31 Trans3 (-1024..1024 step 0.001) = 0;
+    }
+
+    group "Transform";
+
+    anim float31 Scale(-1024..1024 step 0.01) = 1;
+    anim float30 Rot(-16..16 step 0.001);
+    anim float31 Trans(-1024..1024 step 0.01);
+
+    group "Handle options";
+    layout flags HandleFlag "Type" ("default|boxLine") = 0;
+    if(HandleFlag == 0)
+    {
+      layout flags HandleFlagColor "Color" ("custom|theme") = 1;
+      if(HandleFlagColor == 0)
+        nolabel color HandleColor ("rgba") = 0x00ffffff;
+    }
+
+    group "Animation Script"; overbox overlabel linenumber lines 5 string Script;
+  }
+  code
+  {
+    RNModClipTwister2 *node = new RNModClipTwister2;
+    node->ParaBase = *para;
+    out->RootNode = node;
+    out->AddChilds(cmd,para->Renderpass);
+  }
+  handles
+  {
+    if(para->ClipEnable & 1)
+    {
+      sSRT srt0;
+      srt0.Scale = sVector31(para->HandleSize0.x, 0.01, para->HandleSize0.y);
+      srt0.Rotate = sVector30(para->Rot0);
+      srt0.Translate = sVector31(para->Trans0);
+
+      if(para->HandleFlag==0)
+        pi.Box3D(srt0.Scale,srt0.Rotate,srt0.Translate,para->HandleFlagColor,para->HandleColor);
+      else
+        pi.Box3DLine(srt0.Scale,srt0.Rotate,srt0.Translate);
+     }
+
+     if(para->ClipEnable & 2)
+    {
+      sSRT srt1;
+      srt1.Scale = sVector31(para->HandleSize1.x, 0.01, para->HandleSize1.y);
+      srt1.Rotate = sVector30(para->Rot1);
+      srt1.Translate = sVector31(para->Trans1);
+
+      if(para->HandleFlag==0)
+        pi.Box3D(srt1.Scale,srt1.Rotate,srt1.Translate,para->HandleFlagColor,para->HandleColor);
+      else
+        pi.Box3DLine(srt1.Scale,srt1.Rotate,srt1.Translate);
+     }
+
+     if(para->ClipEnable & 4)
+    {
+      sSRT srt2;
+      srt2.Scale = sVector31(para->HandleSize2.x, 0.01, para->HandleSize2.y);
+      srt2.Rotate = sVector30(para->Rot2);
+      srt2.Translate = sVector31(para->Trans2);
+
+      if(para->HandleFlag==0)
+        pi.Box3D(srt2.Scale,srt2.Rotate,srt2.Translate,para->HandleFlagColor,para->HandleColor);
+      else
+        pi.Box3DLine(srt2.Scale,srt2.Rotate,srt2.Translate);
+     }
+
+     if(para->ClipEnable & 8)
+    {
+      sSRT srt3;
+      srt3.Scale = sVector31(para->HandleSize3.x, 0.01, para->HandleSize3.y);
+      srt3.Rotate = sVector30(para->Rot3);
+      srt3.Translate = sVector31(para->Trans3);
+
+      if(para->HandleFlag==0)
+        pi.Box3D(srt3.Scale,srt3.Rotate,srt3.Translate,para->HandleFlagColor,para->HandleColor);
+      else
+        pi.Box3DLine(srt3.Scale,srt3.Rotate,srt3.Translate);
+     }
   }
 }
 

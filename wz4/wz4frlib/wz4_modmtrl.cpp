@@ -2428,3 +2428,126 @@ void RNModClipTwister::Render(Wz4RenderContext *ctx)
 }
 
 /****************************************************************************/
+
+RNModClipTwister2::RNModClipTwister2()
+{
+  Anim.Init(Wz4RenderType->Script);
+}
+
+RNModClipTwister2::~RNModClipTwister2()
+{
+}
+/*
+const sVector4 rotateplane(const sVector4 &plane,const sMatrix34 &mat)
+{
+  sVector30 n(plane.x,plane.y,plane.z);
+  sVector31 p(-plane.x*plane.w,-plane.y*plane.w,-plane.z*plane.w);
+  n = n*mat;
+  p = p*mat;
+  sVector4 newplane;
+  newplane.InitPlane(p,n);
+  return newplane;
+}*/
+
+void RNModClipTwister2::Simulate(Wz4RenderContext *ctx)
+{
+  Para = ParaBase;
+  Anim.Bind(ctx->Script,&Para);
+  SimulateCalc(ctx);
+//  Anim.UnBind(ctx->Script,&Para);
+
+  SimulateChilds(ctx);
+
+  // initialize EnvNumironment
+
+  sVector30 n;
+  ModEnvNum *env = ModMtrlType->EnvNum[Para.Index];
+
+  env->Features |= MMF_ClipPlanes;
+
+  // calculate matrix
+
+  sSRT srt;
+  sMatrix34 matGlobal;
+
+  srt.Init(&Para.Scale.x);
+  srt.MakeMatrix(matGlobal);
+
+  // clip planes
+
+  env->Clip0.Init(0,0,0,1);
+  env->Clip1.Init(0,0,0,1);
+  env->Clip2.Init(0,0,0,1);
+  env->Clip3.Init(0,0,0,1);
+  if(Para.ClipEnable)
+  {
+    if(Para.ClipEnable & 1)
+    {
+      sMatrix34 mat;
+      sSRT srt;
+      srt.Scale = sVector31(0, 0.01, 0);
+      srt.Rotate = sVector30(Para.Rot0);
+      srt.Translate = sVector31(Para.Trans0);
+      srt.MakeMatrix(mat);
+      sVector4 Clip0(0,1,0,0);
+      Clip0.RotatePlane(mat*matGlobal);
+
+      n.Init(Clip0.x,Clip0.y,Clip0.z);
+      n.Unit();
+      env->Clip0.Init(n.x,n.y,n.z,Clip0.w);
+      env->Clip0 = rotateplane(env->Clip0,mat*matGlobal);
+    }
+    if(Para.ClipEnable & 2)
+    {
+      sMatrix34 mat;
+      sSRT srt;
+      srt.Scale = sVector31(0, 0.01, 0);
+      srt.Rotate = sVector30(Para.Rot1);
+      srt.Translate = sVector31(Para.Trans1);
+      srt.MakeMatrix(mat);
+      sVector4 Clip1(0,1,0,0);
+      Clip1.RotatePlane(mat*matGlobal);
+
+      n.Init(Clip1.x,Clip1.y,Clip1.z);
+      n.Unit();
+      env->Clip1.Init(n.x,n.y,n.z,Clip1.w);
+      env->Clip1 = rotateplane(env->Clip1,mat*matGlobal);
+    }
+    if(Para.ClipEnable & 4)
+    {
+      sMatrix34 mat;
+      sSRT srt;
+      srt.Scale = sVector31(0, 0.01, 0);
+      srt.Rotate = sVector30(Para.Rot2);
+      srt.Translate = sVector31(Para.Trans2);
+      srt.MakeMatrix(mat);
+      sVector4 Clip2(0,1,0,0);
+      Clip2.RotatePlane(mat*matGlobal);
+
+      n.Init(Clip2.x,Clip2.y,Clip2.z);
+      n.Unit();
+      env->Clip2.Init(n.x,n.y,n.z,Clip2.w);
+      env->Clip2 = rotateplane(env->Clip2,mat*matGlobal);
+    }
+    if(Para.ClipEnable & 8)
+    {
+      sMatrix34 mat;
+      sSRT srt;
+      srt.Scale = sVector31(0, 0.01, 0);
+      srt.Rotate = sVector30(Para.Rot3);
+      srt.Translate = sVector31(Para.Trans3);
+      srt.MakeMatrix(mat);
+      sVector4 Clip3(0,1,0,0);
+      Clip3.RotatePlane(mat*matGlobal);
+
+      n.Init(Clip3.x,Clip3.y,Clip3.z);
+      n.Unit();
+      env->Clip3.Init(n.x,n.y,n.z,Clip3.w);
+      env->Clip3 = rotateplane(env->Clip3,mat*matGlobal);
+    }
+  }
+}
+
+void RNModClipTwister2::Render(Wz4RenderContext *ctx)
+{
+}
