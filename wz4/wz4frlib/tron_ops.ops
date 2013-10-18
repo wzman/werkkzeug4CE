@@ -239,6 +239,9 @@ operator Wz4Render FR033_WaterSimRender(Wz4Mtrl, Texture2D, Wz4Particles)
     float DP_RandScale[2](0.001..1024 step 0.001) = {0.0,0.0};
     float DP_StartPos[3](0.001..1024 step 0.001) = {0.0,0.0,0.0};
     float DP_DimXZ[2](0.001..1024 step 0.001) = {1.0,1.0};        
+
+    group "Misc";
+    int Renderpass(-127..127);
   }
   
   code
@@ -255,7 +258,7 @@ operator Wz4Render FR033_WaterSimRender(Wz4Mtrl, Texture2D, Wz4Particles)
     node->Init();  
 
     out->RootNode = node;
-    out->AddCode(cmd,0); 
+    out->AddCode(cmd,para->Renderpass);
   }
 }
 

@@ -1504,7 +1504,7 @@ FR033_WaterSimRender::FR033_WaterSimRender()
   Dancer = 0;
   MeteorSim = 0;
 
-  WaterGeo = new sGeometry(sGF_TRILIST|sGF_INDEX16,sVertexFormatStandard);
+  WaterGeo = new sGeometry(sGF_TRILIST|sGF_INDEX16,sVertexFormatTangent);
 
   DancerFormat = sCreateVertexFormat(desc);
   DancerGeo = new sGeometry;
@@ -1748,7 +1748,7 @@ void FR033_WaterSimRender::Render(Wz4RenderContext *ctx)
       sMatrix34 mat1 = sMatrix34(*mat)*Matrix;
       sMatrix34CM mat3 = (sMatrix34CM)mat1;
       // render it once
-      WaterMtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,1,&mat3,0,0,0);
+      WaterMtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.Renderpass,&mat3,0,0,0);
       WaterGeo->Draw();
     }
     
@@ -1885,15 +1885,16 @@ void FR033_WaterSimRender::MakeGrid()
   int i;
   int xc=ParaBase.WG_VertXZ[0];
   int zc=ParaBase.WG_VertXZ[1];
-  sVertexStandard *vp=0;
+  sVertexTangent *vp=0;
 
-  WaterMesh.CalcNormals();
+  WaterMesh.CalcNormalAndTangents();
 
   WaterGeo->BeginLoadVB(zc*xc,sGD_FRAME,&vp);
 	for(i=0;i<xc*zc;i++)
   {
     vp->Init(WaterMesh.Vertices[i].Pos.x, WaterMesh.Vertices[i].Pos.y, WaterMesh.Vertices[i].Pos.z, 
-             WaterMesh.Vertices[i].Normal.x, WaterMesh.Vertices[i].Normal.y, WaterMesh.Vertices[i].Normal.z, 
+             WaterMesh.Vertices[i].Normal.x, WaterMesh.Vertices[i].Normal.y, WaterMesh.Vertices[i].Normal.z,
+             WaterMesh.Vertices[i].Tangent.x, WaterMesh.Vertices[i].Tangent.y, WaterMesh.Vertices[i].Tangent.z,
              (WaterMesh.Vertices[i].U0+ParaBase.WG_OffsetUV[0])*ParaBase.WG_ScaleUV[0], (WaterMesh.Vertices[i].V0+ParaBase.WG_OffsetUV[1])*ParaBase.WG_ScaleUV[1]);
     vp++;
 	}
