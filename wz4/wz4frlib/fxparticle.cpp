@@ -3443,6 +3443,9 @@ void RPFromMesh::Init(Wz4Mesh *mesh)
   sRandom rnd;
   rnd.Seed(Para.RandomSeed);
 
+  sRandom rnd2;
+  rnd2.Seed(Para.RandomSeed2);
+
   for(sInt z=z0;z<z1;z++)
   {
     for(sInt y=y0;y<y1;y++)
@@ -3454,7 +3457,9 @@ void RPFromMesh::Init(Wz4Mesh *mesh)
           if (rnd.Float(1)<=Para.Random)
           {
             Part *p = Parts.AddMany(1);
-            p->Pos.Init(x*s+xo,y*s+yo,z*s+zo);
+            p->Pos.Init( (rnd2.Float(Para.Random2) + x) *s + xo + Para.Bias.x,
+                         (rnd2.Float(Para.Random2) + y) *s + yo + Para.Bias.y,
+                         (rnd2.Float(Para.Random2) + z) *s + zo + Para.Bias.z);
             p->Size = s;
           }
         }
