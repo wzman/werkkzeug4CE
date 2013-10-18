@@ -273,12 +273,12 @@ void RNRibbons::Prepare(Wz4RenderContext *ctx)
       mat.EulerXYZ(rx,ry,rz);
 
       p += mat.k * Para.Forward;
-      vp->Init(p-mat.i*Para.Side,-mat.j,0.0f,i+(1/Para.Steps));
+      vp->Init(p-mat.i*Para.Side,-mat.j,sVector30(0),0.0f,i+(1/Para.Steps));
       vp->tx = vp->nx * (vp->nx * p.x);
       vp->ty = vp->ny * (vp->ny * p.y);
       vp->tz = vp->nz * (vp->nz * p.z);
       vp++;
-      vp->Init(p+mat.i*Para.Side,-mat.j,1.0f,i+(1/Para.Steps));
+      vp->Init(p+mat.i*Para.Side,-mat.j,sVector30(0),1.0f,i+(1/Para.Steps));
       vp->tx = vp->nx * (vp->nx * p.x);
       vp->ty = vp->ny * (vp->ny * p.y);
       vp->tz = vp->nz * (vp->nz * p.z);
@@ -440,11 +440,11 @@ void RNRibbons2::Prepare(Wz4RenderContext *ctx)
       norm.Cross(d0, speed);
       norm.Unit();
 
-      vp[0].Init(pos-d0,norm,0.0f,j+(1/Para.Length));
+      vp[0].Init(pos-d0,norm,sVector30(0),0.0f,j+(1/Para.Length));
       vp->tx = vp->nx * (vp->nx * pos.x);
       vp->ty = vp->ny * (vp->ny * pos.y);
       vp->tz = vp->nz * (vp->nz * pos.z);
-      vp[1].Init(pos+d0,norm,1.0f,j+(1/Para.Length));
+      vp[1].Init(pos+d0,norm,sVector30(0),1.0f,j+(1/Para.Length));
       vp->tx = vp->nx * (vp->nx * pos.x);
       vp->ty = vp->ny * (vp->ny * pos.y);
       vp->tz = vp->nz * (vp->nz * pos.z);

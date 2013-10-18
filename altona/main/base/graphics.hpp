@@ -831,8 +831,8 @@ struct sVertexTangent             // 44 bytes
   sF32 u0,v0;                     // 2 uv's
   void Init(sF32 PX,sF32 PY,sF32 PZ,sF32 NX,sF32 NY,sF32 NZ,sF32 TX,sF32 TY,sF32 TZ,sF32 U0,sF32 V0) volatile
   { px=PX; py=PY; pz=PZ; nx=NX; ny=NY; nz=NZ; u0=U0; v0=V0; tx=TX, ty=TY, tz=TZ; }
-  void Init(const sVector31 &p,const sVector30 &n,sF32 U0,sF32 V0) volatile
-  { px=p.x; py=p.y; pz=p.z; nx=n.x; ny=n.y; nz=n.z; u0=U0; v0=V0; tx=ty=tz=0; }
+  void Init(const sVector31 &p,const sVector30 &n,const sVector30 &t,sF32 U0,sF32 V0) volatile
+  { px=p.x; py=p.y; pz=p.z; nx=n.x; ny=n.y; nz=n.z; u0=U0; v0=V0; tx=t.x; ty=t.y; tz=t.z; }
 
   static sVertexFormatHandle* VertexFormat() {return sVertexFormatTangent;}
 };
