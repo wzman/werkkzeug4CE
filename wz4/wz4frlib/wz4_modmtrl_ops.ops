@@ -1318,29 +1318,29 @@ operator Wz4Render ModClipTwister2 "ModClipTwister" (?Wz4Render)
     if(ClipEnable & 1)
     {
       float2 HandleSize0 (-1024..1024 step 0.001) = 4.0;
-      float31 Rot0 (-1024..1024 step 0.001) = 0;
-      float31 Trans0 (-1024..1024 step 0.001) = 0;
+      anim float31 Rot0 (-1024..1024 step 0.001) = 0;
+      anim float31 Trans0 (-1024..1024 step 0.001) = 0;
     }
     layout continue flags ClipEnable "Clip1" ("*1-|on");
     if(ClipEnable & 2)
     {
       float2 HandleSize1 (-1024..1024 step 0.001) = 4.0;
-      float31 Rot1 (-1024..1024 step 0.001) = 0;
-      float31 Trans1 (-1024..1024 step 0.001) = 0;
+      anim float31 Rot1 (-1024..1024 step 0.001) = 0;
+      anim float31 Trans1 (-1024..1024 step 0.001) = 0;
     }
     layout continue flags ClipEnable "Clip2" ("*2-|on");
     if(ClipEnable & 4)
     {
       float2 HandleSize2 (-1024..1024 step 0.001) = 4.0;
-      float31 Rot2 (-1024..1024 step 0.001) = 0;
-      float31 Trans2 (-1024..1024 step 0.001) = 0;
+      anim float31 Rot2 (-1024..1024 step 0.001) = 0;
+      anim float31 Trans2 (-1024..1024 step 0.001) = 0;
     }
     layout continue flags ClipEnable "Clip3" ("*3-|on");
     if(ClipEnable & 8)
     {
       float2 HandleSize3 (-1024..1024 step 0.001) = 4.0;
-      float31 Rot3 (-1024..1024 step 0.001) = 0;
-      float31 Trans3 (-1024..1024 step 0.001) = 0;
+      anim float31 Rot3 (-1024..1024 step 0.001) = 0;
+      anim float31 Trans3 (-1024..1024 step 0.001) = 0;
     }
 
     group "Transform";
