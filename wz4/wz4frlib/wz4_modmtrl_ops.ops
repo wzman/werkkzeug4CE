@@ -1372,7 +1372,7 @@ operator Wz4Render ModClipTwister2 "ModClipTwister" (?Wz4Render)
     if(para->ClipEnable & 1)
     {
       sSRT srt0;
-      srt0.Scale = sVector31(para->HandleSize0.x, 0.01, para->HandleSize0.y);
+      srt0.Scale = sVector31(0.01, para->HandleSize0.x, para->HandleSize0.y);
       srt0.Rotate = sVector30(para->Rot0);
       srt0.Translate = sVector31(para->Trans0);
 
@@ -1385,7 +1385,7 @@ operator Wz4Render ModClipTwister2 "ModClipTwister" (?Wz4Render)
      if(para->ClipEnable & 2)
     {
       sSRT srt1;
-      srt1.Scale = sVector31(para->HandleSize1.x, 0.01, para->HandleSize1.y);
+      srt1.Scale = sVector31(0.01, para->HandleSize1.x, para->HandleSize1.y);
       srt1.Rotate = sVector30(para->Rot1);
       srt1.Translate = sVector31(para->Trans1);
 
@@ -1398,7 +1398,7 @@ operator Wz4Render ModClipTwister2 "ModClipTwister" (?Wz4Render)
      if(para->ClipEnable & 4)
     {
       sSRT srt2;
-      srt2.Scale = sVector31(para->HandleSize2.x, 0.01, para->HandleSize2.y);
+      srt2.Scale = sVector31(0.01, para->HandleSize2.x, para->HandleSize2.y);
       srt2.Rotate = sVector30(para->Rot2);
       srt2.Translate = sVector31(para->Trans2);
 
@@ -1411,7 +1411,7 @@ operator Wz4Render ModClipTwister2 "ModClipTwister" (?Wz4Render)
      if(para->ClipEnable & 8)
     {
       sSRT srt3;
-      srt3.Scale = sVector31(para->HandleSize3.x, 0.01, para->HandleSize3.y);
+      srt3.Scale = sVector31(0.01, para->HandleSize3.x, para->HandleSize3.y);
       srt3.Rotate = sVector30(para->Rot3);
       srt3.Translate = sVector31(para->Trans3);
 

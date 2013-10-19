@@ -2485,11 +2485,11 @@ void RNModClipTwister2::Simulate(Wz4RenderContext *ctx)
     {
       sMatrix34 mat;
       sSRT srt;
-      srt.Scale = sVector31(0, 0.01, 0);
+      srt.Scale = sVector31(0.01, 0, 0);
       srt.Rotate = sVector30(Para.Rot0);
       srt.Translate = sVector31(Para.Trans0);
       srt.MakeMatrix(mat);
-      sVector4 Clip0(0,1,0,0);
+      sVector4 Clip0(0,0,0,0);
       Clip0.RotatePlane(mat*matGlobal);
 
       n.Init(Clip0.x,Clip0.y,Clip0.z);
@@ -2501,11 +2501,11 @@ void RNModClipTwister2::Simulate(Wz4RenderContext *ctx)
     {
       sMatrix34 mat;
       sSRT srt;
-      srt.Scale = sVector31(0, 0.01, 0);
+      srt.Scale = sVector31(0.01, 0, 0);
       srt.Rotate = sVector30(Para.Rot1);
       srt.Translate = sVector31(Para.Trans1);
       srt.MakeMatrix(mat);
-      sVector4 Clip1(0,1,0,0);
+      sVector4 Clip1(0,0,0,0);
       Clip1.RotatePlane(mat*matGlobal);
 
       n.Init(Clip1.x,Clip1.y,Clip1.z);
@@ -2517,11 +2517,11 @@ void RNModClipTwister2::Simulate(Wz4RenderContext *ctx)
     {
       sMatrix34 mat;
       sSRT srt;
-      srt.Scale = sVector31(0, 0.01, 0);
+      srt.Scale = sVector31(0.01, 0, 0);
       srt.Rotate = sVector30(Para.Rot2);
       srt.Translate = sVector31(Para.Trans2);
       srt.MakeMatrix(mat);
-      sVector4 Clip2(0,1,0,0);
+      sVector4 Clip2(0,0,0,0);
       Clip2.RotatePlane(mat*matGlobal);
 
       n.Init(Clip2.x,Clip2.y,Clip2.z);
@@ -2533,11 +2533,11 @@ void RNModClipTwister2::Simulate(Wz4RenderContext *ctx)
     {
       sMatrix34 mat;
       sSRT srt;
-      srt.Scale = sVector31(0, 0.01, 0);
+      srt.Scale = sVector31(0.01, 0, 0);
       srt.Rotate = sVector30(Para.Rot3);
       srt.Translate = sVector31(Para.Trans3);
       srt.MakeMatrix(mat);
-      sVector4 Clip3(0,1,0,0);
+      sVector4 Clip3(0,0,0,0);
       Clip3.RotatePlane(mat*matGlobal);
 
       n.Init(Clip3.x,Clip3.y,Clip3.z);
