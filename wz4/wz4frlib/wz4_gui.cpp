@@ -721,7 +721,7 @@ sBool Wz4SplineCed::OnKey(sU32 key)
   case 's':
     CmdSelectSameTime();
     break;
-  case 'Q'|sKEYQ_SHIFT:
+  case 'q'|sKEYQ_SHIFT:
     CmdQuantizeTime();
     break;
   case 'c':
