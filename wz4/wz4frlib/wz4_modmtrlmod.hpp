@@ -453,6 +453,26 @@ public:
   void VS(ShaderCreator *sc);
 };
 
+class MM_Refract : public MtrlModule
+{
+public:
+  Texture2D *TexScene;
+  Texture2D *TexRefract;
+  float RefractFactor;
+  float Opacity;
+  sInt TexSceneFilter;
+  sInt TexRefractFilter;
+  sInt Channel;
+  sVector2 Scale;
+  sVector2 Trans;
+  sInt ScaleSource;
+  sInt TransSource;
+
+  MM_Refract();
+  ~MM_Refract();
+  void PS(ShaderCreator *sc);
+};
+
 /****************************************************************************/
 /****************************************************************************/
 

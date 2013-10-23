@@ -1718,6 +1718,16 @@ CachedModShader *ModMtrl::CreateShader(const CachedModInfo &info)
     }
     sc->FragEnd();
   }
+  if(sc->Requires(L"ws_scene",index))
+  {
+    sc->FragBegin(L"inputs");
+    sc->FragFirst(L"ws_scene");
+    sc->Require(L"ws_pos",SCT_FLOAT3);
+    sc->TB.PrintF(L"  float4 ws_scene = mul(float4(ws_pos,1),ws_ss);\n");
+    if(index>=0)
+      sc->TB.PrintF(L"  t%d.%s = ws_scene;\n",index/4,sc->swizzle[index&3][4]);
+    sc->FragEnd();
+  }
 
   sc->FragBegin(L"inputs");
   sc->FragFirst(L"ws_pos");

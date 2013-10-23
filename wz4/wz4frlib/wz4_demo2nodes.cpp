@@ -78,24 +78,23 @@ void RNCamera::Simulate(Wz4RenderContext *ctx)
       break;
     case 4:
       {
-        // mirror view
+        // last view mode : update current camera with last viewed camera settings
 
-        // get and invert current camera rotation
+        // get last view camera pos, rot and target
         sVector30 rot;
         Doc->LastView.Camera.FindEulerXYZ(rot.x, rot.y, rot.z);
-        rot.x = -rot.x;
-        rot.z = -rot.z;
-        rot.y = rot.y;
-
-        // get transposed camera pos on -y
         sVector31 pos = Doc->LastView.Camera.l;
-        pos.y = -pos.y + Para.MirrorBias * 2;
-
-        // get transposed camera target on -y
         sVector31 target = Doc->LastView.Camera.l + Doc->LastView.Camera.k;
-        target.y = -target.y + Para.MirrorBias * 2;
 
-        // update camera
+        // invert Y (used for fx like water plane reflection)
+        if(Para.LastViewMode&1)
+        {
+          rot.x = -rot.x;
+          pos.y = -pos.y + Para.BiasY * 2;
+          target.y = -target.y + Para.BiasY * 2;
+        }
+
+         // update current camera
         mat.LookAt(target, pos);
         mat.EulerXYZ(rot.x,rot.y,rot.z);
       }

@@ -1232,4 +1232,41 @@ operator ModShader SphereFog()
 
 /****************************************************************************/
 
+operator ModShader Refract(Texture2D,Texture2D)
+{
+  tab = Wz4Mtrl;
+  column = 7;
+  parameter
+  {
+    flags Mode ("diffuse|emissive|specular")=0;
+    float Opacity (-1024..1024 step 0.01) = 0.5;
+    float Refract (-100..100 step 0.001) = 0.02;
+    layout flags ScaleSource ("here|Vector0|Vector1|Vector2|Vector3|Vector4|Vector5|Vector6|Vector7") = 0;
+    if(ScaleSource==0)
+      nolabel float2 Scale (-100..100 step 0.001) = 1;
+    layout flags TransSource ("here|Vector0|Vector1|Vector2|Vector3|Vector4|Vector5|Vector6|Vector7") = 0;
+    if(TransSource==0)
+      nolabel float2 Trans (-100..100 step 0.001) = 0;
+    group "Textures";
+    flags TexFilter0 ("*0trilinear|aniso|point|bilinear:*4tile|clamp|mirror|border_black|border_white")=16;
+    flags TexFilter1 ("*0trilinear|aniso|point|bilinear:*4tile|clamp|mirror|border_black|border_white");
+  }
+  code
+  {
+    MM_Refract *mod = new MM_Refract;
+    mod->TexScene = in0; in0->AddRef();
+    mod->TexRefract = in1; in1->AddRef();
+    mod->TexSceneFilter = para->TexFilter0;
+    mod->TexRefractFilter = para->TexFilter1;
+    mod->Opacity = para->Opacity;
+    mod->RefractFactor = para->Refract;
+    mod->Channel = para->Mode;
+    mod->Scale = para->Scale;
+    mod->Trans = para->Trans;
+    mod->ScaleSource = para->ScaleSource;
+    mod->TransSource = para->TransSource;
+    out->Add(mod);
+  }
+}
+
 /****************************************************************************/

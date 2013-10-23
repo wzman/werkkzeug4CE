@@ -2575,3 +2575,95 @@ void MM_BakedShadow::VS(ShaderCreator *sc)
 
 /****************************************************************************/
 
+MM_Refract::MM_Refract()
+{
+  Phase = MMP_Shader;
+  Name = L"refract";
+  TexScene = 0;
+  TexRefract = 0;
+  RefractFactor = 0.02;
+  Opacity = 0.5;
+  Shaders = 2;
+}
+
+MM_Refract::~MM_Refract()
+{
+  TexScene->Release();
+  TexRefract->Release();
+}
+
+
+void MM_Refract::PS(ShaderCreator *sc)
+{
+  sInt slotTexScene = sc->Texture(TexScene, sConvertOldUvFlags(TexSceneFilter&0xffff));
+  sInt slotTexRefract = sc->Texture(TexRefract,sConvertOldUvFlags(TexRefractFilter&0xffff));
+
+  sc->FragBegin(Name);
+  sc->InputPS(L"ws_scene",SCT_FLOAT4);
+
+  sChar channelName[32];
+  switch(Channel)
+  {
+  default:
+  case 0:
+    sc->FragModify(L"col_diffuse");
+    sCopyString(channelName, L"col_diffuse", sizeof(channelName));
+    break;
+
+  case 1:
+    sc->FragModify(L"col_emissive");
+    sCopyString(channelName, L"col_emissive", sizeof(channelName));
+    break;
+
+  case 2:
+    sc->FragModify(L"col_specular");
+    sCopyString(channelName, L"col_specular", sizeof(channelName));
+    break;
+  }
+
+  sc->TB.PrintF(L"  {\n");
+
+  sc->TB.PrintF(L"  float2 refractTexCoord;\n");
+  sc->TB.PrintF(L"  refractTexCoord.x = ws_scene.x / ws_scene.w / 2.0f + 0.5f;\n");
+  sc->TB.PrintF(L"  refractTexCoord.y = -ws_scene.y / ws_scene.w / 2.0f + 0.5f;\n");
+
+  sc->TB.PrintF(L"  float2 uv;\n");
+
+  if(ScaleSource>0)
+  {
+    sInt vectorIndex = ScaleSource-1;
+    sc->Para(sPoolF(L"Vector%d",vectorIndex));
+    sc->TB.PrintF(L"  uv.x = ws_scene.x * Vector%d.x;\n", vectorIndex);
+    sc->TB.PrintF(L"  uv.y = ws_scene.y * Vector%d.y;\n", vectorIndex);
+  }
+  else
+  {
+    sc->TB.PrintF(L"  uv.x = ws_scene.x * %f;\n", Scale.x);
+    sc->TB.PrintF(L"  uv.y = ws_scene.y * %f;\n", Scale.y);
+  }
+
+  if(TransSource>0)
+  {
+    sInt vectorIndex = TransSource-1;
+    sc->Para(sPoolF(L"Vector%d",vectorIndex));
+    sc->TB.PrintF(L"  uv.x += Vector%d.x;\n", vectorIndex);
+    sc->TB.PrintF(L"  uv.y += Vector%d.y;\n", vectorIndex);
+  }
+  else
+  {
+    sc->TB.PrintF(L"  uv.x += %f;\n", Trans.x);
+    sc->TB.PrintF(L"  uv.y += %f;\n", Trans.y);
+  }
+
+  sc->TB.PrintF(L"  float normalMap = %s;\n", Tex2D(slotTexRefract, L"uv", L"xyz", 0));
+  sc->TB.PrintF(L"  float3 normal = (normalMap * 2.0f) - 1.0f;\n");
+  sc->TB.PrintF(L"  refractTexCoord = refractTexCoord + (normal.xy * %f);\n", RefractFactor);
+
+  sc->TB.PrintF(L"  float4 refractionColor = %s;\n", Tex2D(slotTexScene, L"refractTexCoord", L"xyzw", 0));
+  sc->TB.PrintF(L"  %s = lerp(refractionColor, float4(%s,1), %f);\n", channelName, channelName, Opacity);
+
+  sc->TB.PrintF(L"  }\n");
+  sc->FragEnd();
+}
+
+/****************************************************************************/
