@@ -1044,10 +1044,11 @@ CachedModShader *ModMtrl::CreateShader(const CachedModInfo &info)
   }
   if(info.Shadow)
   {
-    MM_Shadow *shadow2d = 0;
-    MM_ShadowCube *shadowcube = 0;
     for(sInt i=0;i<MM_MaxLight;i++)
     {
+      MM_Shadow *shadow2d = 0;
+      MM_ShadowCube *shadowcube = 0;
+
       if(info.Shadow & info.DirLight & (1<<i))
       {
         if(shadow2d==0) shadow2d = new MM_Shadow;
@@ -1069,12 +1070,12 @@ CachedModShader *ModMtrl::CreateShader(const CachedModInfo &info)
         shadow2d->ShadowOrd = info.ShadowOrd;
         shadow2d->ShadowRand = info.ShadowRand;
       }
-    }
-    if(shadow2d)
-      ModulesNew.AddTail(shadow2d);
-    if(shadowcube)
-      ModulesNew.AddTail(shadowcube);
 
+      if(shadow2d)
+        ModulesNew.AddTail(shadow2d);
+      if(shadowcube)
+        ModulesNew.AddTail(shadowcube);
+    }
   }
   if(info.Features & MMF_Fog)
   {
