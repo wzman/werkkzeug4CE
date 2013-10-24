@@ -1270,3 +1270,35 @@ operator ModShader Refract(Texture2D,Texture2D)
 }
 
 /****************************************************************************/
+
+operator ModShader WaterPlane(Texture2D,ModShaderSampler)
+{
+  tab = Wz4Mtrl;
+  column = 7;
+  parameter
+  {
+    flags Flags ("emissive|diffuse|light") = 0;
+    float Width (-1024..1024 step 0.01) = 0.5;
+    color Color("rgb") = 0x000000;
+    float Transparency (-1024..1024 step 0.01) = 0.5;
+    float Perturbation (-1024..1024 step 0.01) = 0.05;
+    group "Textures";
+    flags TexFilter0 ("*0trilinear|aniso|point|bilinear:*4tile|clamp|mirror|border_black|border_white");
+  }
+  code
+  {
+    MM_WaterPlane *mod = new MM_WaterPlane;
+    mod->TexReflect = in0; in0->AddRef();
+    mod->TexReflectFilter = para->TexFilter0;
+    mod->Flags = para->Flags;
+    mod->Width = para->Width;
+    mod->Color.InitColor(para->Color);
+    mod->Transparency = para->Transparency;
+    mod->Perturbation = para->Perturbation;
+    mod->TexRefract = in1->Modules[0];
+    out->Add(mod);
+    out->Add(in1);
+  }
+}
+
+/****************************************************************************/

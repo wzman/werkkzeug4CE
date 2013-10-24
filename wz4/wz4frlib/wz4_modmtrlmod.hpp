@@ -473,6 +473,23 @@ public:
   void PS(ShaderCreator *sc);
 };
 
+class MM_WaterPlane : public MtrlModule
+{
+public:
+  Texture2D *TexReflect;
+  sInt TexReflectFilter;
+  MtrlModule *TexRefract;
+  sInt Flags;
+  sF32 Width;
+  sVector4 Color;
+  sF32 Transparency;
+  sF32 Perturbation;
+
+  MM_WaterPlane();
+  ~MM_WaterPlane();
+  void PS(ShaderCreator *sc);
+};
+
 /****************************************************************************/
 /****************************************************************************/
 

@@ -2667,3 +2667,62 @@ void MM_Refract::PS(ShaderCreator *sc)
 }
 
 /****************************************************************************/
+
+MM_WaterPlane::MM_WaterPlane()
+{
+  Phase = MMP_Shader;
+  Name = L"water plane";
+  TexReflect = 0;
+  TexRefract = 0;
+  Flags = 1;
+  Width = 0.5f;
+  Transparency = 0.5f;
+  Color.Init(1,1,1,1);
+  Perturbation = 0.02;
+  Shaders = 2;
+}
+
+MM_WaterPlane::~MM_WaterPlane()
+{
+  TexReflect->Release();
+}
+
+void MM_WaterPlane::PS(ShaderCreator *sc)
+{
+  sInt slotTexReflect = sc->Texture(TexReflect, sConvertOldUvFlags(TexReflectFilter&0xffff));
+  const sChar * bumpMap = TexRefract->Get(sc);
+
+  sc->FragBegin(Name);
+  sc->InputPS(L"ws_scene",SCT_FLOAT4);
+  sc->FragRead(bumpMap);
+
+  sc->TB.PrintF(L"  {\n");
+  sc->TB.PrintF(L"  float2 perturbation = %f * (%s.rg - 0.5);\n", Perturbation, bumpMap);
+  sc->TB.PrintF(L"  float3 projCoord;\n");
+  sc->TB.PrintF(L"  projCoord.x = 0.5 * (ws_scene.w + ws_scene.x);\n");
+  sc->TB.PrintF(L"  projCoord.y = 0.5 * (ws_scene.w + ws_scene.y);\n");
+  sc->TB.PrintF(L"  projCoord.z = ws_scene.w;\n");
+  sc->TB.PrintF(L"  float2 uvReflect = saturate(projCoord.xy / projCoord.z + perturbation);\n");
+  sc->TB.PrintF(L"  float4 reflectColor = %s;\n", Tex2D(slotTexReflect, L"uvReflect", L"xyzw", 0));
+
+  if(Flags == 1)
+  {
+    sc->FragModify(L"col_diffuse");
+    sc->TB.PrintF(L"    col_diffuse *= %f * float3(%f,%f,%f) +  reflectColor * %f;\n",Width,Color.x,Color.y,Color.z,Transparency);
+  }
+  else if(Flags == 0)
+  {
+    sc->FragModify(L"col_emissive");
+    sc->TB.PrintF(L"    col_emissive += %f * float3(%f,%f,%f) +  reflectColor * %f;\n",Width,Color.x,Color.y,Color.z,Transparency);
+  }
+  else
+  {
+    sc->FragModify(L"col_light");
+    sc->TB.PrintF(L"    col_light += %f * float3(%f,%f,%f) +  reflectColor * %f;\n",Width,Color.x,Color.y,Color.z,Transparency);
+  }
+
+  sc->TB.PrintF(L"  }\n");
+  sc->FragEnd();
+}
+
+/****************************************************************************/
