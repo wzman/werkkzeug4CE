@@ -34,7 +34,7 @@ menu menu_edit "Edit"
   item main.ShellSwitches "Override Shell Switches";
   spacer;
   item main.Panic "Panic" PAUSE|SCOPE0;
-  item main.FlushCache "Uncalc all Ops";
+  item main.FlushCache "Uncalc all Ops" 'u'|CTRL|SCOPE0;
   item main.UnblockChange 'e'|CTRL|SCOPE0;
   item main.ChargeCache "Calc whole timeline" 'w'|CTRL|SCOPE0;
   item main.KillClips "Hide Disabled Clips";
