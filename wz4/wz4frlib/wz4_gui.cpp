@@ -549,7 +549,7 @@ void Wz4SplineCed::OnPaint2D(const sRect &client)
   Client = client;
   Wz4RenderParaSpline *para = (Wz4RenderParaSpline *) Op->EditData;
   Timeline0 = App->TimelineWin->LoopStart;
-  Timeline1 = App->TimelineWin->LoopEnd;
+  Timeline1 = App->TimelineWin->LoopEnd / para->MaxTime;
 
   sGui->BeginBackBuffer(Client);
 
