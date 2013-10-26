@@ -34,7 +34,7 @@ operator Wz4Render CubeTrees "Easter_CubeTrees" (Wz4Mtrl, ?Wz4Mtrl)
     link CubeMaterial : 1 (both);
     group "Tree";
     anim float StartWidth (0.01..1 step 0.01) = 0.2;
-    anim float GrowSpeed (0.1..10 step 0.01) = 1;
+    anim float GrowSpeed (0.1..10000 step 0.01) = 1;
     anim float SegmentLength (0.01..2 step 0.01) = 0.3;
     anim float WidthDecay (0.1..1 step 0.01) = 0.5;
     int Seed = 1;
