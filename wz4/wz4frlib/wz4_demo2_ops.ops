@@ -181,7 +181,7 @@ operator Wz4Render Camera(?Rendertarget2D,?*Wz4Render)
   parameter
   {
     action CopyCam (1);
-    layout flags Mode:13("target|rot|schleuder|spline|lastView");
+    layout flags Mode:13("target|rot|pivot|spline|lastView");
     if(Mode==3)
     {
       string Spline:1;
