@@ -252,6 +252,9 @@ void RPBallistic::Simulate(Wz4RenderContext *ctx)
   Anim.Bind(ctx->Script,&Para);
   SimulateCalc(ctx);
 //  Anim.UnBind(ctx->Script,&Para);
+
+  if(Para.AnimateSource&1 && Source)
+    Source->Simulate(ctx);
 }
 
 sInt RPBallistic::GetPartCount()
