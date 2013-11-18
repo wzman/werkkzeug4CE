@@ -710,12 +710,7 @@ operator Wz4Render Physx (*WpxActor)
 
     group "Time Control";  
     anim int TimeStep (10..10000) = 60;
-    layout flags WaitFetchResults ("no|yes") = 1;    
-    layout flags TimeMode ("as fast as possible|time synchro") = 1;
-    if(TimeMode == 0)
-      anim int TicksPerFrame (1..100000 step 1) = 1;
-    if(TimeMode == 1)
-      anim float DeltaTime (0.001..1 step 0.001) = 0.006;
+    layout flags WaitFetchResults ("no|yes") = 1;
     
     group "Animation Script"; overbox overlabel linenumber lines 5 string Script; 
   }
