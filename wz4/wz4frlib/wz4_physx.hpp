@@ -333,9 +333,8 @@ class RNPhysx : public Wz4RenderNode
 {
 private:
   sBool Executed;                         // flag for restart simulation mecanisme with F6
-  sF32 CurrentTime;                       // current time
+  sF32 LastTime;                          // last frame time
   sF32 Accumulator;                       // time accumulator
-  sF32 DeltaTime;                         // delta time between two frames
   sF32 PreviousTimeLine;                  // delta time line use to restart simulation
   PxActor** ActorBuffer;                  // buffer of actors in the scene
   PxU32 ActorCount;                       // nb actor in buffer

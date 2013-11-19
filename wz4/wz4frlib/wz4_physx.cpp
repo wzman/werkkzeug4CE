@@ -1127,9 +1127,8 @@ void RNPhysx::BuildActor(WpxActor * wa)
 void RNPhysx::Init()
 {
   // init time variables
-  CurrentTime = 0.0f;
+  LastTime = 0.0f;
   Accumulator = 0.0f;
-  DeltaTime = Para.DeltaTime;// / 1000 ;
   PreviousTimeLine = 0.0f;
 
   // init actors buffer
@@ -1157,6 +1156,8 @@ void RNPhysx::Simulate(Wz4RenderContext *ctx)
     return;
 
 
+  // restart simulation mechanism (press F6)
+
   if(!Doc->IsPlayer)
   {
     // compute elpased wz time for the restart mechanism 
@@ -1179,69 +1180,34 @@ void RNPhysx::Simulate(Wz4RenderContext *ctx)
     Executed = sTRUE;
   }  
   
-  sF32 timeStep = 1.0f / sMax(10,Para.TimeStep); 
+  // simulation loop
 
-  if(Para.TimeMode)
+  sF32 fps = 1.0f / Para.FramePerSecond;
+  sF32 timeStep = 1.0f / sMax(10,Para.TimeStep);
+
+  // avoid negative value if GetBaseTime goes back
+  if(Accumulator < 0)
+    Accumulator = 0;
+
+  // compute real elapsed time to synchronize simulation with real time
+  sF32 newTime = sGetTime() * 0.001;
+  sF32 deltaTime = newTime - LastTime;
+  LastTime = newTime;
+  if (deltaTime > timeStep)
+    deltaTime = timeStep;
+  Accumulator += deltaTime;
+
+  while (Accumulator >= fps)
   {
-    // time synchro simulation
+    Accumulator -= fps;
 
-    // avoid negative value if GetBaseTime goes back
-    if(Accumulator < 0)
-      Accumulator = 0;
+    // count nb time to cumulate forces for animated rigid dynamics
+    gCumulatedCount++;
 
-    // compute real elapsed time to synchronize simulation with real time
-    sF32 newTime = sGetTime() * 0.001;
-    sF32 deltaTime = newTime - CurrentTime;
-    CurrentTime = newTime;
-    if (deltaTime > 0.25f)
-      deltaTime = 0.25f;
-    Accumulator += deltaTime;
-
-    while (Accumulator >= DeltaTime)
-    {
-      Accumulator -= DeltaTime;
-
-      // count nb time to cumulate forces for animated rigid dynamics
-      gCumulatedCount++;
-    
-      mScene->simulate(timeStep);
-      if(Para.WaitFetchResults)
-      {
-        while(!mScene->fetchResults())     
-        {
-          // do something useful      
-        }
-      }
-      else
-      {
-        mScene->fetchResults();
-      }
-    }
+    mScene->simulate(timeStep);
   }
-  else
-  {
-    // mode as fast as possible, no time synchro
-    sInt tick = Para.TicksPerFrame;
 
-    while (tick > 0)
-    {
-      tick--;
-
-      // count nb time to cumulate forces for animated rigid dynamics
-      gCumulatedCount++;
-
-      mScene->simulate(timeStep);
-      if(Para.WaitFetchResults)
-      {
-        while(!mScene->fetchResults())     
-        {
-        }             
-      }
-    }
-
-    if(!Para.WaitFetchResults)
-      mScene->fetchResults();
-  }  
+  mScene->fetchResults(Para.WaitFetchResults);
 
   SimulateChilds(ctx);
 }
