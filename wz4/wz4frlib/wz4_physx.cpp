@@ -14,6 +14,7 @@
 PxFoundation * gFoundation;   // global physx foundation pointer
 PxPhysics * gPhysicsSDK;      // global physx engine pointer
 PxCooking * gCooking;         // global physx cooking pointer
+sInt gCumulatedCount = 0;     // cumulated forces counter for animated rigid bodies
 
 static PxDefaultErrorCallback gDefaultErrorCallback;
 static PxDefaultAllocator gDefaultAllocatorCallback;
@@ -555,15 +556,20 @@ void PXRigidMesh::Simulate(Wz4RenderContext *ctx)
           PxReal angDamp = para->AngularDamping;
           rigidDynamic->setAngularDamping(angDamp);
 
-          // force
-          PxVec3 force(para->Force.x, para->Force.y, para->Force.z);
-          PxForceMode::Enum forceMode = (PxForceMode::Enum)para->ForceMode;
-          rigidDynamic->addForce(force, forceMode);
+          // because theses forces are cumulated on each call of this function
+          // we need to compensate call count based on real time (see: Physx::simulate())
+          for(sInt j=0; j<gCumulatedCount; j++)
+          {      
+            // force
+            PxVec3 force(para->Force.x, para->Force.y, para->Force.z);
+            PxForceMode::Enum forceMode = (PxForceMode::Enum)para->ForceMode;
+            rigidDynamic->addForce(force, forceMode);
 
-          // torque
-          PxVec3 torque(para->Torque.x, para->Torque.y, para->Torque.z);
-          PxForceMode::Enum torqueMode = (PxForceMode::Enum)para->TorqueMode;
-          rigidDynamic->addTorque(torque, torqueMode);
+            // torque
+            PxVec3 torque(para->Torque.x, para->Torque.y, para->Torque.z);
+            PxForceMode::Enum torqueMode = (PxForceMode::Enum)para->TorqueMode;
+            rigidDynamic->addTorque(torque, torqueMode);
+          }
         }
       }
     }
@@ -1123,6 +1129,7 @@ void RNPhysx::Init()
   // init time variables
   CurrentTime = 0.0f;
   Accumulator = 0.0f;
+  DeltaTime = Para.DeltaTime;// / 1000 ;
   PreviousTimeLine = 0.0f;
 
   // init actors buffer
@@ -1135,11 +1142,13 @@ void RNPhysx::Init()
 }
 
 void RNPhysx::Simulate(Wz4RenderContext *ctx)
-{
+{  
+  gCumulatedCount = 0;
+  
   Para = ParaBase; 
   Anim.Bind(ctx->Script,&Para);
   SimulateCalc(ctx);
-  SimulateChilds(ctx);
+ // SimulateChilds(ctx);
   
   if(!Para.Enable)
     return;
@@ -1169,24 +1178,72 @@ void RNPhysx::Simulate(Wz4RenderContext *ctx)
     }
     Executed = sTRUE;
   }  
+  
+  sF32 timeStep = 1.0f / sMax(10,Para.TimeStep); 
 
-  // physx simulation
+  if(Para.TimeMode)
+  {
+    // time synchro simulation
 
-  PxReal timeStep = 1.0f / (sF32)Para.TimeStep;
+    // avoid negative value if GetBaseTime goes back
+    if(Accumulator < 0)
+      Accumulator = 0;
 
-  sF32 newTime = (sF32)sGetTime() * 0.001;
-  sF32 deltaTime = newTime - CurrentTime;
-  Accumulator  += deltaTime;
+    // compute real elapsed time to synchronize simulation with real time
+    sF32 newTime = sGetTime() * 0.001;
+    sF32 deltaTime = newTime - CurrentTime;
+    CurrentTime = newTime;
+    if (deltaTime > 0.25f)
+      deltaTime = 0.25f;
+    Accumulator += deltaTime;
 
-  if(Accumulator < timeStep)
-    return;
+    while (Accumulator >= DeltaTime)
+    {
+      Accumulator -= DeltaTime;
 
-  Accumulator -= timeStep;
+      // count nb time to cumulate forces for animated rigid dynamics
+      gCumulatedCount++;
+    
+      mScene->simulate(timeStep);
+      if(Para.WaitFetchResults)
+      {
+        while(!mScene->fetchResults())     
+        {
+          // do something useful      
+        }
+      }
+      else
+      {
+        mScene->fetchResults();
+      }
+    }
+  }
+  else
+  {
+    // mode as fast as possible, no time synchro
+    sInt tick = Para.TicksPerFrame;
 
-  mScene->simulate(timeStep);
-  mScene->fetchResults(Para.WaitFetchResults);
+    while (tick > 0)
+    {
+      tick--;
 
-  CurrentTime = newTime;
+      // count nb time to cumulate forces for animated rigid dynamics
+      gCumulatedCount++;
+
+      mScene->simulate(timeStep);
+      if(Para.WaitFetchResults)
+      {
+        while(!mScene->fetchResults())     
+        {
+        }             
+      }
+    }
+
+    if(!Para.WaitFetchResults)
+      mScene->fetchResults();
+  }  
+
+  SimulateChilds(ctx);
 }
 
 void RNPhysx::Transform(Wz4RenderContext *ctx,const sMatrix34 & mat)
