@@ -1198,7 +1198,7 @@ void RNPhysx::Simulate(Wz4RenderContext *ctx)
 
   while (Accumulator >= timeStep)
   {
-    Accumulator -= timeStep;
+    Accumulator -= deltaTime;
 
     // count nb time to cumulate forces for animated rigid dynamics
     gCumulatedCount++;
