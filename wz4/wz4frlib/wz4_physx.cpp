@@ -1075,16 +1075,6 @@ void RNPhysx::BuildActor(WpxActor * wa)
             PxRigidBodyExt::setMassAndUpdateInertia(*rigidDynamic,mass,&massLocalPose);
           }
 
-          // linear velocity
-          PxVec3 linearVelocity(para->LinearVelocity.x, para->LinearVelocity.y, para->LinearVelocity.z);
-          rigidDynamic->setLinearVelocity(linearVelocity);
-          
-          // angular velocity
-          PxReal maxAngVel = para->MaxAngularVelocity;
-          rigidDynamic->setMaxAngularVelocity(maxAngVel);
-          PxVec3 angVel(para->AngularVelocity.x, para->AngularVelocity.y, para->AngularVelocity.z);
-          rigidDynamic->setAngularVelocity(angVel);
-
           // gravity flag
           bool gravityFlag = !para->Gravity;
           rigidDynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, gravityFlag); 
@@ -1111,17 +1101,81 @@ void RNPhysx::BuildActor(WpxActor * wa)
             rigidDynamic->addTorque(torque, torqueMode);
           }
 
-          // sleep ?
-          if(para->Sleep)
-            rigidDynamic->putToSleep();
-
+          // put to sleep at init
+          rigidDynamic->putToSleep();
         }
+
+
         break;
     }
 
     // clear shape densities array for next actor
     shapeDensities.Clear();   
   }
+}
+
+void RNPhysx::WakeUpScene()
+{
+  sF32 timeStep = 1.0f/30.0f;
+
+  // presimulation before wakeup (time to init joints)
+
+  if(Para.PreDelay)
+  {
+    for(sInt i=0; i<Para.PreDelayCycles; i++)
+    {
+      mScene->simulate(timeStep);
+      mScene->fetchResults(true);
+    }
+    Prepare(0);
+  }
+
+  // wake up
+
+  for(sInt i=0; i<AllActorData.GetCount(); i++)
+  {
+    if(AllActorData[i].ParaPtr->ActorType == EAT_DYNAMIC)
+    {
+      PxRigidDynamic * rigidDynamic = static_cast<PxRigidDynamic*>(ActorBuffer[i]);
+
+      // kinematic is not concerned
+       if(AllActorData[i].ParaPtr->DynamicType != 1)
+       {
+         // get a para pointer for easiest code
+         WpxActorParaRigidBody  * para = AllActorData[i].ParaPtr;
+
+         // initial linear velocity
+         PxVec3 linearVelocity(para->LinearVelocity.x, para->LinearVelocity.y, para->LinearVelocity.z);
+         rigidDynamic->setLinearVelocity(linearVelocity);
+
+         // initial angular velocity
+         PxReal maxAngVel = para->MaxAngularVelocity;
+         rigidDynamic->setMaxAngularVelocity(maxAngVel);
+         PxVec3 angVel(para->AngularVelocity.x, para->AngularVelocity.y, para->AngularVelocity.z);
+         rigidDynamic->setAngularVelocity(angVel);
+
+         // wake up
+         if(!para->Sleep)
+           rigidDynamic->wakeUp();
+         else
+           rigidDynamic->putToSleep();
+      }
+    }
+  }
+
+  // presimulation after wakeup (advance all scene)
+
+  if(Para.PreSimulation)
+  {
+    for(sInt i=0; i<Para.SimulationCycles; i++)
+    {
+      mScene->simulate(timeStep);
+      mScene->fetchResults(true);
+      gCumulatedCount++;
+    }
+    Prepare(0);
+  }
+
 }
 
 void RNPhysx::Init()

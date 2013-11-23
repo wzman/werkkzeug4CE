@@ -352,6 +352,7 @@ public:
   ~RNPhysx();
   sBool CreateScene();
   void CreateJoints();
+  void WakeUpScene();
   void BuildActor(WpxActor * wa);
   void Init();
   void Simulate(Wz4RenderContext *ctx);

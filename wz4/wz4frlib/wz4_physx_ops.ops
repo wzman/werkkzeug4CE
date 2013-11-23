@@ -711,6 +711,14 @@ operator Wz4Render Physx (*WpxActor)
     group "Time Control";  
     anim int TimeStep (10..10000) = 35;
     layout flags WaitFetchResults ("no|yes") = 1;
+
+    group "Pre-Simulation";
+    layout flags PreDelay ("-|enabled") = 0;
+    if(PreDelay == 1)
+      int PreDelayCycles (0..0x100000 step 10) = 20;
+    layout flags PreSimulation ("-|enabled") = 0;
+    if(PreSimulation == 1)
+      int SimulationCycles (0..0x100000 step 10) = 20;
     
     group "Animation Script"; overbox overlabel linenumber lines 5 string Script; 
   }
@@ -740,6 +748,7 @@ operator Wz4Render Physx (*WpxActor)
     
     node->Init();
     node->CreateJoints();
+    node->WakeUpScene();
 
     out->AddChilds(cmd, para->Renderpass);
   }
