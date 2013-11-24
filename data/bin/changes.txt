@@ -1,3 +1,49 @@
+v1.15
+
+[348a2e1] - 2013-11-24 - RigidBody: update mesh shape size for joints
+[24c81a1] - 2013-11-23 - physx : add PreSimulation and PreDelay simulation
+[a188c1e] - 2013-11-22 - Physx : fix timestep
+[fb2c47b] - 2013-11-20 - Physx: fix timestep
+[37eff65] - 2013-11-19 - Physx : new simulation loop
+[f305df2] - 2013-11-19 - Revert "PhysX: simplify simulation loop"
+[a271680] - 2013-11-18 - PhysX: simplify simulation loop
+[9787631] - 2013-10-27 - Ballistic : add a flag to animated source script
+[181ed38] - 2013-10-26 - Easter_cubetree : update growspeed parameter limit from 10 to 10000
+[b43df07] - 2013-10-26 - Camera : update schleuder mode name to pivot
+[6624678] - 2013-10-26 - SplineEditor : Fix bug with scratching time when spline maxtime is different than 1.0
+[39595d0] - 2013-10-25 - General : add ctrl-u shortcut to uncalc all ops
+[229f1a8] - 2013-10-24 - WaterPlane : new mod material fx, a water like reflective material
+[db41de6] - 2013-10-24 - ModLight : shadows now working correctly with multiple spotlights
+[923d432] - 2013-10-23 - Refract : New mod material FX
+[856b9b0] - 2013-10-20 - SplineEditor : Fix Quantize Time shortcut
+[186fb0c] - 2013-10-19 - ModCLipTwister : add individual clip animation
+[60cc261] - 2013-10-19 - ModCLipTwister : fix incorrect clip rotation
+[cdd4889] - 2013-10-18 - ModClipTwister : is now obsolete, replaced by New one (same name) with clip orientation based on matrix (for handles)
+[f37d681] - 2013-10-18 - update init() in sVertexTangent struct to correctly get tangent vector
+[0739d7e] - 2013-10-18 - FR033_WaterSimRender : add tangent information to render normal map
+[3fe8005] - 2013-10-18 - Const (material) : update color parameter name to colors
+[d33e9a4] - 2013-10-18 - FromMesh (particles) : Add new a random parameter to randomize particles positions
+[67b11cd] - 2013-10-17 - FR033_WaterSimRender : fix flickering bug
+[0d6aecc] - 2013-10-17 - ModMaterial : fix warning code. actions didn't return a value in all cases
+[b815e1e] - 2013-10-17 - FR033_MeteorShowerSim + FR033_WaterSimRender : crashes Fixed
+[c0d2738] - 2013-10-14 - ShaderParam : new operator for ModMaterial. Bind vectors from ModMtrlEnv to customized shader code to allow animated variables
+[b1b7367] - 2013-10-13 -  SphereSlicer : Fix shader error when FromEnv is not enabled
+[029b215] - 2013-10-13 - Tint: update ModMisc references to ModMtrlEnv
+[7c0590b] - 2013-10-13 - Tex2D : update ModMisc references to ModMtrlEnv
+[6d8d18a] - 2013-10-13 - SphereFog : update reference to ModMtrlEnv + fix layout flag that don't display correctly list of vectors
+[c97eaf1] - 2013-10-13 - ModMisc is now obsolete, replaced by ModMtrlEnv. Add channel .w for vectors and .a for colors
+[465598c] - 2013-10-13 - ModMaterial (enhenced) : now shader can be manually edited
+[6e9b3cc] - 2013-10-09 - Cloud2: restore old operator for backward compatibility and set it obsolete, creation of a new cloud2 operator with extra rot.x and rot.z parameters
+[5110b27] - 2013-10-09 - ModMaterial: fix crash when shader return a compil error, only paint mesh in red
+[5e35466] - 2013-10-09 - New Mod FX operator : DisplaceTwist
+[ce79f86] - 2013-10-09 - New Mod FX operator : DisplaceSinWave
+[3560f36] - 2013-10-08 - Const (material operator) : now support alpha channel when source is set to ModMtrlEnv
+[9ffa8bc] - 2013-10-08 - ModMisc : renamed to ModMtrlEnv
+[d7bfec6] - 2013-10-08 - ModLightEnv : is now obsolete, replaced by ModFog
+[8291951] - 2013-10-08 - GUI: fix layout bug that maximize the stack window after some windows manipulations (show desktop)
+[0d45787] - 2013-10-07 - Replace LightEnv to EnvNum
+[5790a0f] - 2013-10-06 - CustomMaterial : add tangent information for vertex shader
+
 v1.1
 
 [f43b4d6] - 2013-09-29 - Release new version 1.1
