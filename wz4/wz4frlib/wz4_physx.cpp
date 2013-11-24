@@ -702,8 +702,8 @@ void PXRigidMesh::CreateJointMeshViewer()
   // create a smaller cube
   Wz4Mesh * m = new Wz4Mesh;
   m->MakeCube(1,1,1);
-  srt.Scale = sVector31(0.5, 0.5, 0.5);
-  srt.Translate = sVector31(-0.5,0.25,0.25);
+  srt.Scale = sVector31(1.0, 0.5, 0.5);
+  srt.Translate = sVector31(-1.0,0.25,0.25);
   srt.MakeMatrix(mat);
   m->Transform(mat);
 
