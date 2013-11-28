@@ -231,6 +231,22 @@ public:
 
 /****************************************************************************/
 
+class RNEdgesDetect : public Wz4RenderNode
+{
+  sMaterial *Mtrl;
+public:
+  RNEdgesDetect();
+  ~RNEdgesDetect();
+
+  Wz4RenderParaEdgesDetect Para,ParaBase;
+  Wz4RenderAnimEdgesDetect Anim;
+
+  void Simulate(Wz4RenderContext *);
+  void Render(Wz4RenderContext *);
+};
+
+/****************************************************************************/
+
 class RNGrabScreen : public Wz4RenderNode
 {
 public:

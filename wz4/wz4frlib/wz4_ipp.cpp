@@ -1442,6 +1442,59 @@ void RNCrashZoom::Render(Wz4RenderContext *ctx)
 
 /****************************************************************************/
 
+RNEdgesDetect::RNEdgesDetect()
+{
+  Anim.Init(Wz4RenderType->Script);
+  Mtrl = new Wz4IppEdgesDetect();
+  Mtrl->Flags = sMTRL_ZOFF|sMTRL_CULLOFF;
+  Mtrl->TFlags[0] = sMTF_LEVEL2 | sMTF_CLAMP | sMTF_EXTERN;
+  Mtrl->Prepare(sVertexFormatBasic);
+}
+
+RNEdgesDetect::~RNEdgesDetect()
+{
+  delete Mtrl;
+}
+
+void RNEdgesDetect::Simulate(Wz4RenderContext *ctx)
+{
+  Para = ParaBase;
+  Anim.Bind(ctx->Script,&Para);
+  SimulateCalc(ctx);
+  SimulateChilds(ctx);
+}
+
+void RNEdgesDetect::Render(Wz4RenderContext *ctx)
+{
+  RenderChilds(ctx);
+
+  if((ctx->RenderMode & sRF_TARGET_MASK)==sRF_TARGET_MAIN)
+  {
+    sCBuffer<Wz4IppVSPara> cbv;
+    sCBuffer<Wz4IppEdgesDetectPara> cbp;
+
+    sTexture2D *src = sRTMan->ReadScreen();
+    sTexture2D *dest = sRTMan->WriteScreen();
+    sRTMan->SetTarget(dest);
+    ctx->IppHelper->GetTargetInfo(cbv.Data->mvp);
+
+    cbp.Data->Resolution.Init(Para.Resolution,0,0,0);
+    cbp.Data->Threshold.Init(Para.Threshold[0], Para.Threshold[1], Para.Threshold[2], Para.Threshold[3]);
+    cbp.Data->EdgesColor.InitColor(Para.EdgesColor);
+    cbp.Data->Mode.Init(Para.Mode,0,0,0);
+
+    Mtrl->Texture[0] = src;
+    Mtrl->Set(&cbv,&cbp);
+    ctx->IppHelper->DrawQuad(dest,src);
+    Mtrl->Texture[0] = 0;
+
+    sRTMan->Release(src);
+    sRTMan->Release(dest);
+  }
+}
+
+/****************************************************************************/
+
 RNGrabScreen::RNGrabScreen()
 {
   Anim.Init(Wz4RenderType->Script);

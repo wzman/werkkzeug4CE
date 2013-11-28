@@ -345,6 +345,30 @@ operator Wz4Render CrashZoom(Wz4Render)
 
 /****************************************************************************/
 
+operator Wz4Render EdgesDetect(Wz4Render)
+{
+  column = 4;
+  parameter
+  {
+    int Renderpass(-127..127);
+    anim float Resolution (-10000..10000 step 0.1) = 1024;
+    color EdgesColor ("rgba") = 0xffffffff;
+    anim float Threshold[4] (-1024..1024 step 0.001) = {0.25, 0.4, 8.0, 0.0};
+    layout flags Mode ("edges only|mix") = 1;
+
+    group "Animation Script"; overbox overlabel linenumber lines 5 string Script;
+  }
+  code
+  {
+    RNEdgesDetect *node = new RNEdgesDetect();
+    node->ParaBase = node->Para = *para;
+    out->RootNode = node;
+    out->AddChilds(cmd,para->Renderpass);
+  }
+}
+
+/****************************************************************************/
+
 operator Wz4Render GrabScreen (Rendertarget2D,Wz4Render)
 {
   column = 4;
