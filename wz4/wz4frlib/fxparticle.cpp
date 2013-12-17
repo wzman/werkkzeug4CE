@@ -3326,7 +3326,7 @@ void RPSparcle::Func(Wz4PartInfo &pinfo,sF32 time,sF32 dt)
     else 
       used++;
 
-    p->Init(s->Pos+s->Speed*t+g*t*t,t);
+    p->Init(s->Pos+s->Speed*t+g*t*t,tt);
   }
   pinfo.Used = used;
   pinfo.Flags = 0;
