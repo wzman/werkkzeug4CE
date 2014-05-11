@@ -1838,6 +1838,7 @@ MM_Kill::MM_Kill()
   ThreshHi = 1;
   Invert = 0;
   Channel = 0;
+  Source = 0;
 }
 
 void MM_Kill::PS(ShaderCreator *sc)
@@ -1846,10 +1847,22 @@ void MM_Kill::PS(ShaderCreator *sc)
 
   sc->FragBegin(Name);
   sc->FragRead(tex);
-  if(Invert)
-    sc->TB.PrintF(L"  clip(%s>%f && %s<%f ? -1 : 1);\n",tex,ThreshLo,tex,ThreshHi);
+  if (Source > 0)
+  {
+    sInt src = Source - 1;
+    sc->Para(sPoolF(L"Vector%d", Source - 1));
+    if (Invert)
+      sc->TB.PrintF(L"  clip(%s>Vector%d.x && %s<Vector%d.y ? -1 : 1);\n", tex, src, tex, src);
+    else
+      sc->TB.PrintF(L"  clip(%s<Vector%d.x || %s>Vector%d.y ? -1 : 1);\n", tex, src, tex, src);
+  }
   else
-    sc->TB.PrintF(L"  clip(%s<%f || %s>%f ? -1 : 1);\n",tex,ThreshLo,tex,ThreshHi);
+  {
+    if (Invert)
+      sc->TB.PrintF(L"  clip(%s>%f && %s<%f ? -1 : 1);\n", tex, ThreshLo, tex, ThreshHi);
+    else
+      sc->TB.PrintF(L"  clip(%s<%f || %s>%f ? -1 : 1);\n", tex, ThreshLo, tex, ThreshHi);
+  }
   sc->FragEnd();
 }
 

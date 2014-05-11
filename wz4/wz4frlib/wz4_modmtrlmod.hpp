@@ -334,6 +334,7 @@ public:
   sF32 ThreshHi;
   sInt Invert;
   sInt Channel;
+  sInt Source;
   
   MM_Kill();
   void PS(ShaderCreator *sc);
