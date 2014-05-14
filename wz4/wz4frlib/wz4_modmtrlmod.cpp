@@ -291,7 +291,7 @@ void MM_Phong::PS(ShaderCreator *sc)
         {
           sc->TB.PrintF(L"    refl = reflect(ws_lightdir[%d],normalize(ws_normal_ds));\n",i);
           sc->TB.PrintF(L"    s = saturate(dot(refl,-normalize(ws_eye)));\n");
-          sc->TB.PrintF(L"    col_specular += (pow(s,spec)*li*ls*tran)*speccol;\n");
+          sc->TB.PrintF(L"    col_specular += (pow(s,spec)*li*ls*tran)*speccol*col_light;\n");
         }
       }
     }
