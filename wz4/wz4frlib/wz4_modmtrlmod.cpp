@@ -498,7 +498,7 @@ void MM_BlinnPhong::PS(ShaderCreator *sc)
         {
           sc->TB.PrintF(L"    halfway = normalize(ws_lightdir[%d] + normalize(ws_eye));\n",i);
           sc->TB.PrintF(L"    s = saturate(dot(halfway,normalize(ws_normal_ds)));\n");
-          sc->TB.PrintF(L"    col_specular += pow(s,spec)*ls*li;\n",specsw);
+          sc->TB.PrintF(L"    col_specular += pow(s,spec)*ls*li*col_light;\n",specsw);
         }
       }
     }
