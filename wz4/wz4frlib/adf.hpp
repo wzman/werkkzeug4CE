@@ -13,6 +13,7 @@
 #include "wz4frlib/Wz4_mesh.hpp"
 #include "tADF.hpp"
 #include "adf_shader.hpp"
+#include "adf_ops.hpp"
 
 /****************************************************************************/
 
@@ -55,7 +56,7 @@ void Wz4ADF_Render(sImage *img, Wz4ADF  *adf, wPaintInfo &pi);
 
 /****************************************************************************/
 
-/*
+
 class RNRenderADF : public Wz4RenderNode
 {  
   tADFMat *Mtrl;
@@ -64,7 +65,6 @@ class RNRenderADF : public Wz4RenderNode
 public:
   tSDF *SDF;
   sTexture3D *texture;
-
 
   RNRenderADF();
   ~RNRenderADF();
@@ -76,7 +76,7 @@ public:
   void Simulate(Wz4RenderContext *);
   void Render(Wz4RenderContext *);
 };
-*/
+
 
 #endif // FILE_INTEL09LIB_ADF_HPP
 

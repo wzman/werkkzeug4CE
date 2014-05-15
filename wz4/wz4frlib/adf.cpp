@@ -396,7 +396,7 @@ void Wz4ADF_Render(sImage *img, Wz4ADF  *adf, wPaintInfo &pi)
 */
 }
 
-/*
+
 
 RNRenderADF::RNRenderADF()
 { 
@@ -562,4 +562,4 @@ void RNRenderADF::Render(Wz4RenderContext *ctx)
   } 
 }
 
-*/
+

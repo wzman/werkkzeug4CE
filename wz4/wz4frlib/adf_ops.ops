@@ -140,3 +140,30 @@ operator Wz4ADF FromMesh(Wz4Mesh,?Wz4Mesh)
     }    
   } 
 }
+
+operator Wz4Render RenderADF(Wz4ADF)
+{
+  column = 0;
+
+  parameter
+  {
+    color DiffuseColor ("rgba")=0xffffffff;
+    color AmbientColor ("rgba")=0xffffffff;
+    color SpecColor ("rgba")=0xffffffff;
+    float31 LightPos(-1024..1024 step 0.0001) = 0;
+    float PhongMax(-64..64 step 0.001) = 0.0;
+    float PhongPower(-64..64 step 0.001) = 0.0;
+  }
+  code
+  {
+    RNRenderADF *node = new RNRenderADF();
+    node->ParaBase = node->Para = *para;
+    in0->AddRef();
+
+    node->SDF = in0->GetObj();
+    node->Init();
+
+    out->RootNode = node;
+    out->AddCode(cmd,0);
+  }
+}
