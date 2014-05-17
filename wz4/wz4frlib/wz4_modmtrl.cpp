@@ -1173,7 +1173,7 @@ CachedModShader *ModMtrl::CreateShader(const CachedModInfo &info)
 
   // create pixel shader
 
-  cm->PSPara.Init(32);
+  cm->PSPara.Init(MM_MaxParaPS);
   InputPara.Init(MM_MaxT);
   sc->Init(&cm->PSPara,&InputPara,SCS_PS,cm->UpdateTex);
   sc->LightMask = 0;

@@ -53,6 +53,7 @@ enum ModMtrlEnum
 
   MM_MaxLight         = 8,          // some more constants
   MM_MaxT             = 10,
+  MM_MaxParaPS        = 48,
 };
 
 struct ModShaderVEnv
@@ -64,9 +65,9 @@ struct ModShaderVEnv
 };
 struct ModShaderPEnv
 {
-  sVector4 para[32];
+  sVector4 para[MM_MaxParaPS];
   static const sInt RegStart = 0;
-  static const sInt RegCount = 32;
+  static const sInt RegCount = MM_MaxParaPS;
   static const sInt Slot = sCBUFFER_PS|0;
 };
 
