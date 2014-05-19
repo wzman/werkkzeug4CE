@@ -273,7 +273,6 @@ header_end
 {
   class RNModLight : public Wz4RenderNode
   {
-    sBool accu;
   public:
     Wz4RenderParaModLight Para,ParaBase;
     Wz4RenderAnimModLight Anim;
@@ -283,7 +282,6 @@ header_end
 
     void Simulate(Wz4RenderContext *);
     void Render(Wz4RenderContext *);
-    void Transform(Wz4RenderContext *ctx, const sMatrix34 &mat);
   };
 }
 

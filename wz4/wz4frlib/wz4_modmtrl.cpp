@@ -1911,7 +1911,6 @@ void ModShader::Add(MtrlModule *mod)
 RNModLight::RNModLight()
 {
   Anim.Init(Wz4RenderType->Script);
-  accu = sFALSE;
 }
 
 RNModLight::~RNModLight()
@@ -2094,41 +2093,8 @@ void RNModLight::Simulate(Wz4RenderContext *ctx)
 
 }
 
-void RNModLight::Transform(Wz4RenderContext *ctx, const sMatrix34 &mat)
-{
-  if (accu == sFALSE)
-  {
-    // first transformation call
-    // may be called by operators transform or multiply (with multiply, mat = pre-transform matrix)
-
-    ModEnvNum *env = ModMtrlType->EnvNum[Para.Index];
-    sF32 c = sMax3(mat.i.x, mat.j.y, mat.k.z);
-
-    for (sInt i = 0; i < MM_MaxLight; i++)
-    {
-      if (env->Lights[i].Mode)
-      {
-        env->Lights[i].ws_Pos = env->Lights[i].ws_Pos*mat;
-        env->Lights[i].ws_Dir = env->Lights[i].ws_Dir*mat;
-        env->Lights[i].ws_Dir.Unit();
-        env->Lights[i].Range = env->Lights[i].Range*c;
-      }
-    }
-  }
-  else
-  {
-    // multiple calls before render => Multiply operator
-  }
-
-  //TransformChilds(ctx, mat);
-
-  accu = sTRUE;
-}
-
 void RNModLight::Render(Wz4RenderContext *ctx)
 {
-  // reset accu flag
-  accu = sFALSE;
 }
 
 /****************************************************************************/
