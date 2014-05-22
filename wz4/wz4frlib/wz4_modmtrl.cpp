@@ -2120,8 +2120,8 @@ void RNModLight2::Simulate(Wz4RenderContext *ctx)
   {
     sSRT srtPos;
     sMatrix34 transIndiv;
-    srtPos.Scale = sVector31(1);
-    srtPos.Rotate = sVector30(0);
+    srtPos.Scale = fpTrans->Scale;
+    srtPos.Rotate = fpTrans->Rot;
     srtPos.Translate = fpTrans->Trans;
     srtPos.MakeMatrix(transIndiv);
 
