@@ -271,8 +271,55 @@ operator ModMtrl ModMaterial(?*ModShader)
 
 header_end
 {
+  class RNModLightBase : public Wz4RenderNode
+  {
+  public:
+    Wz4RenderParaModLightBase Para,ParaBase;
+    Wz4RenderAnimModLightBase Anim;
+
+    RNModLightBase();
+    ~RNModLightBase();
+    void Simulate(Wz4RenderContext *);
+  };
+}
+
+operator Wz4Render ModLightBase ()
+{
+  tab = Wz4Mtrl;
+  column = 1;
+  shortcut = 'z';
+  parameter
+  {
+    int Index "EnvNum" (0..15);
+    int Renderpass (-127..127);
+    color Ambient("rgb");
+
+    group "limit shadows";
+    narrow layout flags LimitShadows("-| 0:*1-| 1:*2-| 2:*3-| 3:*4-| 4:*5-| 5:*6-| 6:*7-| 7")=0;
+    if(LimitShadows)
+    {
+      anim float31 LimitCenter(-1024..1024);
+      anim float30 LimitRadius(0..1024) = 64;
+    }
+
+    group "Animation Script"; overbox overlabel linenumber lines 5 string Script;
+  }
+  code
+  {
+    RNModLightBase *node = new RNModLightBase;
+    node->ParaBase = *para;
+    out->RootNode = node;
+    out->AddChilds(cmd,para->Renderpass);
+  }
+}
+
+/****************************************************************************/
+
+header_end
+{
   class RNModLightSingle : public Wz4RenderNode
   {
+    sBool Accu;
     sInt LightId;
   public:
     Wz4RenderParaModLightSingle Para,ParaBase;
@@ -288,7 +335,7 @@ header_end
   };
 }
 
-operator Wz4Render ModLightSingle (?Wz4Render)
+operator Wz4Render ModLightSingle ()
 {
   tab = Wz4Mtrl;
   column = 1;
@@ -301,58 +348,45 @@ operator Wz4Render ModLightSingle (?Wz4Render)
     int Index "EnvNum" (0..15);
     int Renderpass (-127..127);
 
-    // light 0
-
-    group "light 0";
-    layout flags Mode0("off|dir|point|spot");
-    if(Mode0&15)
+    layout flags Mode("off|dir|point|spot");
+    if(Mode&15)
     {
-      layout continue nolabel flags Mode0("*4-|shadow:*7-|headlight");
-      if((Mode0&15)==3) layout continue nolabel flags Mode0("*5-|inner:*6-|falloff");
+      layout continue nolabel flags Mode("*4-|shadow:*7-|headlight");
+      if((Mode&15)==3) layout continue nolabel flags Mode("*5-|inner:*6-|falloff");
 
-      anim color Front0("rgb")=0xffffff;
-      anim nolabel float FrontAmp0(-1024..1024 step 0.01)=1;
-      anim color Middle0("rgb");
-      anim nolabel float MiddleAmp0(-1024..1024 step 0.01)=1;
-      anim color Back0("rgb");
-      anim nolabel float BackAmp0(-1024..1024 step 0.01)=1;
-      if((Mode0&15)>=2)
-        anim float31 Pos0(-10000000..10000000 step 0.01);
-      if((Mode0&15)!=2)
-       anim float30 Dir0(-10000000..10000000 step 0.01) = { 0,0,0 };
-      if((Mode0&15)>=2)
+      anim color Front("rgb")=0xffffff;
+      anim nolabel float FrontAmp(-1024..1024 step 0.01)=1;
+      anim color Middle("rgb");
+      anim nolabel float MiddleAmp(-1024..1024 step 0.01)=1;
+      anim color Back("rgb");
+      anim nolabel float BackAmp(-1024..1024 step 0.01)=1;
+      if((Mode&15)>=2)
+        anim float31 Pos(-10000000..10000000 step 0.01);
+      if((Mode&15)!=2)
+       anim float30 Dir(-10000000..10000000 step 0.01) = { 0,0,0 };
+      if((Mode&15)>=2)
       {
-        anim float Range0(0..10000000 step 0.01) = 16;
+        anim float Range(0..10000000 step 0.01) = 16;
       }
-      if((Mode0&15)==3)
+      if((Mode&15)==3)
       {
-        if(Mode0&0x20)
-          anim float Inner0(0..1 step 0.01) = 0.2;
-        anim float Outer0(0..1 step 0.01) = 0.5;
-        if(Mode0&0x40)
-          anim float Falloff0(0..64 step 0.01) = 1;
+        if(Mode&0x20)
+          anim float Inner(0..1 step 0.01) = 0.2;
+        anim float Outer(0..1 step 0.01) = 0.5;
+        if(Mode&0x40)
+          anim float Falloff(0..64 step 0.01) = 1;
       }
-      if(Mode0&0x10)
+      if(Mode&0x10)
       {
-        anim flags ShadowSize0(" 1| 2| 4| 8| 16| 32| 64| 128| 256| 512| 1024| 2048| 4096| 8192") = 10;
-        continue flags ShadowSize0 "ShadowFilter0" ("*16point|ordered|random");
-        anim float ShadowBaseBias0(-1024..1024 step 0.0001) = 0.5000;
-        anim float ShadowFilter0(0..1024 step 0.01) = 0.500;
-        if(0) anim float ShadowSlopeBias0(-1024..1024 step 0.001) = 0.5000;
+        anim flags ShadowSize(" 1| 2| 4| 8| 16| 32| 64| 128| 256| 512| 1024| 2048| 4096| 8192") = 10;
+        continue flags ShadowSize "ShadowFilter0" ("*16point|ordered|random");
+        anim float ShadowBaseBias(-1024..1024 step 0.0001) = 0.5000;
+        anim float ShadowFilter(0..1024 step 0.01) = 0.500;
+        if(0) anim float ShadowSlopeBias(-1024..1024 step 0.001) = 0.5000;
       }
     }
-    if(0) float dummya0[3];
-    if(0) float dummyb0[4];
 
-    group "limit shadows";
-    narrow layout flags LimitShadows("-| 0:*1-| 1:*2-| 2:*3-| 3:*4-| 4:*5-| 5:*6-| 6:*7-| 7")=0;
-    if(LimitShadows)
-    {
-//      continue flags LimitShadows "Flags" ("*16:light|dark");
-      anim float31 LimitCenter(-1024..1024);
-      anim float30 LimitRadius(0..1024) = 64;
-    }
-
+    group "Animation Script"; overbox overlabel linenumber lines 5 string Script;
   }
   code
   {
@@ -362,9 +396,92 @@ operator Wz4Render ModLightSingle (?Wz4Render)
     out->RootNode = node;
     out->AddChilds(cmd,para->Renderpass);
   }
+  actions
+  {
+    if(code)
+    {
+      sU32 am=0;
+      sU32 bm=0;
+      sU32 cm=0;
+      sInt bs=0;
+      sInt cs=0;
+
+      switch(code)
+      {
+      case 1:     // RG
+        am = 0x0000ff;
+        bm = 0xff0000; bs = 8;
+        cm = 0x00ff00; cs = 8;
+        break;
+      case 2:     // RB
+        am = 0x00ff00;
+        bm = 0xff0000; bs = 16;
+        cm = 0x0000ff; cs = 16;
+        break;
+      case 3:     // GB
+        am = 0xff0000;
+        bm = 0x00ff00; bs = 8;
+        cm = 0x0000ff; cs = 8;
+        break;
+      }
+
+      #define SWAPPER(col) col = (col&am) | ((col&bm)>>bs) | ((col&cm)<<cs)
+      SWAPPER(para->Front);  SWAPPER(para->Back);  SWAPPER(para->Middle);
+      #undef SWAPPER
+
+      return 1;
+    }
+    return 0;
+  }
+
+  handles
+  {
+    sVector30 vEnd;
+
+    switch(para->Mode&15)
+    {
+      case 0:   // off
+        break;
+
+      case 2:   // point
+
+        // update Handle pos
+        pi.Handle3D(op,1,para->Pos,wHM_PLANE);
+
+        // end = ground base
+        vEnd.x = para->Pos.x;
+        vEnd.y = 0;
+        vEnd.z = para->Pos.z;
+
+        // draw line from light pos to ground
+        pi.Line3D(para->Pos, sVector31(vEnd));
+        break;
+
+      case 1:   // directionnal
+      case 3:   // spot
+
+        vEnd = para->Dir;
+
+        // init line length
+        vEnd.Unit();
+        vEnd *= para->Range/2;
+
+        // update Handle pos
+        pi.Handle3D(op,1, para->Pos, wHM_PLANE);
+
+        // add pos to dir
+        vEnd.x += para->Pos.x;
+        vEnd.y += para->Pos.y;
+        vEnd.z += para->Pos.z;
+
+        // draw line
+        pi.Line3D(para->Pos, sVector31(vEnd));
+        break;
+    }
+  }
 }
 
-/*****************************/
+/****************************************************************************/
 
 header_end
 {

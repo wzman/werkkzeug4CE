@@ -142,6 +142,8 @@ struct ModEnvNum                // var environment
     sInt Mode;
     sVector31 ws_Pos_;
     sVector30 ws_Dir_;
+
+    sInt Slot;
   } Lights[MM_MaxLight];
 
   sVector31 LimitShadowCenter;
