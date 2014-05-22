@@ -1908,6 +1908,136 @@ void ModShader::Add(MtrlModule *mod)
 /***                                                                      ***/
 /****************************************************************************/
 
+RNModLightSingle::RNModLightSingle()
+{
+  LightId = -1;
+  Anim.Init(Wz4RenderType->Script);
+}
+
+RNModLightSingle::~RNModLightSingle()
+{
+  ModEnvNum *env = ModMtrlType->EnvNum[Para.Index];
+  if(LightId != -1)
+    env->Lights[LightId].Mode = 0;
+}
+
+void RNModLightSingle::Init()
+{
+  Para = ParaBase;
+  ModEnvNum *env = ModMtrlType->EnvNum[Para.Index];
+
+  for(sInt i=0; i<MM_MaxLight; i++)
+  {
+    if(env->Lights[i].Mode == 0)
+    {
+       LightId = i;
+       env->Lights[LightId].Mode = Para.Mode0;
+       break;
+    }
+  }
+}
+
+void RNModLightSingle::Simulate(Wz4RenderContext *ctx)
+{
+  Para = ParaBase;
+  Anim.Bind(ctx->Script,&Para);
+  SimulateCalc(ctx);
+
+  ModEnvNum *env = ModMtrlType->EnvNum[Para.Index];
+
+  if(LightId == -1)
+    return;
+
+  //sInt i = LightId;
+
+  env->Lights[LightId].ColFront.InitColor(Para.Front0,Para.FrontAmp0);
+  env->Lights[LightId].ColMiddle.InitColor(Para.Middle0,Para.MiddleAmp0);
+  env->Lights[LightId].ColBack.InitColor(Para.Back0,Para.BackAmp0);
+  env->Lights[LightId].ws_Pos = Para.Pos0;
+  env->Lights[LightId].ws_Dir = -Para.Dir0;   // lighting need direction from surface to lightsource, user wants to enter direction of light shining.
+  env->Lights[LightId].ws_Dir.Unit();
+  env->Lights[LightId].Range = Para.Range0;
+  env->Lights[LightId].Inner = sMax(Para.Inner0,Para.Outer0);
+  env->Lights[LightId].Outer = Para.Outer0;
+  env->Lights[LightId].Falloff = Para.Falloff0;
+  env->Lights[LightId].SM_Size = Para.ShadowSize0;
+  env->Lights[LightId].SM_BaseBias = Para.ShadowBaseBias0;
+  env->Lights[LightId].SM_Filter = Para.ShadowFilter0/(1<<(Para.ShadowSize0&15));
+  env->Lights[LightId].SM_SlopeBias = Para.ShadowSlopeBias0;
+
+  if((Para.Mode0&15)==1)
+    env->DirLight |= 1<<LightId;
+  if((Para.Mode0&15)==2)
+    env->PointLight |= 1<<LightId;
+  if((Para.Mode0&15)==3)
+    env->SpotLight |= 1<<LightId;
+  if((Para.Mode0&16))
+    env->Shadow |= 1<<LightId;
+  if((Para.Mode0&32))
+    env->SpotInner |= 1<<LightId;
+  if((Para.Mode0&64))
+    env->SpotFalloff |= 1<<LightId;
+  if((Para.Mode0&128))
+  {
+    env->Lights[LightId].ws_Pos = env->Lights[LightId].ws_Pos;
+    env->Lights[LightId].ws_Dir = env->Lights[LightId].ws_Dir;
+  }
+  else
+  {
+    env->Lights[LightId].ws_Pos = env->Lights[LightId].ws_Pos;// * trans * transIndiv;
+    env->Lights[LightId].ws_Dir = env->Lights[LightId].ws_Dir;// * trans * transIndiv;
+  }
+  env->Lights[LightId].ws_Pos_ = env->Lights[LightId].ws_Pos;
+  env->Lights[LightId].ws_Dir_ = env->Lights[LightId].ws_Dir;
+  env->Lights[LightId].Mode = Para.Mode0;
+
+
+  if((Para.ShadowSize0 & 0x30000)==0x10000)
+    env->ShadowOrd |= 1<<LightId;
+  if((Para.ShadowSize0 & 0x30000)==0x20000)
+    env->ShadowRand |= 1<<LightId;
+}
+
+void RNModLightSingle::Transform(Wz4RenderContext *ctx, const sMatrix34 &mat)
+{
+  if(LightId == -1)
+    return;
+
+  //if (Accu == sFALSE)
+  {
+    // first transformation call
+    // may be called by operators transform or multiply (with multiply, mat = pre-transform matrix)
+
+    ModEnvNum *env = ModMtrlType->EnvNum[Para.Index];
+    sF32 c = sMax3(mat.i.x, mat.j.y, mat.k.z);
+
+    //for (sInt i = 0; i < MM_MaxLight; i++)
+    {
+      if (env->Lights[LightId].Mode)
+      {
+        env->Lights[LightId].ws_Pos = env->Lights[LightId].ws_Pos*mat;
+        env->Lights[LightId].ws_Dir = env->Lights[LightId].ws_Dir*mat;
+        env->Lights[LightId].ws_Dir.Unit();
+        env->Lights[LightId].Range = env->Lights[LightId].Range*c;
+      }
+    }
+  }
+  /*else
+  {
+    // multiple calls before render => Multiply operator
+  }*/
+
+  //TransformChilds(ctx, mat);
+
+  //Accu = sTRUE;
+}
+
+void RNModLightSingle::Render(Wz4RenderContext *ctx)
+{
+}
+
+/****************************************************************************/
+
 RNModLight2::RNModLight2()
 {
   Anim.Init(Wz4RenderType->Script);

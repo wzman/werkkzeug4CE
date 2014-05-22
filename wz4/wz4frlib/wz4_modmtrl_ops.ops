@@ -271,6 +271,103 @@ operator ModMtrl ModMaterial(?*ModShader)
 
 header_end
 {
+  class RNModLightSingle : public Wz4RenderNode
+  {
+    sInt LightId;
+  public:
+    Wz4RenderParaModLightSingle Para,ParaBase;
+    Wz4RenderAnimModLightSingle Anim;
+
+    RNModLightSingle();
+    ~RNModLightSingle();
+
+    void Init();
+    void Simulate(Wz4RenderContext *);
+    void Render(Wz4RenderContext *);
+    void Transform(Wz4RenderContext *ctx, const sMatrix34 &mat);
+  };
+}
+
+operator Wz4Render ModLightSingle (?Wz4Render)
+{
+  tab = Wz4Mtrl;
+  column = 1;
+  shortcut = 'z';
+  parameter
+  {
+    action Swap_RG(1);
+    action Swap_RB(2);
+    action Swap_GB(3);
+    int Index "EnvNum" (0..15);
+    int Renderpass (-127..127);
+
+    // light 0
+
+    group "light 0";
+    layout flags Mode0("off|dir|point|spot");
+    if(Mode0&15)
+    {
+      layout continue nolabel flags Mode0("*4-|shadow:*7-|headlight");
+      if((Mode0&15)==3) layout continue nolabel flags Mode0("*5-|inner:*6-|falloff");
+
+      anim color Front0("rgb")=0xffffff;
+      anim nolabel float FrontAmp0(-1024..1024 step 0.01)=1;
+      anim color Middle0("rgb");
+      anim nolabel float MiddleAmp0(-1024..1024 step 0.01)=1;
+      anim color Back0("rgb");
+      anim nolabel float BackAmp0(-1024..1024 step 0.01)=1;
+      if((Mode0&15)>=2)
+        anim float31 Pos0(-10000000..10000000 step 0.01);
+      if((Mode0&15)!=2)
+       anim float30 Dir0(-10000000..10000000 step 0.01) = { 0,0,0 };
+      if((Mode0&15)>=2)
+      {
+        anim float Range0(0..10000000 step 0.01) = 16;
+      }
+      if((Mode0&15)==3)
+      {
+        if(Mode0&0x20)
+          anim float Inner0(0..1 step 0.01) = 0.2;
+        anim float Outer0(0..1 step 0.01) = 0.5;
+        if(Mode0&0x40)
+          anim float Falloff0(0..64 step 0.01) = 1;
+      }
+      if(Mode0&0x10)
+      {
+        anim flags ShadowSize0(" 1| 2| 4| 8| 16| 32| 64| 128| 256| 512| 1024| 2048| 4096| 8192") = 10;
+        continue flags ShadowSize0 "ShadowFilter0" ("*16point|ordered|random");
+        anim float ShadowBaseBias0(-1024..1024 step 0.0001) = 0.5000;
+        anim float ShadowFilter0(0..1024 step 0.01) = 0.500;
+        if(0) anim float ShadowSlopeBias0(-1024..1024 step 0.001) = 0.5000;
+      }
+    }
+    if(0) float dummya0[3];
+    if(0) float dummyb0[4];
+
+    group "limit shadows";
+    narrow layout flags LimitShadows("-| 0:*1-| 1:*2-| 2:*3-| 3:*4-| 4:*5-| 5:*6-| 6:*7-| 7")=0;
+    if(LimitShadows)
+    {
+//      continue flags LimitShadows "Flags" ("*16:light|dark");
+      anim float31 LimitCenter(-1024..1024);
+      anim float30 LimitRadius(0..1024) = 64;
+    }
+
+  }
+  code
+  {
+    RNModLightSingle *node = new RNModLightSingle;
+    node->ParaBase = *para;
+    node->Init();
+    out->RootNode = node;
+    out->AddChilds(cmd,para->Renderpass);
+  }
+}
+
+/*****************************/
+
+header_end
+{
   class RNModLight2 : public Wz4RenderNode
   {
     sBool Accu;
