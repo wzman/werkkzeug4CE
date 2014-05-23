@@ -2476,6 +2476,9 @@ void RNModLight::Simulate(Wz4RenderContext *ctx)
     env->Lights[i].ws_Dir_ = env->Lights[i].ws_Dir;
     env->Lights[i].Mode = fp->Mode;
 
+    if ((fp->Mode & 15)!=0)
+      env->Lights[i].Slot = 1;
+
     if((fp->SM_Size & 0x30000)==0x10000)
       env->ShadowOrd |= 1<<i;
     if((fp->SM_Size & 0x30000)==0x20000)
