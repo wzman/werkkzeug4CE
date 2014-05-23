@@ -1936,6 +1936,9 @@ void RNModLightBase::Simulate(Wz4RenderContext *ctx)
   env->SpotInner = 0;
   env->SpotFalloff = 0;
 
+  for(sInt i=0; i<MM_MaxLight; i++)
+    env->Lights[i].Slot = 0;
+
   env->LimitShadow = Para.LimitShadows & 255;
   env->LimitShadowFlags = (Para.LimitShadows >> 8) & 255;
   env->LimitShadowCenter = Para.LimitCenter;
@@ -1953,14 +1956,14 @@ RNModLightSingle::RNModLightSingle()
 
 RNModLightSingle::~RNModLightSingle()
 {
-  ModEnvNum *env = ModMtrlType->EnvNum[Para.Index];
-  if(LightId != -1)
-    env->Lights[LightId].Slot = 0;
 }
 
-void RNModLightSingle::Init()
+void RNModLightSingle::Simulate(Wz4RenderContext *ctx)
 {
   Para = ParaBase;
+  Anim.Bind(ctx->Script,&Para);
+  SimulateCalc(ctx);
+
   ModEnvNum *env = ModMtrlType->EnvNum[Para.Index];
 
   for(sInt i=0; i<MM_MaxLight; i++)
@@ -1972,20 +1975,9 @@ void RNModLightSingle::Init()
        break;
     }
   }
-}
 
-void RNModLightSingle::Simulate(Wz4RenderContext *ctx)
-{
-  Para = ParaBase;
-  Anim.Bind(ctx->Script,&Para);
-  SimulateCalc(ctx);
-
-  ModEnvNum *env = ModMtrlType->EnvNum[Para.Index];
-
-  if(LightId == -1)
+  if(LightId == -1 || (Para.Mode&15)==0)
     return;
-
-  env->Lights[LightId].Slot = 1;
 
   env->Lights[LightId].ColFront.InitColor(Para.Front,Para.FrontAmp);
   env->Lights[LightId].ColMiddle.InitColor(Para.Middle,Para.MiddleAmp);

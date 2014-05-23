@@ -287,7 +287,7 @@ operator Wz4Render ModLightBase ()
 {
   tab = Wz4Mtrl;
   column = 1;
-  shortcut = 'z';
+  shortcut = 'Z';
   parameter
   {
     int Index "EnvNum" (0..15);
@@ -328,7 +328,6 @@ header_end
     RNModLightSingle();
     ~RNModLightSingle();
 
-    void Init();
     void Simulate(Wz4RenderContext *);
     void Render(Wz4RenderContext *);
     void Transform(Wz4RenderContext *ctx, const sMatrix34 &mat);
@@ -392,7 +391,6 @@ operator Wz4Render ModLightSingle ()
   {
     RNModLightSingle *node = new RNModLightSingle;
     node->ParaBase = *para;
-    node->Init();
     out->RootNode = node;
     out->AddChilds(cmd,para->Renderpass);
   }
@@ -505,7 +503,6 @@ operator Wz4Render ModLight2 "ModLight2" (?Wz4Render)
 {
   tab = Wz4Mtrl;
   column = 1;
-  shortcut = 'z';
   parameter
   {
     action Swap_RG(1);
