@@ -2048,7 +2048,21 @@ void RNModLightSingle::Transform(Wz4RenderContext *ctx, const sMatrix34 &mat)
     if (Clone<MM_MaxLight)
       Clone++;
 
-    sInt id = Clone+LightId;
+    sInt freeId = -1;
+    for (sInt i=0; i<MM_MaxLight; i++)
+    {
+      if (env->Lights[i].Slot == 0)
+      {
+        freeId = i;
+        env->Lights[i].Slot = 1;
+        break;
+      }
+    }
+
+    if (freeId==-1)
+      return;
+
+    sInt id = Clone+LightId+freeId;
 
     env->Lights[id].ColFront.InitColor(Para.Front,Para.FrontAmp);
     env->Lights[id].ColMiddle.InitColor(Para.Middle,Para.MiddleAmp);
