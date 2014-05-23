@@ -2033,7 +2033,7 @@ void RNModLightSingle::Transform(Wz4RenderContext *ctx, const sMatrix34 &mat)
     env->Lights[LightId].ws_Pos = env->Lights[LightId].ws_Pos*mat;
     env->Lights[LightId].ws_Dir = env->Lights[LightId].ws_Dir*mat;
     env->Lights[LightId].ws_Dir.Unit();
-    env->Lights[LightId].Range = env->Lights[LightId].Range*c;
+    env->Lights[LightId].Range = env->Lights[LightId].Range*sAbs(c);
   }
   else
   {
