@@ -2028,12 +2028,12 @@ void RNModLightSingle::Transform(Wz4RenderContext *ctx, const sMatrix34 &mat)
     // may be called by operators transform or multiply (with multiply, mat = pre-transform matrix)
 
     ModEnvNum *env = ModMtrlType->EnvNum[Para.Index];
-    sF32 c = sMax3(mat.i.x, mat.j.y, mat.k.z);
+    sF32 c = sMax3(sAbs(mat.i.x), sAbs(mat.j.y), sAbs(mat.k.z));
 
     env->Lights[LightId].ws_Pos = env->Lights[LightId].ws_Pos*mat;
     env->Lights[LightId].ws_Dir = env->Lights[LightId].ws_Dir*mat;
     env->Lights[LightId].ws_Dir.Unit();
-    env->Lights[LightId].Range = env->Lights[LightId].Range*sAbs(c);
+    env->Lights[LightId].Range = env->Lights[LightId].Range*c;
   }
   else
   {
