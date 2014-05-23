@@ -1952,6 +1952,8 @@ RNModLightSingle::RNModLightSingle()
   Accu = sFALSE;
   LightId = -1;
   Anim.Init(Wz4RenderType->Script);
+
+  Clone = 0;
 }
 
 RNModLightSingle::~RNModLightSingle()
@@ -2015,6 +2017,8 @@ void RNModLightSingle::Simulate(Wz4RenderContext *ctx)
     env->ShadowOrd |= 1<<LightId;
   if((Para.ShadowSize & 0x30000)==0x20000)
     env->ShadowRand |= 1<<LightId;
+
+  Clone =0;
 }
 
 void RNModLightSingle::Transform(Wz4RenderContext *ctx, const sMatrix34 &mat)
@@ -2038,6 +2042,57 @@ void RNModLightSingle::Transform(Wz4RenderContext *ctx, const sMatrix34 &mat)
   else
   {
     // multiple calls before render => Multiply operator
+
+    ModEnvNum *env = ModMtrlType->EnvNum[Para.Index];
+
+    if(Clone<8)
+      Clone++;
+
+    sInt id = Clone+LightId;
+
+    env->Lights[id].ColFront.InitColor(Para.Front,Para.FrontAmp);
+    env->Lights[id].ColMiddle.InitColor(Para.Middle,Para.MiddleAmp);
+    env->Lights[id].ColBack.InitColor(Para.Back,Para.BackAmp);
+    env->Lights[id].ws_Pos = Para.Pos;
+    env->Lights[id].ws_Dir = -Para.Dir;   // lighting need direction from surface to lightsource, user wants to enter direction of light shining.
+    env->Lights[id].ws_Dir.Unit();
+    env->Lights[id].Range = Para.Range;
+    env->Lights[id].Inner = sMax(Para.Inner,Para.Outer);
+    env->Lights[id].Outer = Para.Outer;
+    env->Lights[id].Falloff = Para.Falloff;
+    env->Lights[id].SM_Size = Para.ShadowSize;
+    env->Lights[id].SM_BaseBias = Para.ShadowBaseBias;
+    env->Lights[id].SM_Filter = Para.ShadowFilter/(1<<(Para.ShadowSize&15));
+    env->Lights[id].SM_SlopeBias = Para.ShadowSlopeBias;
+
+    if((Para.Mode&15)==1)
+      env->DirLight |= 1<<id;
+    if((Para.Mode&15)==2)
+      env->PointLight |= 1<<id;
+    if((Para.Mode&15)==3)
+      env->SpotLight |= 1<<id;
+    if((Para.Mode&16))
+      env->Shadow |= 1<<id;
+    if((Para.Mode&32))
+      env->SpotInner |= 1<<id;
+    if((Para.Mode&64))
+      env->SpotFalloff |= 1<<id;
+
+    sF32 c = sMax3(sAbs(mat.i.x), sAbs(mat.j.y), sAbs(mat.k.z));
+
+    env->Lights[id].ws_Pos = env->Lights[id].ws_Pos*mat;
+    env->Lights[id].ws_Dir = env->Lights[id].ws_Dir*mat;
+    env->Lights[id].ws_Dir.Unit();
+    env->Lights[id].Range = env->Lights[id].Range*c;
+
+    env->Lights[id].ws_Pos_ = env->Lights[id].ws_Pos;
+    env->Lights[id].ws_Dir_ = env->Lights[id].ws_Dir;
+    env->Lights[id].Mode = Para.Mode;
+
+    if((Para.ShadowSize & 0x30000)==0x10000)
+      env->ShadowOrd |= 1<<id;
+    if((Para.ShadowSize & 0x30000)==0x20000)
+      env->ShadowRand |= 1<<id;
   }
 
   Accu = sTRUE;

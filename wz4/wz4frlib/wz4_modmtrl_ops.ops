@@ -321,6 +321,7 @@ header_end
   {
     sBool Accu;
     sInt LightId;
+    sInt Clone;
   public:
     Wz4RenderParaModLightSingle Para,ParaBase;
     Wz4RenderAnimModLightSingle Anim;
