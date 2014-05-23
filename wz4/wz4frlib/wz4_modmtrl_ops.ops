@@ -163,8 +163,8 @@ operator ModMtrl ModMaterial(?*ModShader)
     }
 
     out->KillFeatures = para->AllowFeatures;
-    out->KillLight = sU8(para->AllowLight);
-    out->KillShadow = sU8(para->AllowShadow);
+    out->KillLight = sU16(para->AllowLight);
+    out->KillShadow = sU16(para->AllowShadow);
     out->FeatureFlags = para->FeatureFlags;
     out->SetMtrl(para->Flags,blendc,blenda);
     out->SetAlphaTest(para->AlphaTest,para->AlphaRef);

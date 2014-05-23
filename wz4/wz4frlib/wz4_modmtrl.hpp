@@ -51,9 +51,9 @@ enum ModMtrlEnum
   MMFF_NormalI4       = 0x00000400, // use sVF_I4 for normals instead of sVF_F3
   MMFF_DoubleSidedLight = 0x000800, // use doublesided lighting
 
-  MM_MaxLight         = 8,          // some more constants
+  MM_MaxLight         = 16,          // some more constants
   MM_MaxT             = 10,
-  MM_MaxParaPS        = 48,
+  MM_MaxParaPS        = 88,
 };
 
 struct ModShaderVEnv
@@ -149,17 +149,17 @@ struct ModEnvNum                // var environment
   sVector31 LimitShadowCenter;
   sVector30 LimitShadowRadius;
   sInt Features;
-  sU8 DirLight;
-  sU8 PointLight;
-  sU8 SpotLight;
-  sU8 Shadow;                     // any shadow at all=
-  sU8 ShadowOrd;                  // ordered filtering for shadow
-  sU8 ShadowRand;                 // random filtering for shadow
-  sU8 SpotInner;
-  sU8 SpotFalloff;
-  sU8 RequireShadow;              // or'ed killshadow flags, see if ALL materials opt out of this shadow!
-  sU8 LimitShadow;                // limit shadowmaps of these directional lights
-  sU8 LimitShadowFlags;           // limit to light or dark
+  sU16 DirLight;
+  sU16 PointLight;
+  sU16 SpotLight;
+  sU16 Shadow;                     // any shadow at all=
+  sU16 ShadowOrd;                  // ordered filtering for shadow
+  sU16 ShadowRand;                 // random filtering for shadow
+  sU16 SpotInner;
+  sU16 SpotFalloff;
+  sU16 RequireShadow;              // or'ed killshadow flags, see if ALL materials opt out of this shadow!
+  sU16 LimitShadow;                // limit shadowmaps of these directional lights
+  sU16 LimitShadowFlags;           // limit to light or dark
   sAABBox ShadowCaster;           // bounding box for shadow casters that only cast into this le. there is another global ShadowCaster BBox
 
   // misc
@@ -194,17 +194,17 @@ struct CachedModInfo
   CachedModInfo(sInt matmode,class ModMtrl *,sInt EnvNum);
   sInt Features;
   sInt FeatureFlags;
-  sU8 EnvNum;
-  sU8 MatrixMode;
-  sU8 RenderTarget;
-  sU8 DirLight;
-  sU8 PointLight;
-  sU8 SpotLight;
-  sU8 Shadow;
-  sU8 ShadowOrd;
-  sU8 ShadowRand;
-  sU8 SpotInner;
-  sU8 SpotFalloff;
+  sU16 EnvNum;
+  sU16 MatrixMode;
+  sU16 RenderTarget;
+  sU16 DirLight;
+  sU16 PointLight;
+  sU16 SpotLight;
+  sU16 Shadow;
+  sU16 ShadowOrd;
+  sU16 ShadowRand;
+  sU16 SpotInner;
+  sU16 SpotFalloff;
 };
 
 bool operator == (const CachedModInfo &a,const CachedModInfo &b);
@@ -336,9 +336,9 @@ public:
   ~ModMtrl();
   void SetMtrl(sInt flags=sMTRL_ZON|sMTRL_CULLON,sU32 blend=0,sU32 blenda=0);
   void SetAlphaTest(sInt test,sInt ref);
-  sU8 KillLight;
+  sU16 KillLight;
 
-  sU8 KillShadow;
+  sU16 KillShadow;
   sInt KillFeatures;
   sInt FeatureFlags;
 

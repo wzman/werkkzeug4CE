@@ -1229,17 +1229,17 @@ CachedModShader *ModMtrl::CreateShader(const CachedModInfo &info)
   sc->FragEnd();
 
   sc->FragBegin(L"setup");
-  sc->TB.Print(L"  float3 ws_lightdir[8];\n");
+  sc->TB.PrintF(L"  float3 ws_lightdir[%d];\n",MM_MaxLight);
   sc->FragFirst(L"ws_lightdir");
   sc->FragEnd();
 
   sc->FragBegin(L"setup");
-  sc->TB.Print(L"  float lighti[8];\n");
+  sc->TB.PrintF(L"  float lighti[%d];\n", MM_MaxLight);
   sc->FragFirst(L"lighti");
   sc->FragEnd();
 
   sc->FragBegin(L"setup");
-  sc->TB.Print(L"  float lightshadow[8] = { 1,1,1,1 ,1,1,1,1 };\n");
+  sc->TB.PrintF(L"  float lightshadow[%d] = { 1,1,1,1 ,1,1,1,1, 1,1,1,1 ,1,1,1,1};\n", MM_MaxLight);
   sc->FragFirst(L"lightshadow");
   sc->FragEnd();
 
@@ -2045,7 +2045,7 @@ void RNModLightSingle::Transform(Wz4RenderContext *ctx, const sMatrix34 &mat)
 
     ModEnvNum *env = ModMtrlType->EnvNum[Para.Index];
 
-    if(Clone<8)
+    if (Clone<MM_MaxLight)
       Clone++;
 
     sInt id = Clone+LightId;
