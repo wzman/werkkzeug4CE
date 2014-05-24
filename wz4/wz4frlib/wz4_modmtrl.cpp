@@ -2054,7 +2054,6 @@ void RNModLightSingle::Transform(Wz4RenderContext *ctx, const sMatrix34 &mat)
       if (env->Lights[i].Slot == 0)
       {
         freeId = i;
-        env->Lights[i].Slot = 1;
         break;
       }
     }
@@ -2062,7 +2061,9 @@ void RNModLightSingle::Transform(Wz4RenderContext *ctx, const sMatrix34 &mat)
     if (freeId==-1)
       return;
 
-    sInt id = Clone+LightId+freeId;
+    sInt id = freeId;
+
+    env->Lights[id].Slot = 1;
 
     env->Lights[id].ColFront.InitColor(Para.Front,Para.FrontAmp);
     env->Lights[id].ColMiddle.InitColor(Para.Middle,Para.MiddleAmp);
