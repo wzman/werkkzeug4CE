@@ -2283,7 +2283,6 @@ operator Wz4Mesh Bevel(Wz4Mesh)
 operator Wz4Mesh FromVertex(Wz4Mesh, Wz4Mesh)
 {
   column = 1;
-  flags = passinput|passoutput;
   parameter
   {
     float Amount(0..1 step 0.001)=1;
