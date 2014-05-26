@@ -44,6 +44,8 @@
 #define sCONFIG_SDK_XSI           0         // Softimage XSI SDK
 #define sCONFIG_SDK_GECKO         0         // Mozilla Gecko (XULRunner) SDK
 
+#define sCOMPIL_PHYSX
+
 // makeproject: what project files should be created?
 // scanned at program start, no need to recompile
 // sCONFIG_MP_VS_???: all platforms will be integrated into one project file

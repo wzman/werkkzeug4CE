@@ -13,7 +13,10 @@
 #include "base/devices.hpp"
 #include "util/taskscheduler.hpp"
 #include "extra/blobheap.hpp"
+
+#ifdef sCOMPIL_PHYSX
 #include "wz4frlib/wz4_physx.hpp"
+#endif
 
 /****************************************************************************/
 
@@ -64,7 +67,9 @@ void RegisterWZ4Classes()
     sREGOPS(adf,1);     
     sREGOPS(pdf,1);
 
+#ifdef sCOMPIL_PHYSX
     sREGOPS(wz4_physx,0);
+#endif
   }
 
   Doc->FindType(L"Scene")->Secondary = 1;
@@ -86,7 +91,9 @@ void RegisterWZ4Classes()
 
 void sMain()
 {
+#ifdef sCOMPIL_PHYSX
   PhysXInitEngine();
+#endif
 
 //  sBreakOnAllocation(27005);
 //  sAddMidi();
