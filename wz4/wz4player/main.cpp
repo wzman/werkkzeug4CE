@@ -70,7 +70,9 @@ void RegisterWZ4Classes()
     sREGOPS(adf,0);     
     sREGOPS(pdf,0);
 
+#ifdef sCOMPIL_PHYSX
     sREGOPS(wz4_physx,0);
+#endif
   }
 
   Doc->FindType(L"Scene")->Secondary = 1;
@@ -721,11 +723,15 @@ static void sExitSts()
   sDelete(sSched);
 }
 
+#ifdef sCOMPIL_PHYSX
 extern void PhysXInitEngine();
+#endif
 
 void sMain()
 {
+#ifdef sCOMPIL_PHYSX
   PhysXInitEngine();
+#endif
 
   bSelectorResult Selection;
   sClear(Selection);
