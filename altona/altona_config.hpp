@@ -44,6 +44,7 @@
 #define sCONFIG_SDK_XSI           0         // Softimage XSI SDK
 #define sCONFIG_SDK_GECKO         0         // Mozilla Gecko (XULRunner) SDK
 
+// comment this line to compil without physx
 #define sCOMPIL_PHYSX
 
 // makeproject: what project files should be created?
