@@ -980,6 +980,7 @@ enum sShaderCompileFlag
   sSCF_AVOID_CFLOW    = 0x00020000,   // avoiding control flow
   sSCF_PREFER_CFLOW   = 0x00040000,   // prefer control flow
   sSCF_DONT_OPTIMIZE  = 0x00080000,   // skip optimization
+  sSCF_COMPATIBILITY  = 0x00100000,   // backward compatibility
 };
 
 /****************************************************************************/

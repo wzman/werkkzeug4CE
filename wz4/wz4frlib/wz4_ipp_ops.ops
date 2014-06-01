@@ -555,7 +555,7 @@ operator Wz4Render CustomIPP(Wz4Render,TextObject,TextObject,*?Texture2D)
     node->Log.Clear();
 
     // compile vertex shader
-    sShader *vs=node->CompileShader(sSTF_VERTEX|sSTF_HLSL23,in1->Text.Get());
+    sShader *vs=node->CompileShader(sSTF_VERTEX,in1->Text.Get());
     if (!vs)
     {
       cmd->SetError(L"Vertex shader compile failed");
@@ -567,7 +567,7 @@ operator Wz4Render CustomIPP(Wz4Render,TextObject,TextObject,*?Texture2D)
     }
 
     // compile pixel shader
-    sShader *ps=node->CompileShader(sSTF_PIXEL|sSTF_HLSL23,in2->Text.Get());
+    sShader *ps=node->CompileShader(sSTF_PIXEL,in2->Text.Get());
     if (!ps)
     {
       cmd->SetError(L"Pixel shader compile failed");

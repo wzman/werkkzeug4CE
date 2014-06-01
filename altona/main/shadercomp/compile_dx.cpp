@@ -51,6 +51,7 @@ sBool sShaderCompileDX(const sChar *source,const sChar *profile,const sChar *mai
   if(flags&sSCF_AVOID_CFLOW) flags1 |= D3D10_SHADER_AVOID_FLOW_CONTROL;
   if(flags&sSCF_PREFER_CFLOW) flags1 |= D3D10_SHADER_PREFER_FLOW_CONTROL;
   if(flags&sSCF_DONT_OPTIMIZE) flags1 |= D3D10_SHADER_SKIP_OPTIMIZATION;
+  if (flags&sSCF_COMPATIBILITY) flags1 |= D3DXSHADER_ENABLE_BACKWARDS_COMPATIBILITY;
 
   HRESULT hr = D3DCompile(src8,len,0,0,0,main8,profile8,flags1,flags2,&bytecode,&dxerrors);
 

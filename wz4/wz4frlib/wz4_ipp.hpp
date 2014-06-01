@@ -313,7 +313,7 @@ public:
   RNCustomIPP();
   ~RNCustomIPP();
   void Init();
-  sShader *CompileShader(sInt shadertype, const sChar *source);
+  sShader *CompileShader(sInt type, const sChar *source);
 
   Wz4RenderParaCustomIPP Para,ParaBase;
   Wz4RenderAnimCustomIPP Anim;

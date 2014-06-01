@@ -9,6 +9,8 @@
 #include "util/ipp.hpp"
 #include "base/graphics.hpp"
 #include "wz4frlib/wz4_ipp_shader.hpp"
+#include "shadercomp\shadercomp.hpp"
+#include "shadercomp\shaderdis.hpp"
 
 /****************************************************************************/
 
@@ -1705,16 +1707,33 @@ void RNCustomIPP::Init()
   Mtrl->Prepare(sVertexFormatBasic);
 }
 
-#include "shadercomp\shadercomp.hpp"
-#include "shadercomp\shaderdis.hpp"
-sShader *RNCustomIPP::CompileShader(sInt shadertype, const sChar *source)
+sShader *RNCustomIPP::CompileShader(sInt type, const sChar *source)
 {
-  sString<16> profile;
-  switch (shadertype)
+  const sChar *profile = L"???";
+  sInt shadertype = 0;
+
+#if sRENDERER==sRENDER_DX9
+  const sChar *psp = L"ps_3_0";
+  const sChar *vsp = L"vs_3_0";
+  shadertype = sSTF_HLSL23;
+#endif
+#if sRENDERER==sRENDER_DX11
+  const sChar *psp = L"ps_4_0";
+  const sChar *vsp = L"vs_4_0";
+  shadertype = sSTF_HLSL45;
+#endif
+
+  switch (type)
   {
-    case sSTF_PIXEL|sSTF_HLSL23: profile=L"ps_3_0"; break;
-    case sSTF_VERTEX|sSTF_HLSL23: profile=L"vs_3_0"; break;
-    default: Log.PrintF(L"unknown shader type %x\n",shadertype); return 0;
+  case sSTF_VERTEX:
+    profile = vsp;
+    shadertype |= sSTF_VERTEX;
+    break;
+  case sSTF_PIXEL:
+    profile = psp;
+    shadertype |= sSTF_PIXEL;
+    break;
+  default: Log.PrintF(L"unknown shader type %x\n", shadertype); return 0;
   }
 
   sTextBuffer src2;
@@ -1727,7 +1746,7 @@ sShader *RNCustomIPP::CompileShader(sInt shadertype, const sChar *source)
   src2.Print(L"uniform float4x4 mv : register(c4);\n");
   src2.Print(L"uniform float3 eye : register(c8);\n");
 
-  switch (shadertype)
+  switch (type)
   {
       // links to customIPP variables
       // note : these definitions are not implanted (commented here) to give the possibility, in the shader code,
@@ -1735,7 +1754,8 @@ sShader *RNCustomIPP::CompileShader(sInt shadertype, const sChar *source)
       // uniform float4 ps_var0 : register(c9);   =>    uniform float2 myvar : register(c9);
       // However, dispay these comments lets remember these statements (copy/past) in the debug shader code text field.
 
-    case sSTF_PIXEL|sSTF_HLSL23: profile=L"ps_3_0";
+    //case sSTF_PIXEL|sSTF_HLSL23: profile=L"ps_3_0";
+  case sSTF_PIXEL:
       src2.Print(L"//uniform float4 ps_var0 : register(c9);     // link to ps_var0 (needs to be redefined)\n");
       src2.Print(L"//uniform float4 ps_var1 : register(c10);    // link to ps_var1 (needs to be redefined)\n");
       src2.Print(L"//uniform float4 ps_var2 : register(c11);    // link to ps_var2 (needs to be redefined)\n");
@@ -1744,7 +1764,8 @@ sShader *RNCustomIPP::CompileShader(sInt shadertype, const sChar *source)
       src2.Print(L"uniform float2 resolution : register(c14);   // screen resolution\n");
       break;
 
-    case sSTF_VERTEX|sSTF_HLSL23: profile=L"vs_3_0";
+    //case sSTF_VERTEX|sSTF_HLSL23: profile=L"vs_3_0";
+    case sSTF_VERTEX:
       src2.Print(L"//uniform float4 vs_var0 : register(c9);     // link to vs_var0 (needs to be redefined)\n");
       src2.Print(L"//uniform float4 vs_var1 : register(c10);    // link to vs_var1 (needs to be redefined)\n");
       src2.Print(L"//uniform float4 vs_var2 : register(c11);    // link to vs_var2 (needs to be redefined)\n");
@@ -1756,7 +1777,7 @@ sShader *RNCustomIPP::CompileShader(sInt shadertype, const sChar *source)
   src2.Print(L"\n");
   src2.Print(source);
 
-  if(sShaderCompileDX(src2.Get(),profile,L"main",data,size,sSCF_PREFER_CFLOW|sSCF_DONT_OPTIMIZE,&error))
+  if(sShaderCompileDX(src2.Get(),profile,L"main",data,size,sSCF_PREFER_CFLOW|sSCF_DONT_OPTIMIZE|sSCF_COMPATIBILITY,&error))
   {
     Log.PrintF(L"dx: %q\n",error.Get());
     Log.PrintListing(src2.Get());
