@@ -359,14 +359,14 @@ operator CustomMtrl CustomMaterial2 "CustomMaterial" (TextObject,TextObject,*?Te
     out->SetAlphaTest(para->AlphaTest,para->AlphaRef);
     out->Log.Clear();
 
-    sShader *vs=out->CompileShader(sSTF_VERTEX|sSTF_HLSL23,in0->Text.Get());
+    sShader *vs=out->CompileShader(sSTF_VERTEX,in0->Text.Get());
     if (!vs)
     {
       cmd->SetError(L"Vertex shader compile failed");
       return 0;
     }
 
-    sShader *ps=out->CompileShader(sSTF_PIXEL|sSTF_HLSL23,in1->Text.Get());
+    sShader *ps=out->CompileShader(sSTF_PIXEL,in1->Text.Get());
     if (!ps)
     {
       cmd->SetError(L"Pixel shader compile failed");

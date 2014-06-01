@@ -1213,14 +1213,41 @@ sBool CustomMtrl::SkipPhase(sInt flags,sInt EnvNum)
   return 0;
 }
 
-sShader *CustomMtrl::CompileShader(sInt shadertype, const sChar *source)
+sShader *CustomMtrl::CompileShader(sInt type, const sChar *source)
 {
-  sString<16> profile;
+  /*sString<16> profile;
   switch (shadertype)
   {
   case sSTF_PIXEL|sSTF_HLSL23: profile=L"ps_3_0"; break;
   case sSTF_VERTEX|sSTF_HLSL23: profile=L"vs_3_0"; break;
   default: Log.PrintF(L"unknown shader type %x\n",shadertype); return 0;
+  }*/
+
+  const sChar *profile = L"???";
+  sInt shadertype = 0;
+
+#if sRENDERER==sRENDER_DX9
+  const sChar *psp = L"ps_3_0";
+  const sChar *vsp = L"vs_3_0";
+  shadertype = sSTF_HLSL23;
+#endif
+#if sRENDERER==sRENDER_DX11
+  const sChar *psp = L"ps_4_0";
+  const sChar *vsp = L"vs_4_0";
+  shadertype = sSTF_HLSL45;
+#endif
+
+  switch (type)
+  {
+  case sSTF_VERTEX:
+    profile = vsp;
+    shadertype |= sSTF_VERTEX;
+    break;
+  case sSTF_PIXEL:
+    profile = psp;
+    shadertype |= sSTF_PIXEL;
+    break;
+  default: Log.PrintF(L"unknown shader type %x\n", shadertype); return 0;
   }
   
   sTextBuffer src2;
@@ -1233,14 +1260,14 @@ sShader *CustomMtrl::CompileShader(sInt shadertype, const sChar *source)
   src2.Print(L"uniform float4x4 mv  : register(c4);\n");
   src2.Print(L"uniform float3   eye : register(c8);\n");
 
-  if(shadertype == (sSTF_VERTEX|sSTF_HLSL23))
+  if(type == (sSTF_VERTEX))
     src2.Print(L"uniform float4x4 model : register(c14);\n");
 
   src2.Print(L"\n");
 
   src2.Print(source);
 
-  if(sShaderCompileDX(src2.Get(),profile,L"main",data,size,sSCF_AVOID_CFLOW|sSCF_DONT_OPTIMIZE,&error))
+  if(sShaderCompileDX(src2.Get(),profile,L"main",data,size,sSCF_AVOID_CFLOW|sSCF_DONT_OPTIMIZE|sSCF_COMPATIBILITY,&error))
   {
     Log.PrintF(L"dx: %q\n",error.Get());
     Log.PrintListing(src2.Get());

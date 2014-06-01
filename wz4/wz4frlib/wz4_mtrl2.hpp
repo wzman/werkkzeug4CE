@@ -132,7 +132,7 @@ public:
   void SetShader(sShader *vs, sShader *ps);
   void Prepare();
 
-  sShader *CompileShader(sInt shadertype, const sChar *source);
+  sShader *CompileShader(sInt type, const sChar *source);
 
   sVertexFormatHandle *GetFormatHandle(sInt flags);
   sBool SkipPhase(sInt flags, sInt EnvNum);
