@@ -473,7 +473,7 @@ sShader *ShaderCreator::Compile(sTextBuffer &log, sTextBuffer &code, sBool getCo
   sU8 *data = 0;
   sInt size = 0;
   sShader *sh = 0;
-  if(sShaderCompileDX(tb.Get(),profile,L"main",data,size,sSCF_AVOID_CFLOW,&error))
+  if(sShaderCompileDX(tb.Get(),profile,L"main",data,size,sSCF_AVOID_CFLOW|sSCF_COMPATIBILITY,&error))
   {
     log.PrintF(L"dx: %q\n",error.Get());
     log.PrintListing(tb.Get());
