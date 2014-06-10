@@ -238,7 +238,8 @@ void RPBallistic::Init()
       break;
     }
     p->Pos = (sVector31)r;
-    r.InitRandom(rnd);
+    if (Para.RandomSpeed)
+      r.InitRandom(rnd);
     p->Speed = r;
     p->Time = rnd.Float(1);
   }

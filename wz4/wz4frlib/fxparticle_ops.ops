@@ -72,6 +72,7 @@ operator Wz4Particles Ballistic(?Wz4Particles)
     flags AnimateSource("-|on");
     group "Special";
     flags Special("-|particle direction")=0;
+    flags RandomSpeed("-|on") = 1;
 
     group "Animation Script"; overbox overlabel linenumber lines 5 string Script;
   }
