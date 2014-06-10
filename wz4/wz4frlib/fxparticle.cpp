@@ -3542,7 +3542,7 @@ void RPFromVertex::Init(Wz4Mesh *mesh)
     if (logic(Para.Selection, vp->Select))
     {
       positions.AddTail(vp->Pos);
-      directions.AddTail(vp->Normal);
+      directions.AddTail(vp->Normal.GetUnit());
     }
   }
 
@@ -3551,9 +3551,12 @@ void RPFromVertex::Init(Wz4Mesh *mesh)
     // mode emitter, vertices should not be sorted
     for (sInt i = 0; i < positions.GetCount(); i++)
     {
-      Part *p = Parts.AddMany(1);
-      p->Pos = positions[i];
-      p->Dir = directions[i];
+      if(rnd.Float(1) <= Para.Random)
+      {
+        Part *p = Parts.AddMany(1);
+        p->Pos = positions[i];
+        p->Dir = directions[i];
+      }
     }
   }
   else
