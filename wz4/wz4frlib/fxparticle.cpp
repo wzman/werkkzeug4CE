@@ -311,7 +311,10 @@ void RPBallistic::Func(Wz4PartInfo &pinfo,sF32 time,sF32 dt)
     if(t>=0)
       used++;
     sF32 tt = t+dt;
-    p = p + (part->Speed*Para.SpeedRand+Para.SpeedStart)*tt + Para.Gravity*(tt*tt);
+    if(!Para.Special)
+      p = p + (part->Speed*Para.SpeedRand+Para.SpeedStart)*tt + Para.Gravity*(tt*tt);
+    else
+      p = p + (pinfo.Parts[_i].Dir*Para.SpeedRand + Para.SpeedStart)*tt + Para.Gravity*(tt*tt);
     pinfo.Parts[_i].Init(p,t);
   }
   pinfo.Used = used;
@@ -3524,6 +3527,7 @@ static inline bool operator <(const sVector31 &a, const sVector31 &b)
 void RPFromVertex::Init(Wz4Mesh *mesh)
 {
   sArray<sVector31> positions;
+  sArray<sVector30> directions;
   Wz4MeshVertex * vp;
   Para = ParaBase;
   sRandom rnd;
@@ -3534,19 +3538,37 @@ void RPFromVertex::Init(Wz4Mesh *mesh)
   // build list of all positions (including duplicates)
   sFORALL(mesh->Vertices, vp)
   {
-    if(logic(Para.Selection, vp->Select))
+    if (logic(Para.Selection, vp->Select))
+    {
       positions.AddTail(vp->Pos);
+      directions.AddTail(vp->Normal);
+    }
   }
 
-  // sort to identify unique particles
-  sIntroSort(sAll(positions));
-  for(sInt i=0; i < positions.GetCount(); i++)
+  if (Para.Mode)
   {
-    if((i == 0 || positions[i] != positions[i-1]) && // haven't seen this one before
-      rnd.Float(1) <= Para.Random)
+    // mode emitter, vertices should not be sorted
+    for (sInt i = 0; i < positions.GetCount(); i++)
     {
       Part *p = Parts.AddMany(1);
       p->Pos = positions[i];
+      p->Dir = directions[i];
+    }
+  }
+  else
+  {
+    // sort to identify unique particles
+    sIntroSort(sAll(positions));
+
+    for (sInt i = 0; i < positions.GetCount(); i++)
+    {
+      if ((i == 0 || positions[i] != positions[i - 1]) && // haven't seen this one before
+        rnd.Float(1) <= Para.Random)
+      {
+        Part *p = Parts.AddMany(1);
+        p->Pos = positions[i];
+        p->Dir = directions[i];
+      }
     }
   }
 }
@@ -3574,6 +3596,7 @@ void RPFromVertex::Func(Wz4PartInfo &pinfo,sF32 time,sF32 dt)
   for(sInt i=0;i<count;i++)
   {
     pinfo.Parts[i].Init(Parts[i].Pos,1.0f);
+    pinfo.Parts[i].Dir = sVector30(Parts[i].Dir);
   }
   pinfo.Used = count;
 }

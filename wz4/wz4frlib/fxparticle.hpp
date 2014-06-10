@@ -614,6 +614,7 @@ class RPFromVertex : public Wz4ParticleNode
   struct Part
   {
     sVector31 Pos;
+    sVector30 Dir;
   };
   sArray<Part> Parts;
 public:

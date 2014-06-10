@@ -151,6 +151,7 @@ enum Wz4ParticleNodeFlags
 struct Wz4Particle
 {
   sVector31 Pos;                  // position
+  sVector30 Dir;                  // direction
   sF32 Time;                      // lifetime 0..1 | -1 = not active | may loop beyond 1
 
   Wz4Particle() { Pos = sVector31(0,0,0); Time = -1.0f; }
