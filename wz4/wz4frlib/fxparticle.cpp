@@ -1138,7 +1138,7 @@ void RNChunks::Prepare(Wz4RenderContext *ctx)
   for(sInt i=1;i<Samples;i++)
   {
     PInfo[i].Reset();
-    Source->Func(PInfo[i],Time,Para.LookAhead*i);
+    Source->Func(PInfo[i],Time*Para.LookAhead*i,Para.LookAhead*i);
   }
 
   switch(Para.UpVector)
@@ -3315,7 +3315,7 @@ void RPSparcle::Func(Wz4PartInfo &pinfo,sF32 time,sF32 dt)
   sInt used = 0;
   sF32 il = 1/Para.Lifetime;
 
-  time = time - Para.Delay + dt;
+  time = time - Para.Delay;
 
   if(Para.Mode==1)
     time = Para.Time;
