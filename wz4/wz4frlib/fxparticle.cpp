@@ -3261,12 +3261,20 @@ void RPSparcle::DelayedInit()
   {
     db = !db;
     sF32 time = sF32(i)/Para.SamplePoints;
+
+    if(Para.Distribution&1)
+      time /= Para.Percentage;
+
     part[db].Reset();
     Source->Func(part[db],time+Para.Delay,0);
 
     for(sInt j=0;j<maxsrc;j++)
     {
-      if(part[db].Parts[j].Time>=0 && rnd.Float(1)<Para.Percentage && Sparcs.GetCount()<MaxSparks)
+      sBool create = rnd.Float(1)<Para.Percentage;
+      if(Para.Distribution&1)
+        create = sTRUE;
+
+      if(part[db].Parts[j].Time>=0 && create && Sparcs.GetCount()<MaxSparks)
       {
         sVector30 speed;
         Sparc *s = Sparcs.AddMany(1);
