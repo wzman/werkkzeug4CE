@@ -849,7 +849,7 @@ operator Wz4Particles Sparcle "Sparkle" (Wz4Particles)
       float Delay(-1024..1 step 0.01);
     if(Mode==1)
       float Time(-1024..1024 step 0.01);
-    layout flags Distribution("random|reparted") = 0;
+    layout flags Distribution("random|repeated") = 0;
   }
   code
   {
