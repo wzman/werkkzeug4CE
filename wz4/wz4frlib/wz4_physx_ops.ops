@@ -49,12 +49,10 @@ type WpxColliderBase
     pi.View->SetZoom(pi.Zoom3D);
     pi.View->Prepare();
 
-    sMatrix34 mat;
-    mat.Init();
-    Paint(obj,pi,&mat,1);
+    Paint(obj,pi);
   }
 
-  extern void Paint(wObject *obj,wPaintInfo &pi,sMatrix34 *mat,sInt matcount)
+  extern void Paint(wObject *obj,wPaintInfo &pi)
   {
     if(obj && obj->IsType(WpxColliderBaseType))
     {
@@ -62,12 +60,13 @@ type WpxColliderBase
       sFrustum fr;
       fr.Init(pi.View->ModelScreen);
 
+      sMatrix34 mat;
+      mat.Init();
+
       WpxColliderBase * wpxcol = (WpxColliderBase *) obj;
-
       wpxcol->ClearMatricesR();
-      wpxcol->Transform(*mat);
-
-      wpxcol->Render(fr,mat);
+      wpxcol->Transform(mat);
+      wpxcol->Render(fr);
     }
   }
 

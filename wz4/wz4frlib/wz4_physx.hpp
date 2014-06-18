@@ -28,11 +28,11 @@ public:
   WpxColliderBase();
   ~WpxColliderBase();
 
-  virtual void Render(sFrustum &fr, sMatrix34 * mat); // render collider geometry
+  virtual void Render(sFrustum &fr);                  // render collider geometry
   virtual void Transform(const sMatrix34 & mat);      // build list of model matrices with GRAPH!
 
   void ClearMatricesR();                              // clear matrices
-  void RenderChilds(sFrustum &fr, sMatrix34 * mat);   // recurse to childs
+  void RenderChilds(sFrustum &fr);                    // recurse to childs
   void TransformChilds(const sMatrix34 & mat);        // recurse to childs
   void AddChilds(wCommand *cmd);                      // add childs
 };
@@ -51,7 +51,7 @@ public:
   WpxCollider();
   ~WpxCollider();
   void Transform(const sMatrix34 & mat);
-  void Render(sFrustum &fr, sMatrix34 * mat);
+  void Render(sFrustum &fr);
 
   void CreateGeometry(Wz4Mesh * input);
 };

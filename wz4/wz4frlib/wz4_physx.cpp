@@ -43,9 +43,9 @@ WpxColliderBase::~WpxColliderBase()
 
 void WpxColliderBase::AddChilds(wCommand *cmd)
 {
-  for (sInt i = 0; i<cmd->InputCount; i++)
+  for (sInt i=0; i<cmd->InputCount; i++)
   {
-    WpxColliderBase *in = cmd->GetInput<WpxColliderBase *>(i);
+    WpxColliderBase * in = cmd->GetInput<WpxColliderBase *>(i);
     if (in)
     {
       if (in->IsType(WpxColliderBaseType))
@@ -80,17 +80,17 @@ void WpxColliderBase::TransformChilds(const sMatrix34 &mat)
     c->Transform(mat);
 }
 
-void WpxColliderBase::Render(sFrustum &fr, sMatrix34 *mat)
+void WpxColliderBase::Render(sFrustum &fr)
 {
-  RenderChilds(fr, mat);
+  RenderChilds(fr);
 }
 
-void WpxColliderBase::RenderChilds(sFrustum &fr, sMatrix34 *mat)
+void WpxColliderBase::RenderChilds(sFrustum &fr)
 {
   // recurse to childs
   WpxColliderBase *c;
   sFORALL(Childs, c)
-    c->Render(fr, mat);
+    c->Render(fr);
 }
 
 /****************************************************************************/
@@ -107,7 +107,7 @@ WpxCollider::~WpxCollider()
   MeshInput->Release();
 }
 
-void WpxCollider::Render(sFrustum &fr, sMatrix34 *mat)
+void WpxCollider::Render(sFrustum &fr)
 {
   if (MeshCollider)
   {
