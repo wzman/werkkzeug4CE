@@ -19,14 +19,15 @@ void PhysXInitEngine();
 /****************************************************************************/
 /****************************************************************************/
 
-class WpxColliderBase : public wObject
+template <typename  T>
+class WpxGenericGraph : public wObject
 {
 public:
   sArray<sMatrix34CM> Matrices;       // matrices list
-  sArray<WpxColliderBase *> Childs;   // childs tree
+  sArray<T *> Childs;                 // childs tree
 
-  WpxColliderBase();
-  ~WpxColliderBase();
+  WpxGenericGraph();
+  ~WpxGenericGraph();
 
   virtual void Render(sFrustum &fr);                  // render collider geometry
   virtual void Transform(const sMatrix34 & mat);      // build list of model matrices with GRAPH!
@@ -37,6 +38,82 @@ public:
   void AddChilds(wCommand *cmd);                      // add childs
 };
 
+template<typename T>
+WpxGenericGraph<T>::WpxGenericGraph()
+{
+  Type = WpxColliderBaseType;
+}
+
+template<typename T>
+WpxGenericGraph<T>::~WpxGenericGraph()
+{
+  sReleaseAll(Childs);
+}
+
+template<typename T>
+void WpxGenericGraph<T>::AddChilds(wCommand *cmd)
+{
+  for (sInt i = 0; i<cmd->InputCount; i++)
+  {
+    T * in = cmd->GetInput<T *>(i);
+    if (in)
+    {
+      if (in->IsType(WpxColliderBaseType))
+      {
+        Childs.AddTail(in);
+        in->AddRef();
+      }
+    }
+  }
+}
+
+template<typename T>
+void WpxGenericGraph<T>::ClearMatricesR()
+{
+  T *c;
+  Matrices.Clear();
+  sFORALL(Childs, c)
+    c->ClearMatricesR();
+}
+
+template<typename T>
+void WpxGenericGraph<T>::Transform(const sMatrix34 &mat)
+{
+  TransformChilds(mat);
+}
+
+template<typename T>
+void WpxGenericGraph<T>::TransformChilds(const sMatrix34 &mat)
+{
+  T *c;
+
+  Matrices.AddTail(sMatrix34CM(mat));
+
+  sFORALL(Childs, c)
+    c->Transform(mat);
+}
+
+template<typename T>
+void WpxGenericGraph<T>::Render(sFrustum &fr)
+{
+  RenderChilds(fr);
+}
+
+template<typename T>
+void WpxGenericGraph<T>::RenderChilds(sFrustum &fr)
+{
+  // recurse to childs
+  T *c;
+  sFORALL(Childs, c)
+    c->Render(fr);
+}
+
+/****************************************************************************/
+/****************************************************************************/
+
+class WpxColliderBase : public WpxGenericGraph<WpxColliderBase> {};
+
+/****************************************************************************/
 /****************************************************************************/
 
 class WpxCollider : public WpxColliderBase
