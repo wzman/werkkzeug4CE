@@ -167,4 +167,42 @@ public:
 /****************************************************************************/
 /****************************************************************************/
 
+class WpxActorBase : public WpxGenericGraph<WpxActorBase> {};
+
+/****************************************************************************/
+/****************************************************************************/
+
+class WpxRigidBody : public WpxActorBase
+{
+public:
+  WpxRigidBodyParaRigidBody ParaBase, Para;
+};
+
+/****************************************************************************/
+
+class WpxRigidBodyAdd : public WpxActorBase
+{
+public:
+  WpxRigidBodyAddParaRigidBodyAdd ParaBase, Para;
+};
+
+/****************************************************************************/
+
+class WpxRigidBodyMul : public WpxActorBase
+{
+public:
+  WpxRigidBodyMulParaRigidBodyMul ParaBase, Para;
+};
+
+/****************************************************************************/
+
+class WpxRigidBodyTransform : public WpxActorBase
+{
+public:
+  WpxRigidBodyTransformParaRigidBodyTransform ParaBase, Para;
+};
+
+/****************************************************************************/
+/****************************************************************************/
+
 #endif FILE_WZ4FRLIB_PHYSX_HPP

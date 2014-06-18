@@ -73,6 +73,7 @@ type WpxColliderBase
 }
 
 /****************************************************************************/
+/****************************************************************************/
 
 type WpxCollider : WpxColliderBase
 {
@@ -205,3 +206,146 @@ operator WpxColliderMul ColliderMul "Multiply" (WpxColliderBase)
 
 /****************************************************************************/
 /****************************************************************************/
+
+type WpxActorBase
+{
+  name = "WpxActorBase";
+  gui = base3d;
+  flags = render3d|notab;
+  color = 0xFF9CCC52;
+
+  extern void Show(wObject *obj,wPaintInfo &pi)
+  {
+    sSetTarget(sTargetPara(pi.ClearFirst ? sST_CLEARALL : 0,pi.BackColor,pi.Spec));
+
+    pi.ClearFirst = sFALSE;
+    pi.View->SetTargetCurrent();
+    pi.View->SetZoom(pi.Zoom3D);
+    pi.View->Prepare();
+
+    Paint(obj,pi);
+  }
+
+  extern void Paint(wObject *obj,wPaintInfo &pi)
+  {
+    if(obj && obj->IsType(WpxActorBaseType))
+    {
+      Wz4MtrlType->PrepareView(*pi.View);
+      sFrustum fr;
+      fr.Init(pi.View->ModelScreen);
+
+      sMatrix34 mat;
+      mat.Init();
+
+      WpxActorBase * b = (WpxActorBase *) obj;
+      b->ClearMatricesR();
+      b->Transform(mat);
+      b->Render(fr);
+    }
+  }
+
+}
+
+/****************************************************************************/
+/****************************************************************************/
+
+type WpxRigidBody : WpxActorBase
+{
+  name = "WpxRigidBody";
+  gui = base3d;
+  flags = render3d|notab;
+  color = 0xFF9CCC52;
+}
+
+type WpxRigidBodyAdd : WpxActorBase
+{
+  name = "WpxRigidBodyAdd";
+  gui = base3d;
+  flags = render3d|notab;
+  color = 0xFF9CCC52;
+}
+
+type WpxRigidBodyTransform : WpxActorBase
+{
+  name = "WpxRigidBodyTransform";
+  gui = base3d;
+  flags = render3d|notab;
+  color = 0xFF9CCC52;
+}
+
+type WpxRigidBodyMul : WpxActorBase
+{
+  name = "WpxRigidBodyMul";
+  gui = base3d;
+  flags = render3d|notab;
+  color = 0xFF9CCC52;
+}
+
+/****************************************************************************/
+/****************************************************************************/
+
+operator WpxRigidBody RigidBody (?Wz4Render, WpxColliderBase)
+{
+  tab = PhysXTab;
+  column = 1;
+  shortcut = 'r';
+
+  parameter
+  {
+    group "Transform";
+    float30 Rot (-16..16 step 0.01) = 0;
+    float31 Trans (-0x10000..0x10000 step 0.01) = 0;
+  }
+  code
+  {
+    out->ParaBase = out->Para = *para;
+  }
+}
+
+/****************************************************************************/
+
+operator WpxRigidBodyAdd RigidBodyAdd "Add" (*WpxActorBase)
+{
+  tab = PhysXTab;
+  column = 1;
+
+  parameter
+  {
+  }
+  code
+  {
+    out->ParaBase = out->Para = *para;
+  }
+}
+
+/****************************************************************************/
+
+operator WpxRigidBodyMul RigidBodyMul "Mul" (WpxActorBase)
+{
+  tab = PhysXTab;
+  column = 1;
+
+  parameter
+  {
+  }
+  code
+  {
+    out->ParaBase = out->Para = *para;
+  }
+}
+
+/****************************************************************************/
+
+operator WpxRigidBodyTransform RigidBodyTransform "Transform" (WpxActorBase)
+{
+  tab = PhysXTab;
+  column = 1;
+
+  parameter
+  {
+  }
+  code
+  {
+    out->ParaBase = out->Para = *para;
+  }
+}
