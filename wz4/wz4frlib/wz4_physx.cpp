@@ -31,6 +31,29 @@ enum E_GEOMETRY_TYPE
 /****************************************************************************/
 /****************************************************************************/
 
+WpxColliderBase::WpxColliderBase()
+{
+  Type = WpxColliderBaseType;
+}
+
+void WpxColliderBase::AddChilds(wCommand *cmd)
+{
+  for (sInt i = 0; i<cmd->InputCount; i++)
+  {
+    WpxColliderBase * in = cmd->GetInput<WpxColliderBase *>(i);
+    if (in)
+    {
+      if (in->IsType(WpxColliderBaseType))
+      {
+        Childs.AddTail(in);
+        in->AddRef();
+      }
+    }
+  }
+}
+
+/****************************************************************************/
+
 WpxCollider::WpxCollider()
 {
   MeshCollider = 0;
@@ -145,4 +168,27 @@ void WpxColliderMul::Transform(const sMatrix34 & mat)
 }
 
 /****************************************************************************/
+/****************************************************************************/
+
+WpxActorBase::WpxActorBase()
+{
+  Type = WpxActorBaseType;
+}
+
+void WpxActorBase::AddChilds(wCommand *cmd)
+{
+  for (sInt i = 0; i<cmd->InputCount; i++)
+  {
+    WpxActorBase * in = cmd->GetInput<WpxActorBase *>(i);
+    if (in)
+    {
+      if (in->IsType(WpxColliderBaseType))
+      {
+        Childs.AddTail(in);
+        in->AddRef();
+      }
+    }
+  }
+}
+
 /****************************************************************************/

@@ -19,56 +19,31 @@ void PhysXInitEngine();
 /****************************************************************************/
 /****************************************************************************/
 
-template <typename  T>
-class WpxGenericGraph : public wObject
+template <typename  T, class T2>
+class WpxGenericGraph : public T2
 {
 public:
   sArray<sMatrix34CM> Matrices;       // matrices list
-  sArray<T *> Childs;                 // childs tree
+  sArray<T *> Childs;                 // childs objects
 
-  WpxGenericGraph();
   ~WpxGenericGraph();
 
-  virtual void Render(sFrustum &fr);                  // render collider geometry
+  virtual void Render(sFrustum &fr);                  // render
   virtual void Transform(const sMatrix34 & mat);      // build list of model matrices with GRAPH!
 
   void ClearMatricesR();                              // clear matrices
   void RenderChilds(sFrustum &fr);                    // recurse to childs
   void TransformChilds(const sMatrix34 & mat);        // recurse to childs
-  void AddChilds(wCommand *cmd);                      // add childs
 };
 
-template<typename T>
-WpxGenericGraph<T>::WpxGenericGraph()
-{
-  Type = WpxColliderBaseType;
-}
-
-template<typename T>
-WpxGenericGraph<T>::~WpxGenericGraph()
+template <typename  T, class T2>
+WpxGenericGraph<T, T2>::~WpxGenericGraph()
 {
   sReleaseAll(Childs);
 }
 
-template<typename T>
-void WpxGenericGraph<T>::AddChilds(wCommand *cmd)
-{
-  for (sInt i = 0; i<cmd->InputCount; i++)
-  {
-    T * in = cmd->GetInput<T *>(i);
-    if (in)
-    {
-      if (in->IsType(WpxColliderBaseType))
-      {
-        Childs.AddTail(in);
-        in->AddRef();
-      }
-    }
-  }
-}
-
-template<typename T>
-void WpxGenericGraph<T>::ClearMatricesR()
+template <typename  T, class T2>
+void WpxGenericGraph<T, T2>::ClearMatricesR()
 {
   T *c;
   Matrices.Clear();
@@ -76,14 +51,14 @@ void WpxGenericGraph<T>::ClearMatricesR()
     c->ClearMatricesR();
 }
 
-template<typename T>
-void WpxGenericGraph<T>::Transform(const sMatrix34 &mat)
+template <typename  T, class T2>
+void WpxGenericGraph<T, T2>::Transform(const sMatrix34 &mat)
 {
   TransformChilds(mat);
 }
 
-template<typename T>
-void WpxGenericGraph<T>::TransformChilds(const sMatrix34 &mat)
+template <typename  T, class T2>
+void WpxGenericGraph<T, T2>::TransformChilds(const sMatrix34 &mat)
 {
   T *c;
 
@@ -93,14 +68,14 @@ void WpxGenericGraph<T>::TransformChilds(const sMatrix34 &mat)
     c->Transform(mat);
 }
 
-template<typename T>
-void WpxGenericGraph<T>::Render(sFrustum &fr)
+template <typename  T, class T2>
+void WpxGenericGraph<T, T2>::Render(sFrustum &fr)
 {
   RenderChilds(fr);
 }
 
-template<typename T>
-void WpxGenericGraph<T>::RenderChilds(sFrustum &fr)
+template <typename  T, class T2>
+void WpxGenericGraph<T, T2>::RenderChilds(sFrustum &fr)
 {
   // recurse to childs
   T *c;
@@ -111,7 +86,12 @@ void WpxGenericGraph<T>::RenderChilds(sFrustum &fr)
 /****************************************************************************/
 /****************************************************************************/
 
-class WpxColliderBase : public WpxGenericGraph<WpxColliderBase> {};
+class WpxColliderBase : public WpxGenericGraph<WpxColliderBase, wObject>
+{
+public:
+  WpxColliderBase();
+  void AddChilds(wCommand *cmd);    // add childs
+};
 
 /****************************************************************************/
 /****************************************************************************/
@@ -167,7 +147,12 @@ public:
 /****************************************************************************/
 /****************************************************************************/
 
-class WpxActorBase : public WpxGenericGraph<WpxActorBase> {};
+class WpxActorBase : public WpxGenericGraph<WpxActorBase, Wz4Render>
+{
+public:
+  WpxActorBase();
+  void AddChilds(wCommand *cmd);    // add childs
+};
 
 /****************************************************************************/
 /****************************************************************************/
