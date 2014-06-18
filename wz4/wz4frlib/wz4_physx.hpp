@@ -28,12 +28,12 @@ public:
 
   ~WpxGenericGraph();
 
-  virtual void Render(sFrustum &fr);                  // render
-  virtual void Transform(const sMatrix34 & mat);      // build list of model matrices with GRAPH!
+  virtual void Render(Wz4RenderContext &ctx, sMatrix34 &mat);   // render
+  virtual void Transform(const sMatrix34 & mat);                // build list of model matrices with GRAPH!
 
-  void ClearMatricesR();                              // clear matrices
-  void RenderChilds(sFrustum &fr);                    // recurse to childs
-  void TransformChilds(const sMatrix34 & mat);        // recurse to childs
+  void ClearMatricesR();                                        // clear matrices
+  void RenderChilds(Wz4RenderContext &ctx, sMatrix34 &mat);     // recurse to childs
+  void TransformChilds(const sMatrix34 & mat);                  // recurse to childs
 };
 
 template <typename  T, class T2>
@@ -69,18 +69,18 @@ void WpxGenericGraph<T, T2>::TransformChilds(const sMatrix34 &mat)
 }
 
 template <typename  T, class T2>
-void WpxGenericGraph<T, T2>::Render(sFrustum &fr)
+void WpxGenericGraph<T, T2>::Render(Wz4RenderContext &ctx, sMatrix34 &mat)
 {
-  RenderChilds(fr);
+  RenderChilds(ctx,mat);
 }
 
 template <typename  T, class T2>
-void WpxGenericGraph<T, T2>::RenderChilds(sFrustum &fr)
+void WpxGenericGraph<T, T2>::RenderChilds(Wz4RenderContext &ctx, sMatrix34 &mat)
 {
   // recurse to childs
   T *c;
   sFORALL(Childs, c)
-    c->Render(fr);
+    c->Render(ctx,mat);
 }
 
 /****************************************************************************/
@@ -108,7 +108,7 @@ public:
   WpxCollider();
   ~WpxCollider();
   void Transform(const sMatrix34 & mat);
-  void Render(sFrustum &fr);
+  void Render(Wz4RenderContext &ctx, sMatrix34 &mat);
 
   void CreateGeometry(Wz4Mesh * input);
 };
@@ -161,6 +161,8 @@ class WpxRigidBody : public WpxActorBase
 {
 public:
   WpxRigidBodyParaRigidBody ParaBase, Para;
+
+  void Render(Wz4RenderContext &ctx, sMatrix34 &mat);
 };
 
 /****************************************************************************/
@@ -207,4 +209,5 @@ public:
   Wz4RenderParaPhysx ParaBase, Para;
   Wz4RenderAnimPhysx Anim;
 };
+
 #endif FILE_WZ4FRLIB_PHYSX_HPP

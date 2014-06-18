@@ -66,7 +66,7 @@ WpxCollider::~WpxCollider()
   MeshInput->Release();
 }
 
-void WpxCollider::Render(sFrustum &fr)
+void WpxCollider::Render(Wz4RenderContext &ctx, sMatrix34 &mat)
 {
   if (MeshCollider)
   {
@@ -192,3 +192,23 @@ void WpxActorBase::AddActorsChilds(wCommand *cmd)
 }
 
 /****************************************************************************/
+
+void WpxRigidBody::Render(Wz4RenderContext &ctx, sMatrix34 &mat)
+{
+  if (RootNode)
+  {
+    RootNode->ClearMatricesR();
+    RootNode->ClearRecFlagsR();
+    RootNode->Transform(&ctx, mat);
+    RootNode->Prepare(&ctx);
+
+    ctx.ClearRecFlags(RootNode);
+
+    sMatrix34CM * m;
+    sFORALL(Matrices, m)
+    {
+      RootNode->Render(&ctx);
+      //ctx.NextRecMask();
+    }
+  }
+}

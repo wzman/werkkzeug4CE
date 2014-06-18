@@ -60,13 +60,24 @@ type WpxColliderBase
       sFrustum fr;
       fr.Init(pi.View->ModelScreen);
 
+      Wz4RenderContext ctx;
+      sTargetSpec spec = pi.Spec;
+      ctx.Init(0, &spec, &pi);
+      sRTMan->ResolutionCheck(this, ctx.ScreenX, ctx.ScreenY);
+      ctx.RenderFlags |= pi.Wireframe ? wRF_RenderWire : wRF_RenderMain;
+      if (pi.CamOverride)
+        ctx.RenderFlags |= wRF_FreeCam;
+      ctx.View = *pi.View;
+      ctx.Frustum = fr;
+      ctx.RenderMode = sRF_TARGET_MAIN;
+
       sMatrix34 mat;
       mat.Init();
 
       WpxColliderBase * wpxcol = (WpxColliderBase *) obj;
       wpxcol->ClearMatricesR();
       wpxcol->Transform(mat);
-      wpxcol->Render(fr);
+      wpxcol->Render(ctx,mat);
     }
   }
 
@@ -234,13 +245,24 @@ type WpxActorBase
       sFrustum fr;
       fr.Init(pi.View->ModelScreen);
 
+      Wz4RenderContext ctx;
+      sTargetSpec spec = pi.Spec;
+      ctx.Init(0, &spec, &pi);
+      sRTMan->ResolutionCheck(this, ctx.ScreenX, ctx.ScreenY);
+      ctx.RenderFlags |= pi.Wireframe ? wRF_RenderWire : wRF_RenderMain;
+      if (pi.CamOverride)
+        ctx.RenderFlags |= wRF_FreeCam;
+      ctx.View = *pi.View;
+      ctx.Frustum = fr;
+      ctx.RenderMode = sRF_TARGET_MAIN;
+
       sMatrix34 mat;
       mat.Init();
 
       WpxActorBase * b = (WpxActorBase *) obj;
       b->ClearMatricesR();
       b->Transform(mat);
-      b->Render(fr);
+      b->Render(ctx,mat);
     }
   }
 
@@ -284,7 +306,7 @@ type WpxRigidBodyMul : WpxActorBase
 /****************************************************************************/
 /****************************************************************************/
 
-operator WpxRigidBody RigidBody (?Wz4Render, WpxColliderBase)
+operator WpxRigidBody RigidBody (Wz4Render, WpxColliderBase)
 {
   tab = PhysXTab;
   column = 1;
