@@ -90,7 +90,7 @@ class WpxColliderBase : public WpxGenericGraph<WpxColliderBase, wObject>
 {
 public:
   WpxColliderBase();
-  void AddChilds(wCommand *cmd);    // add childs
+  void AddCollidersChilds(wCommand *cmd);    // add childs
 };
 
 /****************************************************************************/
@@ -151,7 +151,7 @@ class WpxActorBase : public WpxGenericGraph<WpxActorBase, Wz4Render>
 {
 public:
   WpxActorBase();
-  void AddChilds(wCommand *cmd);    // add childs
+  void AddActorsChilds(wCommand *cmd);    // add childs
 };
 
 /****************************************************************************/
@@ -190,4 +190,21 @@ public:
 /****************************************************************************/
 /****************************************************************************/
 
+class WpxRigidBodyNode : public  Wz4RenderNode
+{
+public:
+  WpxRigidBodyParaRigidBody ParaBase, Para;
+};
+
+/****************************************************************************/
+/****************************************************************************/
+
+class RNPhysx : public Wz4RenderNode
+{
+private:
+
+public:
+  Wz4RenderParaPhysx ParaBase, Para;
+  Wz4RenderAnimPhysx Anim;
+};
 #endif FILE_WZ4FRLIB_PHYSX_HPP

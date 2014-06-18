@@ -36,7 +36,7 @@ WpxColliderBase::WpxColliderBase()
   Type = WpxColliderBaseType;
 }
 
-void WpxColliderBase::AddChilds(wCommand *cmd)
+void WpxColliderBase::AddCollidersChilds(wCommand *cmd)
 {
   for (sInt i = 0; i<cmd->InputCount; i++)
   {
@@ -175,7 +175,7 @@ WpxActorBase::WpxActorBase()
   Type = WpxActorBaseType;
 }
 
-void WpxActorBase::AddChilds(wCommand *cmd)
+void WpxActorBase::AddActorsChilds(wCommand *cmd)
 {
   for (sInt i = 0; i<cmd->InputCount; i++)
   {
