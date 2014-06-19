@@ -191,18 +191,22 @@ public:
 
 /****************************************************************************/
 
-class WpxRigidBodyMul : public WpxActorBase
-{
-public:
-  WpxRigidBodyMulParaRigidBodyMul ParaBase, Para;
-};
-
-/****************************************************************************/
-
 class WpxRigidBodyTransform : public WpxActorBase
 {
 public:
   WpxRigidBodyTransformParaRigidBodyTransform ParaBase, Para;
+
+  void Transform(const sMatrix34 & mat);
+};
+
+/****************************************************************************/
+
+class WpxRigidBodyMul : public WpxActorBase
+{
+public:
+  WpxRigidBodyMulParaRigidBodyMul ParaBase, Para;
+
+  void Transform(const sMatrix34 & mat);
 };
 
 /****************************************************************************/

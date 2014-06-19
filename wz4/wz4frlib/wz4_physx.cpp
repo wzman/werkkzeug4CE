@@ -182,7 +182,7 @@ void WpxActorBase::AddActorsChilds(wCommand *cmd)
     WpxActorBase * in = cmd->GetInput<WpxActorBase *>(i);
     if (in)
     {
-      if (in->IsType(WpxColliderBaseType))
+      if (in->IsType(WpxActorBaseType))
       {
         Childs.AddTail(in);
         in->AddRef();
@@ -212,6 +212,40 @@ void WpxRigidBody::AddRootCollider(WpxColliderBase * col)
 void WpxRigidBody::Transform(const sMatrix34 & mat)
 {
   sSRT srt;
+  sMatrix34 mul, mulmat;
+
+  srt.Scale = Para.Scale;
+  srt.Rotate = Para.Rot;
+  srt.Translate = Para.Trans;
+  srt.MakeMatrix(mul);
+
+  mulmat = mul*mat;
+
+  TransformChilds(mulmat);
+
+  RootCollider->Transform(mulmat);
+  RootNode->Transform(0, mulmat);
+}
+
+
+void WpxRigidBody::Render(Wz4RenderContext &ctx, sMatrix34 &mat)
+{
+  // RenderNode render
+  //RootNode->Prepare(&ctx);
+  ctx.ClearRecFlags(RootNode);
+  RootNode->Render(&ctx);
+  RootNode->ClearMatricesR();
+
+  // colliders render
+  RootCollider->Render(ctx, mat);
+  RootCollider->ClearMatricesR();
+}
+
+/****************************************************************************/
+
+void WpxRigidBodyTransform::Transform(const sMatrix34 & mat)
+{
+  sSRT srt;
   sMatrix34 mul;
 
   srt.Scale = Para.Scale;
@@ -222,31 +256,33 @@ void WpxRigidBody::Transform(const sMatrix34 & mat)
   TransformChilds(mul*mat);
 }
 
+/****************************************************************************/
 
-void WpxRigidBody::Render(Wz4RenderContext &ctx, sMatrix34 &mat)
+void WpxRigidBodyMul::Transform(const sMatrix34 & mat)
 {
-  // get actor initial matrix
-  sMatrix34 mat0 = sMatrix34(Matrices[0]);
+  sSRT srt;
+  sMatrix34 preMat;
+  sMatrix34 mulMat;
+  sMatrix34 accu;
 
-  // prepare and transform RootNode with actor initial matrix
-  RootNode->Prepare(&ctx);
-  RootNode->ClearMatricesR();
-  RootNode->ClearRecFlagsR();
-  RootNode->Transform(&ctx, mat0);
-  ctx.ClearRecFlags(RootNode);
+  srt.Scale = Para.PreScale;
+  srt.Rotate = Para.PreRot;
+  srt.Translate = Para.PreTrans;
+  srt.MakeMatrix(preMat);
 
-  // transform root collider with actor initial matrix
-  RootCollider->ClearMatricesR();
-  RootCollider->Transform(mat0);
+  srt.Scale = Para.Scale;
+  srt.Rotate = Para.Rot;
+  srt.Translate = Para.Trans;
+  srt.MakeMatrix(mulMat);
 
-  // for each matrix in graph, render actor + its colliders
-  sMatrix34CM * m;
-  sFORALL(Matrices, m)
+  if (Para.Count>1 && (Para.Flags & 1))
+    accu.l = sVector31(sVector30(srt.Translate) * ((Para.Count - 1)*-0.5));
+
+  for (sInt i = 0; i<sMax(1, Para.Count); i++)
   {
-    // render actor
-    RootNode->Render(&ctx);
-
-    // render colliders graph from root collider
-    RootCollider->Render(ctx, sMatrix34(*m));
+    TransformChilds(preMat*accu*mat);
+    accu = accu * mulMat;
   }
 }
+
+/****************************************************************************/
