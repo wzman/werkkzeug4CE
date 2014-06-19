@@ -175,8 +175,10 @@ public:
 
   WpxRigidBody();
   ~WpxRigidBody();
-  void AddRootCollider(WpxColliderBase * col);
+  void Transform(const sMatrix34 & mat);
   void Render(Wz4RenderContext &ctx, sMatrix34 &mat);
+
+  void AddRootCollider(WpxColliderBase * col);
 };
 
 /****************************************************************************/

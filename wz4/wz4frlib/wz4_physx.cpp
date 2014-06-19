@@ -209,28 +209,44 @@ void WpxRigidBody::AddRootCollider(WpxColliderBase * col)
   col->AddRef();
 }
 
+void WpxRigidBody::Transform(const sMatrix34 & mat)
+{
+  sSRT srt;
+  sMatrix34 mul;
+
+  srt.Scale = Para.Scale;
+  srt.Rotate = Para.Rot;
+  srt.Translate = Para.Trans;
+  srt.MakeMatrix(mul);
+
+  TransformChilds(mul*mat);
+}
+
+
 void WpxRigidBody::Render(Wz4RenderContext &ctx, sMatrix34 &mat)
 {
-  // render actor
-  if (RootNode)
-  {
-    RootNode->ClearMatricesR();
-    RootNode->ClearRecFlagsR();
-    RootNode->Transform(&ctx, mat);
-    RootNode->Prepare(&ctx);
+  // get actor initial matrix
+  sMatrix34 mat0 = sMatrix34(Matrices[0]);
 
-    ctx.ClearRecFlags(RootNode);
+  // prepare and transform RootNode with actor initial matrix
+  RootNode->Prepare(&ctx);
+  RootNode->ClearMatricesR();
+  RootNode->ClearRecFlagsR();
+  RootNode->Transform(&ctx, mat0);
+  ctx.ClearRecFlags(RootNode);
 
-    sMatrix34CM * m;
-    sFORALL(Matrices, m)
-    {
-      RootNode->Render(&ctx);
-      //ctx.NextRecMask();
-    }
-  }
-
-  // render colliders graph from root collider
+  // transform root collider with actor initial matrix
   RootCollider->ClearMatricesR();
-  RootCollider->Transform(mat);
-  RootCollider->Render(ctx, mat);
+  RootCollider->Transform(mat0);
+
+  // for each matrix in graph, render actor + its colliders
+  sMatrix34CM * m;
+  sFORALL(Matrices, m)
+  {
+    // render actor
+    RootNode->Render(&ctx);
+
+    // render colliders graph from root collider
+    RootCollider->Render(ctx, sMatrix34(*m));
+  }
 }
