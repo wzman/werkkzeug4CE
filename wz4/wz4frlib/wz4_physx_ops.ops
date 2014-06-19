@@ -254,7 +254,11 @@ type WpxActorBase
         ctx.RenderFlags |= wRF_FreeCam;
       ctx.View = *pi.View;
       ctx.Frustum = fr;
-      ctx.RenderMode = sRF_TARGET_MAIN;
+
+      if( (ctx.RenderFlags&wRF_RenderWire) == 0)
+        ctx.RenderMode = sRF_TARGET_MAIN;
+      else
+        ctx.RenderMode = sRF_TARGET_WIRE;
 
       sMatrix34 mat;
       mat.Init();

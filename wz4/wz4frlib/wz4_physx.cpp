@@ -72,7 +72,10 @@ void WpxCollider::Render(Wz4RenderContext &ctx, sMatrix34 &mat)
   {
     // render mesh geometry (instance mode)
     sMatrix34CM * cm = &Matrices[0];
-    MeshCollider->RenderInst(sRF_TARGET_MAIN, 0, Matrices.GetCount(), cm, 0);
+
+    if( (ctx.RenderFlags&wRF_RenderWire) == 0)
+      MeshCollider->RenderInst(sRF_TARGET_MAIN, 0, Matrices.GetCount(), cm, 0);
+
     MeshCollider->RenderInst(sRF_TARGET_WIRE, 0, Matrices.GetCount(), cm, 0);
   }
 }
