@@ -160,8 +160,13 @@ public:
 class WpxRigidBody : public WpxActorBase
 {
 public:
+  WpxColliderBase * RootCollider;    // associated colliders geometry, root collider in graph
+
   WpxRigidBodyParaRigidBody ParaBase, Para;
 
+  WpxRigidBody();
+  ~WpxRigidBody();
+  void AddRootCollider(WpxColliderBase * col);
   void Render(Wz4RenderContext &ctx, sMatrix34 &mat);
 };
 

@@ -193,8 +193,25 @@ void WpxActorBase::AddActorsChilds(wCommand *cmd)
 
 /****************************************************************************/
 
+WpxRigidBody::WpxRigidBody()
+{
+  RootCollider = 0;
+}
+
+WpxRigidBody::~WpxRigidBody()
+{
+  RootCollider->Release();
+}
+
+void WpxRigidBody::AddRootCollider(WpxColliderBase * col)
+{
+  RootCollider = col;
+  col->AddRef();
+}
+
 void WpxRigidBody::Render(Wz4RenderContext &ctx, sMatrix34 &mat)
 {
+  // render actor
   if (RootNode)
   {
     RootNode->ClearMatricesR();
@@ -211,4 +228,9 @@ void WpxRigidBody::Render(Wz4RenderContext &ctx, sMatrix34 &mat)
       //ctx.NextRecMask();
     }
   }
+
+  // render colliders graph from root collider
+  RootCollider->ClearMatricesR();
+  RootCollider->Transform(mat);
+  RootCollider->Render(ctx, mat);
 }

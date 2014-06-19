@@ -324,6 +324,9 @@ operator WpxRigidBody RigidBody (Wz4Render, WpxColliderBase)
     WpxRigidBodyNode * node = new WpxRigidBodyNode();
     node->ParaBase = out->ParaBase = out->Para = *para;
 
+    // add colliders
+    out->AddRootCollider(in1);
+
     out->RootNode = node;
     out->AddChilds(cmd, para->Renderpass, 0, 1);
   }
