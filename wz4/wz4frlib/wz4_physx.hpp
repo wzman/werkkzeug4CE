@@ -19,6 +19,9 @@ void PhysXInitEngine();
 /****************************************************************************/
 /****************************************************************************/
 
+// A template tree scene
+// Transform and Render objects in a graph
+
 template <typename  T, class T2>
 class WpxGenericGraph : public T2
 {
@@ -86,6 +89,9 @@ void WpxGenericGraph<T, T2>::RenderChilds(Wz4RenderContext &ctx, sMatrix34 &mat)
 /****************************************************************************/
 /****************************************************************************/
 
+// WpxColliderBase is the base type for all colliders operators
+// WpxColliderBase inherited classes are used to preview a graph of colliders
+
 class WpxColliderBase : public WpxGenericGraph<WpxColliderBase, wObject>
 {
 public:
@@ -147,6 +153,9 @@ public:
 /****************************************************************************/
 /****************************************************************************/
 
+// WpxActorBase is the base type for all actors operators
+// WpxActorBase inherited classes are used to preview a graph of actors + associated colliders graph
+
 class WpxActorBase : public WpxGenericGraph<WpxActorBase, Wz4Render>
 {
 public:
@@ -160,7 +169,7 @@ public:
 class WpxRigidBody : public WpxActorBase
 {
 public:
-  WpxColliderBase * RootCollider;    // associated colliders geometry, root collider in graph
+  WpxColliderBase * RootCollider;    // associated colliders geometries, root collider in collider graph
 
   WpxRigidBodyParaRigidBody ParaBase, Para;
 
@@ -195,6 +204,14 @@ public:
 };
 
 /****************************************************************************/
+/****************************************************************************/
+
+/****************************************************************************/
+// next Wz4RenderNodes, are nodes associated with actors operators,
+// they are computed in the Wz4Render graph process at each render loop,
+// they are used for :
+// - render real RenderNode binded with physx
+// - simulate and process manually physx features like kinematics, add forces, etc...
 /****************************************************************************/
 
 class WpxRigidBodyNode : public  Wz4RenderNode
