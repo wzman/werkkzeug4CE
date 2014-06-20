@@ -328,10 +328,7 @@ operator WpxRigidBody RigidBody (Wz4Render, WpxColliderBase)
   }
   code
   {
-    //WpxRigidBodyNode * node = new WpxRigidBodyNode();
-    WpxRigidBodyNode * node = 0;
-    node = new WpxRigidBodyNodeDynamic();
-
+    WpxRigidBodyNodeDynamic * node = new WpxRigidBodyNodeDynamic();
     node->ParaBase = out->ParaBase = out->Para = *para;
 
     // add colliders
@@ -351,12 +348,17 @@ operator WpxRigidBodyAdd RigidBodyAdd "Add" (*WpxActorBase)
 
   parameter
   {
+    int Renderpass(-127..127);
   }
   code
   {
+    WpxRigidBodyNode * node = new WpxRigidBodyNode();
     out->ParaBase = out->Para = *para;
 
     out->AddActorsChilds(cmd);
+
+    out->RootNode = node;
+    out->AddChilds(cmd, para->Renderpass);
   }
 }
 
@@ -369,15 +371,20 @@ operator WpxRigidBodyTransform RigidBodyTransform "Transform" (WpxActorBase)
 
   parameter
   {
+    int Renderpass(-127..127);
     float31 Scale (-1024..1024 step 0.01) = 1;
     float30 Rot (-16..16 step 0.01) = 0;
     float31 Trans (-0x10000..0x10000 step 0.01) = { 0,0,0 } ;
   }
   code
   {
-    out->ParaBase = out->Para = *para;
+    WpxRigidBodyNodeDynamicTransform * node = new WpxRigidBodyNodeDynamicTransform();
+    node->ParaBase = out->ParaBase = out->Para = *para;
 
     out->AddActorsChilds(cmd);
+
+    out->RootNode = node;
+    out->AddChilds(cmd, para->Renderpass);
   }
 }
 
@@ -390,6 +397,7 @@ operator WpxRigidBodyMul RigidBodyMul "Multiply" (WpxActorBase)
 
   parameter
   {
+    int Renderpass(-127..127);
     flags Flags ("-|Center");
     group "Pre-Transform";
     float31 PreScale (-1024..1024 step 0.01) = 1;
@@ -403,9 +411,13 @@ operator WpxRigidBodyMul RigidBodyMul "Multiply" (WpxActorBase)
   }
   code
   {
-    out->ParaBase = out->Para = *para;
+    WpxRigidBodyNode * node = new WpxRigidBodyNode();
+    /*node->ParaBase =*/ out->ParaBase = out->Para = *para;
 
     out->AddActorsChilds(cmd);
+
+    out->RootNode = node;
+    out->AddChilds(cmd, para->Renderpass);
   }
 }
 
