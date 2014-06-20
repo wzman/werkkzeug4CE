@@ -11,8 +11,264 @@
 /****************************************************************************/
 /****************************************************************************/
 
+PxFoundation * gFoundation;   // global physx foundation pointer
+PxPhysics * gPhysicsSDK;      // global physx engine pointer
+PxCooking * gCooking;         // global physx cooking pointer
+
+static PxDefaultErrorCallback gDefaultErrorCallback;
+static PxDefaultAllocator gDefaultAllocatorCallback;
+static PxSimulationFilterShader gDefaultFilterShader=PxDefaultSimulationFilterShader;
+
+/****************************************************************************/
+/****************************************************************************/
+
 void PhysXInitEngine()
 {
+  // create foundation object with default error and allocator callbacks.
+  gFoundation = PxCreateFoundation(PX_PHYSICS_VERSION,gDefaultAllocatorCallback,gDefaultErrorCallback);
+  if(!gFoundation)
+  {
+    sLogF(L"PhysX",L"PhysXInitEngine - PxCreateFoundation failed!\n");
+    return;
+  }
+
+  // create Physics object with the created foundation and with a 'default' scale tolerance.
+  gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION,*gFoundation,PxTolerancesScale());
+  if(!gPhysicsSDK)
+  {
+    sLogF(L"PhysX",L"PhysXInitEngine - PxCreatePhysics failed!\n");
+    return;
+  }
+
+  // create cooking object
+  gCooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, PxCookingParams());
+  if (!gCooking)
+  {
+    sLogF(L"PhysX",L"PhysXInitEngine - PxCreateCooking failed!\n");
+    return;
+  }
+}
+
+/****************************************************************************/
+
+sINLINE void sMatrix34ToPxMat44(const sMatrix34 &wzMat, PxMat44 &pxMat)
+{
+  PxVec3 pxv0(wzMat.i.x, wzMat.i.y, wzMat.i.z);
+  PxVec3 pxv1(wzMat.j.x, wzMat.j.y, wzMat.j.z);
+  PxVec3 pxv2(wzMat.k.x, wzMat.k.y, wzMat.k.z);
+  PxVec3 pxv3(wzMat.l.x, wzMat.l.y, wzMat.l.z);
+
+  pxMat = PxMat44(pxv0, pxv1, pxv2, pxv3);
+}
+
+/****************************************************************************/
+
+sINLINE void PxMat44TosMatrix34(const PxMat44 &pxMat, sMatrix34 &wzMat)
+{
+  wzMat.i.x = pxMat.column0.x;
+  wzMat.i.y = pxMat.column0.y;
+  wzMat.i.z = pxMat.column0.z;
+
+  wzMat.j.x = pxMat.column1.x;
+  wzMat.j.y = pxMat.column1.y;
+  wzMat.j.z = pxMat.column1.z;
+
+  wzMat.k.x = pxMat.column2.x;
+  wzMat.k.y = pxMat.column2.y;
+  wzMat.k.z = pxMat.column2.z;
+
+  wzMat.l.x = pxMat.column3.x;
+  wzMat.l.y = pxMat.column3.y;
+  wzMat.l.z = pxMat.column3.z;
+}
+
+/****************************************************************************/
+
+void PxConvexMeshToWz4Mesh(const PxConvexMesh * pxConvexMesh, Wz4Mesh * wz4Mesh)
+{
+  sVERIFY(wz4Mesh);
+
+  PxU32 nbVerts = pxConvexMesh->getNbVertices();
+  const PxVec3* convexVerts = pxConvexMesh->getVertices();
+  const PxU8* indexBuffer = pxConvexMesh->getIndexBuffer();
+  PxU32 nbPolygons = pxConvexMesh->getNbPolygons();
+
+  PxU32 totalNbTris = 0;
+  PxU32 totalNbVerts = 0;
+  for(PxU32 i=0;i<nbPolygons;i++)
+  {
+    PxHullPolygon data;
+    bool status = pxConvexMesh->getPolygonData(i, data);
+    PX_ASSERT(status);
+    totalNbVerts += data.mNbVerts;
+    totalNbTris += data.mNbVerts - 2;
+  }
+
+  wz4Mesh->AddDefaultCluster();
+
+  PxU32 offset = 0;
+  for(PxU32 i=0;i<nbPolygons;i++)
+  {
+    PxHullPolygon face;
+    bool status = pxConvexMesh->getPolygonData(i, face);
+    PX_ASSERT(status);
+
+    const PxU8* faceIndices = indexBuffer + face.mIndexBase;
+    for(PxU32 j=0;j<face.mNbVerts;j++)
+    {
+      sVector31 v;
+      v.x = convexVerts[faceIndices[j]].x;
+      v.y = convexVerts[faceIndices[j]].y;
+      v.z = convexVerts[faceIndices[j]].z;
+
+      Wz4MeshVertex mv;
+      mv.Init();
+      mv.Pos.x = v.x;
+      mv.Pos.y = v.y;
+      mv.Pos.z = v.z;
+
+      wz4Mesh->Vertices.AddTail(mv);
+    }
+
+    for(PxU32 j=1;j<face.mNbVerts;j++)
+    {
+      Wz4MeshFace mf;
+      mf.Init(3);
+      mf.Vertex[0] = PxU16(offset);
+      mf.Vertex[1] = PxU16(offset+j);
+      mf.Vertex[2] = PxU16(offset+j-1);
+      wz4Mesh->Faces.AddTail(mf);
+    }
+
+    offset += face.mNbVerts;
+  }
+}
+
+/****************************************************************************/
+
+PxConvexMesh * MakePxConvexHull(Wz4Mesh * srcMesh)
+{
+  sArray<PxVec3> convexVertices;
+
+  // copy all wz4mesh vertices into convexVertices array
+  Wz4MeshVertex * mv;
+  sFORALL(srcMesh->Vertices, mv)
+  {
+    PxVec3 pxv;
+    pxv.x = mv->Pos.x;
+    pxv.y = mv->Pos.y;
+    pxv.z = mv->Pos.z;
+
+    convexVertices.AddTail(pxv);
+  }
+
+  // generate hull from convex Description
+  PxConvexMeshDesc convexDesc;
+  convexDesc.points.count     = srcMesh->Vertices.GetCount();
+  convexDesc.points.stride    = sizeof(PxVec3);
+  convexDesc.points.data      = convexVertices.GetData();
+  convexDesc.flags            = PxConvexFlag::eCOMPUTE_CONVEX;
+
+  PxDefaultMemoryOutputStream os;
+  if(!gCooking->cookConvexMesh(convexDesc, os))
+  {
+    // failed to create convex hull mesh
+    return 0;
+  }
+
+  PxU8 * data = os.getData();
+  PxDefaultMemoryInputData * input = new PxDefaultMemoryInputData(data, os.getSize());
+  PxConvexMesh * convexMesh = gPhysicsSDK->createConvexMesh(*input);
+  delete input;
+
+  return convexMesh;
+}
+
+/****************************************************************************/
+
+PxTriangleMesh * MakePxMesh(Wz4Mesh * srcMesh)
+{
+  sArray<PxVec3> meshVertices;
+
+  // copy all wz4mesh vertices into convexVertices array
+  Wz4MeshVertex * mv;
+  sFORALL(srcMesh->Vertices, mv)
+  {
+    PxVec3 pxv;
+    pxv.x = mv->Pos.x;
+    pxv.y = mv->Pos.y;
+    pxv.z = mv->Pos.z;
+
+    meshVertices.AddTail(pxv);
+  }
+
+  sArray<PxU32> meshFaces;
+  Wz4MeshFace * mf;
+  sFORALL(srcMesh->Faces, mf)
+  {
+    meshFaces.AddTail(mf->Vertex[0]);
+    meshFaces.AddTail(mf->Vertex[1]);
+    meshFaces.AddTail(mf->Vertex[2]);
+  }
+
+  PxTriangleMeshDesc meshDesc;
+  meshDesc.points.count           = meshVertices.GetCount();
+  meshDesc.points.stride          = sizeof(PxVec3);
+  meshDesc.points.data            = meshVertices.GetData();
+
+  meshDesc.triangles.count        = meshFaces.GetCount()/3;
+  meshDesc.triangles.stride       = 3*sizeof(PxU32);
+  meshDesc.triangles.data         = meshFaces.GetData();
+
+
+  PxDefaultMemoryOutputStream os;
+  if(!gCooking->cookTriangleMesh(meshDesc, os))
+  {
+    // failed to create px triangulate mesh
+    return 0;
+  }
+
+  PxU8 * data = os.getData();
+  PxDefaultMemoryInputData * input = new PxDefaultMemoryInputData(data, os.getSize());
+  PxTriangleMesh * triMesh = gPhysicsSDK->createTriangleMesh(*input);
+  delete input;
+
+  return triMesh;
+}
+
+/****************************************************************************/
+
+void PxTriMeshToWz4Mesh(const PxTriangleMesh * pxConvexMesh, Wz4Mesh * wz4Mesh)
+{
+  sVERIFY(wz4Mesh);
+  wz4Mesh->AddDefaultCluster();
+
+  const PxU32 nbVerts = pxConvexMesh->getNbVertices();
+  const PxVec3* verts = pxConvexMesh->getVertices();
+  const PxU32 nbTris = pxConvexMesh->getNbTriangles();
+  const void* tris = pxConvexMesh->getTriangles();
+
+  for(PxU32 i=0; i<nbVerts; i++)
+  {
+    Wz4MeshVertex mv;
+    mv.Init();
+    mv.Pos.x = verts->x;
+    mv.Pos.y = verts->y;
+    mv.Pos.z = verts->z;
+    wz4Mesh->Vertices.AddTail(mv);
+    verts++;
+  }
+
+  const PxU16* src = (const PxU16*)tris;
+  for(PxU32 i=0;i<nbTris;i++)
+  {
+    Wz4MeshFace mf;
+    mf.Init(3);
+    mf.Vertex[0] = src[i*3+0];
+    mf.Vertex[1] = src[i*3+2];
+    mf.Vertex[2] = src[i*3+1];
+    wz4Mesh->Faces.AddTail(mf);
+  }
 }
 
 /****************************************************************************/
