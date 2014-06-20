@@ -548,3 +548,76 @@ void WpxRigidBodyMul::Transform(const sMatrix34 & mat)
 }
 
 /****************************************************************************/
+/****************************************************************************/
+
+RNPhysx::RNPhysx()
+{
+  Scene = 0;
+
+  Anim.Init(Wz4RenderType->Script);
+}
+
+RNPhysx::~RNPhysx()
+{
+  if(Scene)
+    Scene->release();
+}
+
+sBool RNPhysx::Init(wCommand *cmd)
+{
+  // create a new physx scene
+  Scene = CreateScene();
+  if (!Scene)
+    return sFALSE;
+
+  return sTRUE;
+}
+
+PxScene * RNPhysx::CreateScene()
+{
+  // Create the scene
+  PxSceneDesc sceneDesc(gPhysicsSDK->getTolerancesScale());
+  sceneDesc.gravity = PxVec3(Para.Gravity.x, Para.Gravity.y, Para.Gravity.z);
+  if (!sceneDesc.cpuDispatcher)
+  {
+    PxDefaultCpuDispatcher* mCpuDispatcher = PxDefaultCpuDispatcherCreate(Para.NumThreads);
+
+    if (!mCpuDispatcher)
+    {
+      sLogF(L"PhysX", L"CreateScene - PxDefaultCpuDispatcherCreate failed!\n");
+      return 0;
+    }
+
+    sceneDesc.cpuDispatcher = mCpuDispatcher;
+  }
+
+  if (!sceneDesc.filterShader)
+    sceneDesc.filterShader = gDefaultFilterShader;
+
+
+  PxScene * scene = gPhysicsSDK->createScene(sceneDesc);
+
+  if (!scene)
+  {
+    sLogF(L"PhysX", L"CreateScene - createScene failed!\n");
+    return 0;
+  }
+
+  return scene;
+}
+
+void RNPhysx::Simulate(Wz4RenderContext *ctx)
+{
+  Para = ParaBase;
+  Anim.Bind(ctx->Script, &Para);
+  SimulateCalc(ctx);
+  SimulateChilds(ctx);
+
+  // compute physx
+  sF32 stepSize = 1.0f / 600.0f;
+  Scene->simulate(stepSize);
+  while (!Scene->fetchResults())
+  {
+    // do something useful
+  }
+}

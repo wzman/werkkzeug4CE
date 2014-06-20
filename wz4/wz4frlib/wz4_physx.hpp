@@ -270,10 +270,20 @@ public:
 class RNPhysx : public Wz4RenderNode
 {
 private:
+  PxScene * Scene;    // Physx scene
+
+  PxScene * CreateScene();
 
 public:
   Wz4RenderParaPhysx ParaBase, Para;
   Wz4RenderAnimPhysx Anim;
+
+  RNPhysx::RNPhysx();
+  RNPhysx::~RNPhysx();
+  void Simulate(Wz4RenderContext *ctx);
+
+  sBool Init(wCommand *cmd);
+
 };
 
 #endif FILE_WZ4FRLIB_PHYSX_HPP

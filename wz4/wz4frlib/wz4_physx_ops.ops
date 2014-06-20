@@ -434,6 +434,12 @@ operator Wz4Render Physx (*WpxActorBase)
     RNPhysx *node = new RNPhysx();
     node->ParaBase = node->Para = *para;
 
+    if(!node->Init(cmd))
+    {
+      cmd->SetError(L"Failed to init physx scene");
+      return 0;
+    }
+
     out->RootNode = node;
     out->AddChilds(cmd, para->Renderpass);
   }
