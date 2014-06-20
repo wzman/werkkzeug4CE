@@ -224,24 +224,27 @@ void WpxRigidBody::Transform(const sMatrix34 & mat)
 
   mulmat = mul*mat;
 
-  TransformChilds(mulmat);
+  // a WpxRigidBody has no WpxRigidBody childs
+  // but it has a RootCollider and a RootNode, so transform them
 
   RootCollider->Transform(mulmat);
   RootNode->Transform(0, mulmat);
 }
 
+void WpxRigidBody::ClearMatricesR()
+{
+  RootCollider->ClearMatricesR();
+  RootNode->ClearMatricesR();
+}
 
 void WpxRigidBody::Render(Wz4RenderContext &ctx, sMatrix34 &mat)
 {
   // RenderNode render
-  //RootNode->Prepare(&ctx);
   ctx.ClearRecFlags(RootNode);
   RootNode->Render(&ctx);
-  RootNode->ClearMatricesR();
 
   // colliders render
   RootCollider->Render(ctx, mat);
-  RootCollider->ClearMatricesR();
 }
 
 /****************************************************************************/

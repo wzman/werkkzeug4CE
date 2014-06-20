@@ -33,8 +33,8 @@ public:
 
   virtual void Render(Wz4RenderContext &ctx, sMatrix34 &mat);   // render
   virtual void Transform(const sMatrix34 & mat);                // build list of model matrices with GRAPH!
+  virtual void ClearMatricesR();                                // clear matrices
 
-  void ClearMatricesR();                                        // clear matrices
   void RenderChilds(Wz4RenderContext &ctx, sMatrix34 &mat);     // recurse to childs
   void TransformChilds(const sMatrix34 & mat);                  // recurse to childs
 };
@@ -177,6 +177,7 @@ public:
   ~WpxRigidBody();
   void Transform(const sMatrix34 & mat);
   void Render(Wz4RenderContext &ctx, sMatrix34 &mat);
+  void ClearMatricesR();
 
   void AddRootCollider(WpxColliderBase * col);
 };
