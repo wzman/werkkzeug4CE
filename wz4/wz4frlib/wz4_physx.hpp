@@ -254,6 +254,7 @@ public:
 // next Wz4RenderNodes, are nodes associated with actors operators,
 // they are computed in the Wz4Render graph process at each render loop,
 // they are used for :
+// - init physx objects
 // - render real RenderNode binded with physx
 // - simulate and process manually physx features like kinematics, add forces, etc...
 /****************************************************************************/
@@ -262,6 +263,8 @@ class WpxRigidBodyNode : public  Wz4RenderNode
 {
 public:
   WpxRigidBodyParaRigidBody ParaBase, Para;
+
+  WpxRigidBodyNode() {}
 
   virtual void PhysxInit(PxScene * scene, const sMatrix34 & mat);
   void PhysxInitChilds(PxScene * scene, const sMatrix34 & mat);
@@ -295,9 +298,11 @@ public:
 class RNPhysx : public Wz4RenderNode
 {
 private:
-  PxScene * Scene;    // Physx scene
+  PxScene * Scene;                        // Physx scene
+  sBool Executed;                         // flag for restart and pause simulation mechanism with F6/F5
+  sF32 PreviousTimeLine;                  // delta time line use to restart simulation
 
-  PxScene * CreateScene();
+  PxScene * CreateScene();                // create new physx scene
 
 public:
   Wz4RenderParaPhysx ParaBase, Para;
@@ -306,9 +311,7 @@ public:
   RNPhysx::RNPhysx();
   RNPhysx::~RNPhysx();
   void Simulate(Wz4RenderContext *ctx);
-
   sBool Init(wCommand *cmd);
-
 };
 
 #endif FILE_WZ4FRLIB_PHYSX_HPP

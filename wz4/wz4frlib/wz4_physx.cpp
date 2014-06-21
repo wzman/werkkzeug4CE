@@ -618,7 +618,7 @@ void WpxRigidBodyNodeDynamic::Transform(Wz4RenderContext *ctx,const sMatrix34 & 
   PxTransform pT;
   sMatrix34 mmat;
 
-  if (Actor)
+  if (Actor && ctx)
   {
     pT = Actor->getGlobalPose();
     PxMat44TosMatrix34(pT, mmat);
@@ -648,6 +648,8 @@ void WpxRigidBodyNodeDynamicTransform::PhysxInit(PxScene * scene, const sMatrix3
 RNPhysx::RNPhysx()
 {
   Scene = 0;
+  PreviousTimeLine = 0.0f;
+  Executed = sFALSE;
 
   Anim.Init(Wz4RenderType->Script);
 }
@@ -665,11 +667,10 @@ sBool RNPhysx::Init(wCommand *cmd)
   if (!Scene)
     return sFALSE;
 
-
   sMatrix34 mat;
   mat.Init();
 
-  // add physx objects to scene
+  // add physx childs objects to scene
   for (sInt i=0; i<cmd->InputCount; i++)
   {
     WpxActorBase *in = cmd->GetInput<WpxActorBase *>(i);
@@ -680,16 +681,11 @@ sBool RNPhysx::Init(wCommand *cmd)
         WpxRigidBodyNode * n = static_cast<WpxRigidBodyNode *>(in->RootNode);
         if(n)
         {
-          sMatrix34 m;
-          m.Init();
-          //n->ClearMatricesR();
-          //n->Transform(0, m);
-          n->PhysxInit(Scene, m);
+          n->PhysxInit(Scene, mat);
         }
       }
     }
   }
-
 
   return sTRUE;
 }
@@ -732,7 +728,32 @@ void RNPhysx::Simulate(Wz4RenderContext *ctx)
   Para = ParaBase;
   Anim.Bind(ctx->Script, &Para);
   SimulateCalc(ctx);
+
+  // pause/restart mechanism (F5/F6 key)
+  if (!Doc->IsPlayer)
+  {
+    // compute elpased wz time for the restart mechanism
+    sF32 timeLine = ctx->GetBaseTime();
+    sF32 deltaTimeLine = timeLine - PreviousTimeLine;
+    PreviousTimeLine = timeLine;
+
+    // timeline is paused, no simulation to run
+    if (deltaTimeLine == 0)
+      return;
+
+    // Restart mechanism (for F6, loop demo, or clip restart)
+    if (Executed && deltaTimeLine < -0.1f)
+    {
+      // rebuild operator (to restore default values)
+      Doc->Change(Op, 1, 1);
+      Executed = sFALSE;
+      return;
+    }
+    Executed = sTRUE;
+  }
+
   SimulateChilds(ctx);
+
 
   // compute physx
   sF32 stepSize = 1.0f / 600.0f;
