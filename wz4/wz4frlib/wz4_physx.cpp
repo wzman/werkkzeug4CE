@@ -576,37 +576,67 @@ void WpxRigidBodyNode::PhysxInitChilds(PxScene * scene, const sMatrix34 & mat)
 
 WpxRigidBodyNodeDynamic::WpxRigidBodyNodeDynamic()
 {
+  Actor = 0;
 }
 
 WpxRigidBodyNodeDynamic::~WpxRigidBodyNodeDynamic()
 {
+  if (Actor)
+    Actor->release();
 }
 
 void WpxRigidBodyNodeDynamic::PhysxInit(PxScene * scene, const sMatrix34 & mat)
 {
   Para = ParaBase;
+
+  if (Actor)
+    Actor->release();
+
+  sMatrix34 wzMat34;
+  sSRT srt;
+  srt.Rotate = Para.Rot;
+  srt.Translate = Para.Trans;
+  srt.MakeMatrix(wzMat34);
+  wzMat34 *= mat;
+  PxMat44 pxMat;
+  sMatrix34ToPxMat44(wzMat34, pxMat);
+  PxTransform pose(pxMat);
+
+  Actor = gPhysicsSDK->createRigidDynamic(pose);
+
+  PxMaterial* mMaterial;
+
+  mMaterial = gPhysicsSDK->createMaterial(0.5f, 0.5f, 0.1f);    //static friction, dynamic friction, restitution
+  if (!mMaterial)
+    sLogF(L"PhysX", L"createMaterial failed!\n");
+
+  Actor->createShape(PxSphereGeometry(0.5), *mMaterial);
+
+  scene->addActor(*Actor);
+
 }
 
 void WpxRigidBodyNodeDynamic::Transform(Wz4RenderContext *ctx, const sMatrix34 & mat)
 {
-  if(ctx)
+  if (ctx)
   {
-    sMatrix34 mul;
-    sSRT srt;
-    srt.Rotate = Para.Rot;
-    srt.Translate = Para.Trans;
-    srt.MakeMatrix(mul);
-    TransformChilds(ctx, mat*mul);
+    // transformed by Wz4RenderNode process
+    // process actor transformation by physx pose
 
-    /*PxTransform pT;
-    sMatrix34 mmat;
-    pT = Actor->getGlobalPose();
-    PxMat44TosMatrix34(pT, mmat);
-    TransformChilds(ctx, mmat);*/
-
+    if (Actor)
+    {
+      PxTransform pT;
+      sMatrix34 mmat;
+      pT = Actor->getGlobalPose();
+      PxMat44TosMatrix34(pT, mmat);
+      TransformChilds(ctx, mmat);
+    }
   }
   else
   {
+    // transformed by WpxRigidBody (preview actors positions without physx)
+    // transform associated scene node
+
     TransformChilds(ctx, mat);
   }
 }
@@ -616,6 +646,16 @@ void WpxRigidBodyNodeDynamic::Transform(Wz4RenderContext *ctx, const sMatrix34 &
 void WpxRigidBodyNodeDynamicTransform::PhysxInit(PxScene * scene, const sMatrix34 & mat)
 {
   Para = ParaBase;
+
+  sSRT srt;
+  sMatrix34 mul;
+
+  srt.Scale = Para.Scale;
+  srt.Rotate = Para.Rot;
+  srt.Translate = Para.Trans;
+  srt.MakeMatrix(mul);
+
+  PhysxInitChilds(scene, mul*mat);
 }
 
 /****************************************************************************/
@@ -623,33 +663,6 @@ void WpxRigidBodyNodeDynamicTransform::PhysxInit(PxScene * scene, const sMatrix3
 void WpxRigidBodyNodeDynamicMul::PhysxInit(PxScene * scene, const sMatrix34 & mat)
 {
   Para = ParaBase;
-}
-
-void WpxRigidBodyNodeDynamicMul::Transform(Wz4RenderContext *ctx, const sMatrix34 &mat)
-{
-  sSRT srt;
-  sMatrix34 PreMat;
-  sMatrix34 MulMat;
-  sMatrix34 accu;
-
-  srt.Scale = Para.PreScale;
-  srt.Rotate = Para.PreRot;
-  srt.Translate = Para.PreTrans;
-  srt.MakeMatrix(PreMat);
-
-  srt.Scale = Para.Scale;
-  srt.Rotate = Para.Rot;
-  srt.Translate = Para.Trans;
-  srt.MakeMatrix(MulMat);
-
-  if (Para.Count>1 && (Para.Flags & 1))
-    accu.l = sVector31(sVector30(srt.Translate) * ((Para.Count - 1)*-0.5));
-
-  for (sInt i = 0; i<sMax(1, Para.Count); i++)
-  {
-    TransformChilds(ctx, PreMat*accu*mat);
-    accu = accu * MulMat;
-  }
 }
 
 /****************************************************************************/

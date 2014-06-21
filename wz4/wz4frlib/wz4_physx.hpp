@@ -271,14 +271,16 @@ public:
 
 class WpxRigidBodyNodeDynamic : public WpxRigidBodyNode
 {
+  PxRigidActor * Actor;
+
 public:
   WpxRigidBodyParaRigidBody ParaBase, Para;
 
   WpxRigidBodyNodeDynamic();
   ~WpxRigidBodyNodeDynamic();
 
-  void PhysxInit(PxScene * scene, const sMatrix34 & mat);
   void Transform(Wz4RenderContext *ctx, const sMatrix34 & mat);
+  void PhysxInit(PxScene * scene, const sMatrix34 & mat);
 };
 
 class WpxRigidBodyNodeDynamicTransform : public WpxRigidBodyNode
@@ -291,12 +293,9 @@ public:
 
 class WpxRigidBodyNodeDynamicMul : public WpxRigidBodyNode
 {
-  sArray<PxRigidActor *> Actors;
-
 public:
   WpxRigidBodyMulParaRigidBodyMul ParaBase, Para;
 
-  void Transform(Wz4RenderContext *ctx, const sMatrix34 &mat);
   void PhysxInit(PxScene * scene, const sMatrix34 & mat);
 };
 
