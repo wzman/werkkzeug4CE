@@ -411,8 +411,8 @@ operator WpxRigidBodyMul RigidBodyMul "Multiply" (WpxActorBase)
   }
   code
   {
-    WpxRigidBodyNode * node = new WpxRigidBodyNode();
-    /*node->ParaBase =*/ out->ParaBase = out->Para = *para;
+    WpxRigidBodyNodeDynamicMul * node = new WpxRigidBodyNodeDynamicMul();
+    node->ParaBase = out->ParaBase = out->Para = *para;
 
     out->AddActorsChilds(cmd);
 
