@@ -557,41 +557,31 @@ void WpxRigidBodyMul::Transform(const sMatrix34 & mat)
 /****************************************************************************/
 /****************************************************************************/
 
-void WpxRigidBodyNode::PhysxInit(PxScene * scene, const sMatrix34 & mat)
+void WpxRigidBodyNode::PhysxInit(PxScene * scene, const sMatrix34 & mat, sArray<sActor*> * actors)
 {
-  PhysxInitChilds(scene, mat);
+  PhysxInitChilds(scene, mat, actors);
 }
 
-void WpxRigidBodyNode::PhysxInitChilds(PxScene * scene, const sMatrix34 & mat)
+void WpxRigidBodyNode::PhysxInitChilds(PxScene * scene, const sMatrix34 & mat, sArray<sActor*> * actors)
 {
   Wz4RenderNode * n;
   sFORALL(Childs, n)
   {
     WpxRigidBodyNode * rn = static_cast<WpxRigidBodyNode*>(n);
-    rn->PhysxInit(scene, mat);
+    rn->PhysxInit(scene, mat, actors);
   }
 }
 
 /****************************************************************************/
 
-WpxRigidBodyNodeDynamic::WpxRigidBodyNodeDynamic()
-{
-  Actor = 0;
-}
-
-WpxRigidBodyNodeDynamic::~WpxRigidBodyNodeDynamic()
-{
-  if (Actor)
-    Actor->release();
-}
-
-void WpxRigidBodyNodeDynamic::PhysxInit(PxScene * scene, const sMatrix34 & mat)
+void WpxRigidBodyNodeDynamic::PhysxInit(PxScene * scene, const sMatrix34 & mat, sArray<sActor*> * actors)
 {
   Para = ParaBase;
 
-  if (Actor)
-    Actor->release();
+  // create new actor
+  sActor * actor = new sActor;
 
+  // compute actor pose
   sMatrix34 wzMat34;
   sSRT srt;
   srt.Rotate = Para.Rot;
@@ -601,41 +591,52 @@ void WpxRigidBodyNodeDynamic::PhysxInit(PxScene * scene, const sMatrix34 & mat)
   PxMat44 pxMat;
   sMatrix34ToPxMat44(wzMat34, pxMat);
   PxTransform pose(pxMat);
+  actor->matrix = new sMatrix34(wzMat34);
 
-  Actor = gPhysicsSDK->createRigidDynamic(pose);
+  // create physx rigid body
+  actor->actor = gPhysicsSDK->createRigidDynamic(pose);
 
+  // TO DELETE (create a temp collider and a temp material for rigidbody during test)
   PxMaterial* mMaterial;
-
   mMaterial = gPhysicsSDK->createMaterial(0.5f, 0.5f, 0.1f);    //static friction, dynamic friction, restitution
   if (!mMaterial)
     sLogF(L"PhysX", L"createMaterial failed!\n");
+  actor->actor->createShape(PxSphereGeometry(0.5), *mMaterial);
 
-  Actor->createShape(PxSphereGeometry(0.5), *mMaterial);
+  // add actor to physx scene
+  scene->addActor(*actor->actor);
 
-  scene->addActor(*Actor);
+  // add actor to all actors list
+  actors->AddTail(actor);
 
+  // copy ptr of all actors here for using in transform()
+  AllActorsPtr = actors;
 }
+
 
 void WpxRigidBodyNodeDynamic::Transform(Wz4RenderContext *ctx, const sMatrix34 & mat)
 {
   if (ctx)
   {
     // transformed by Wz4RenderNode process
-    // process actor transformation by physx pose
+    // transform associated scene node with physx
 
-    if (Actor)
+    sActor * a;
+    PxTransform pT;
+    sMatrix34 mmat;
+    sFORALL(*AllActorsPtr, a)
     {
-      PxTransform pT;
-      sMatrix34 mmat;
-      pT = Actor->getGlobalPose();
+      pT = a->actor->getGlobalPose();
       PxMat44TosMatrix34(pT, mmat);
-      TransformChilds(ctx, mmat);
+
+      Childs[0]->Matrices.AddTail(sMatrix34CM(mmat));
+      //TransformChilds(ctx, mmat);
     }
   }
   else
   {
     // transformed by WpxRigidBody (preview actors positions without physx)
-    // transform associated scene node
+    // transform associated scene node without physx
 
     TransformChilds(ctx, mat);
   }
@@ -643,7 +644,7 @@ void WpxRigidBodyNodeDynamic::Transform(Wz4RenderContext *ctx, const sMatrix34 &
 
 /****************************************************************************/
 
-void WpxRigidBodyNodeDynamicTransform::PhysxInit(PxScene * scene, const sMatrix34 & mat)
+void WpxRigidBodyNodeDynamicTransform::PhysxInit(PxScene * scene, const sMatrix34 & mat, sArray<sActor*> * actors)
 {
   Para = ParaBase;
 
@@ -655,14 +656,38 @@ void WpxRigidBodyNodeDynamicTransform::PhysxInit(PxScene * scene, const sMatrix3
   srt.Translate = Para.Trans;
   srt.MakeMatrix(mul);
 
-  PhysxInitChilds(scene, mul*mat);
+  PhysxInitChilds(scene, mul*mat, actors);
 }
 
 /****************************************************************************/
 
-void WpxRigidBodyNodeDynamicMul::PhysxInit(PxScene * scene, const sMatrix34 & mat)
+void WpxRigidBodyNodeDynamicMul::PhysxInit(PxScene * scene, const sMatrix34 & mat, sArray<sActor*> * actors)
 {
   Para = ParaBase;
+
+  sSRT srt;
+  sMatrix34 preMat;
+  sMatrix34 mulMat;
+  sMatrix34 accu;
+
+  srt.Scale = Para.PreScale;
+  srt.Rotate = Para.PreRot;
+  srt.Translate = Para.PreTrans;
+  srt.MakeMatrix(preMat);
+
+  srt.Scale = Para.Scale;
+  srt.Rotate = Para.Rot;
+  srt.Translate = Para.Trans;
+  srt.MakeMatrix(mulMat);
+
+  if (Para.Count>1 && (Para.Flags & 1))
+    accu.l = sVector31(sVector30(srt.Translate) * ((Para.Count - 1)*-0.5));
+
+  for (sInt i = 0; i<sMax(1, Para.Count); i++)
+  {
+    PhysxInitChilds(scene, preMat*accu*mat, actors);
+    accu = accu * mulMat;
+  }
 }
 
 /****************************************************************************/
@@ -670,7 +695,9 @@ void WpxRigidBodyNodeDynamicMul::PhysxInit(PxScene * scene, const sMatrix34 & ma
 
 RNPhysx::RNPhysx()
 {
+  AllActors = 0;
   Scene = 0;
+
   PreviousTimeLine = 0.0f;
   Executed = sFALSE;
 
@@ -679,7 +706,21 @@ RNPhysx::RNPhysx()
 
 RNPhysx::~RNPhysx()
 {
-  if(Scene)
+  // delete all actors
+  if (AllActors)
+  {
+    sActor * a;
+    sFORALL(*AllActors, a)
+    {
+      a->actor->release();
+      delete a->matrix;
+      delete a;
+    }
+    delete AllActors;
+  }
+
+  // delete physx scene
+  if (Scene)
     Scene->release();
 }
 
@@ -690,8 +731,12 @@ sBool RNPhysx::Init(wCommand *cmd)
   if (!Scene)
     return sFALSE;
 
+  // create first matrix
   sMatrix34 mat;
   mat.Init();
+
+  // create list for all actors
+  AllActors = new sArray<sActor*>;
 
   // add physx childs objects to scene
   for (sInt i=0; i<cmd->InputCount; i++)
@@ -704,7 +749,7 @@ sBool RNPhysx::Init(wCommand *cmd)
         WpxRigidBodyNode * n = static_cast<WpxRigidBodyNode *>(in->RootNode);
         if(n)
         {
-          n->PhysxInit(Scene, mat);
+          n->PhysxInit(Scene, mat, AllActors);
         }
       }
     }
@@ -779,7 +824,7 @@ void RNPhysx::Simulate(Wz4RenderContext *ctx)
 
 
   // compute physx
-  sF32 stepSize = 1.0f / 600.0f;
+  sF32 stepSize = 1.0f / 60.0f;
   Scene->simulate(stepSize);
   while (!Scene->fetchResults())
   {
