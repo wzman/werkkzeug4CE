@@ -629,7 +629,7 @@ void WpxRigidBodyNodeDynamic::Transform(Wz4RenderContext *ctx, const sMatrix34 &
       pT = a->actor->getGlobalPose();
       PxMat44TosMatrix34(pT, mmat);
 
-      Childs[0]->Matrices.AddTail(sMatrix34CM(mmat));
+      Childs[0]->Matrices.AddTail(sMatrix34CM(mmat*mat));
       //TransformChilds(ctx, mmat);
     }
   }
