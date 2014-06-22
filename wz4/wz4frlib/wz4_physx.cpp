@@ -557,24 +557,65 @@ void WpxRigidBodyMul::Transform(const sMatrix34 & mat)
 /****************************************************************************/
 /****************************************************************************/
 
-void WpxRigidBodyNode::PhysxInit(PxScene * scene, const sMatrix34 & mat, sArray<sActor*> * actors)
+void WpxRigidBodyNode::PhysxInit(PxScene * scene, const sMatrix34 & mat)
 {
-  PhysxInitChilds(scene, mat, actors);
+  PhysxInitChilds(scene, mat);
 }
 
-void WpxRigidBodyNode::PhysxInitChilds(PxScene * scene, const sMatrix34 & mat, sArray<sActor*> * actors)
+void WpxRigidBodyNode::PhysxInitChilds(PxScene * scene, const sMatrix34 & mat)
 {
   Wz4RenderNode * n;
   sFORALL(Childs, n)
   {
     WpxRigidBodyNode * rn = static_cast<WpxRigidBodyNode*>(n);
-    rn->PhysxInit(scene, mat, actors);
+    rn->PhysxInit(scene, mat);
+  }
+}
+
+void WpxRigidBodyNode::PhysxReset()
+{
+  PhysxResetChilds();
+}
+
+void WpxRigidBodyNode::PhysxResetChilds()
+{
+  Wz4RenderNode * n;
+  sFORALL(Childs, n)
+  {
+    WpxRigidBodyNode * rn = static_cast<WpxRigidBodyNode*>(n);
+    rn->PhysxReset();
   }
 }
 
 /****************************************************************************/
 
-void WpxRigidBodyNodeDynamic::PhysxInit(PxScene * scene, const sMatrix34 & mat, sArray<sActor*> * actors)
+WpxRigidBodyNodeDynamic::WpxRigidBodyNodeDynamic()
+{
+  AllActorsPtr = new sArray<sActor*>;
+}
+
+WpxRigidBodyNodeDynamic::~WpxRigidBodyNodeDynamic()
+{
+  //delete all actors
+  if (AllActorsPtr)
+  {
+    sActor * a;
+    sFORALL(*AllActorsPtr, a)
+    {
+      a->actor->release();
+      delete a->matrix;
+      delete a;
+    }
+    delete AllActorsPtr;
+  }
+}
+
+void WpxRigidBodyNodeDynamic::PhysxReset()
+{
+  AllActorsPtr->Clear();
+}
+
+void WpxRigidBodyNodeDynamic::PhysxInit(PxScene * scene, const sMatrix34 & mat)
 {
   Para = ParaBase;
 
@@ -606,11 +647,8 @@ void WpxRigidBodyNodeDynamic::PhysxInit(PxScene * scene, const sMatrix34 & mat, 
   // add actor to physx scene
   scene->addActor(*actor->actor);
 
-  // add actor to all actors list
-  actors->AddTail(actor);
-
-  // copy ptr of all actors here for using in transform()
-  AllActorsPtr = actors;
+  // add actor to list
+  AllActorsPtr->AddTail(actor);
 }
 
 
@@ -647,7 +685,7 @@ void WpxRigidBodyNodeDynamic::Transform(Wz4RenderContext *ctx, const sMatrix34 &
 
 /****************************************************************************/
 
-void WpxRigidBodyNodeDynamicTransform::PhysxInit(PxScene * scene, const sMatrix34 & mat, sArray<sActor*> * actors)
+void WpxRigidBodyNodeDynamicTransform::PhysxInit(PxScene * scene, const sMatrix34 & mat)
 {
   Para = ParaBase;
 
@@ -659,12 +697,12 @@ void WpxRigidBodyNodeDynamicTransform::PhysxInit(PxScene * scene, const sMatrix3
   srt.Translate = Para.Trans;
   srt.MakeMatrix(mul);
 
-  PhysxInitChilds(scene, mul*mat, actors);
+  PhysxInitChilds(scene, mul*mat);
 }
 
 /****************************************************************************/
 
-void WpxRigidBodyNodeDynamicMul::PhysxInit(PxScene * scene, const sMatrix34 & mat, sArray<sActor*> * actors)
+void WpxRigidBodyNodeDynamicMul::PhysxInit(PxScene * scene, const sMatrix34 & mat)
 {
   Para = ParaBase;
 
@@ -688,7 +726,7 @@ void WpxRigidBodyNodeDynamicMul::PhysxInit(PxScene * scene, const sMatrix34 & ma
 
   for (sInt i = 0; i<sMax(1, Para.Count); i++)
   {
-    PhysxInitChilds(scene, preMat*accu*mat, actors);
+    PhysxInitChilds(scene, preMat*accu*mat);
     accu = accu * mulMat;
   }
 }
@@ -698,7 +736,6 @@ void WpxRigidBodyNodeDynamicMul::PhysxInit(PxScene * scene, const sMatrix34 & ma
 
 RNPhysx::RNPhysx()
 {
-  AllActors = 0;
   Scene = 0;
 
   PreviousTimeLine = 0.0f;
@@ -709,19 +746,6 @@ RNPhysx::RNPhysx()
 
 RNPhysx::~RNPhysx()
 {
-  // delete all actors
-  if (AllActors)
-  {
-    sActor * a;
-    sFORALL(*AllActors, a)
-    {
-      a->actor->release();
-      delete a->matrix;
-      delete a;
-    }
-    delete AllActors;
-  }
-
   // delete physx scene
   if (Scene)
     Scene->release();
@@ -738,9 +762,6 @@ sBool RNPhysx::Init(wCommand *cmd)
   sMatrix34 mat;
   mat.Init();
 
-  // create list for all actors
-  AllActors = new sArray<sActor*>;
-
   // add physx childs objects to scene
   for (sInt i=0; i<cmd->InputCount; i++)
   {
@@ -752,7 +773,8 @@ sBool RNPhysx::Init(wCommand *cmd)
         WpxRigidBodyNode * n = static_cast<WpxRigidBodyNode *>(in->RootNode);
         if(n)
         {
-          n->PhysxInit(Scene, mat, AllActors);
+          n->PhysxReset();
+          n->PhysxInit(Scene, mat);
         }
       }
     }

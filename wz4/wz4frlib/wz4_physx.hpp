@@ -270,8 +270,10 @@ class WpxRigidBodyNode : public  Wz4RenderNode
 public:
   WpxRigidBodyNode() {}
 
-  virtual void PhysxInit(PxScene * scene, const sMatrix34 & mat, sArray<sActor*> * actors);
-  void PhysxInitChilds(PxScene * scene, const sMatrix34 & mat, sArray<sActor*> * actors);
+  virtual void PhysxInit(PxScene * scene, const sMatrix34 & mat);
+  void PhysxInitChilds(PxScene * scene, const sMatrix34 & mat);
+  virtual void PhysxReset();
+  void PhysxResetChilds();
 };
 
 class WpxRigidBodyNodeDynamic : public WpxRigidBodyNode
@@ -281,9 +283,13 @@ class WpxRigidBodyNodeDynamic : public WpxRigidBodyNode
 public:
   WpxRigidBodyParaRigidBody ParaBase, Para;
 
+  WpxRigidBodyNodeDynamic();
+  ~WpxRigidBodyNodeDynamic();
+
   void Transform(Wz4RenderContext *ctx, const sMatrix34 & mat);
 
-  void PhysxInit(PxScene * scene, const sMatrix34 & mat, sArray<sActor*> * actors);
+  void PhysxInit(PxScene * scene, const sMatrix34 & mat);
+  void PhysxReset();
 };
 
 class WpxRigidBodyNodeDynamicTransform : public WpxRigidBodyNode
@@ -291,7 +297,7 @@ class WpxRigidBodyNodeDynamicTransform : public WpxRigidBodyNode
 public:
   WpxRigidBodyTransformParaRigidBodyTransform ParaBase, Para;
 
-  void PhysxInit(PxScene * scene, const sMatrix34 & mat, sArray<sActor*> * actors);
+  void PhysxInit(PxScene * scene, const sMatrix34 & mat);
 };
 
 class WpxRigidBodyNodeDynamicMul : public WpxRigidBodyNode
@@ -299,7 +305,7 @@ class WpxRigidBodyNodeDynamicMul : public WpxRigidBodyNode
 public:
   WpxRigidBodyMulParaRigidBodyMul ParaBase, Para;
 
-  void PhysxInit(PxScene * scene, const sMatrix34 & mat, sArray<sActor*> * actors);
+  void PhysxInit(PxScene * scene, const sMatrix34 & mat);
 };
 
 /****************************************************************************/
@@ -308,7 +314,6 @@ public:
 class RNPhysx : public Wz4RenderNode
 {
 private:
-  sArray<sActor*> * AllActors;            // all actors list
   PxScene * Scene;                        // Physx scene
   sBool Executed;                         // flag for restart and pause simulation mechanism with F6/F5
   sF32 PreviousTimeLine;                  // delta time line use to restart simulation
