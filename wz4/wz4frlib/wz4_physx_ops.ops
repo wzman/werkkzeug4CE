@@ -76,7 +76,7 @@ type WpxColliderBase
 
       WpxColliderBase * wpxcol = (WpxColliderBase *) obj;
       wpxcol->ClearMatricesR();
-      wpxcol->Transform(mat);
+      wpxcol->Transform(mat,0);
       wpxcol->Render(ctx,mat);
     }
   }
@@ -265,7 +265,7 @@ type WpxActorBase
 
       WpxActorBase * b = (WpxActorBase *) obj;
       b->ClearMatricesR();
-      b->Transform(mat);
+      b->Transform(mat,0);
       b->Render(ctx,mat);
     }
   }
