@@ -624,12 +624,15 @@ void WpxRigidBodyNodeDynamic::Transform(Wz4RenderContext *ctx, const sMatrix34 &
     sActor * a;
     PxTransform pT;
     sMatrix34 mmat;
+    sMatrix34CM matRes;
     sFORALL(*AllActorsPtr, a)
     {
       pT = a->actor->getGlobalPose();
       PxMat44TosMatrix34(pT, mmat);
 
-      Childs[0]->Matrices.AddTail(sMatrix34CM(mmat*mat));
+      matRes = mmat*mat;
+      Childs[0]->Matrices.AddTail(matRes);
+      //Childs[0]->Matrices.AddTail(sMatrix34CM(mmat*mat));
       //TransformChilds(ctx, mmat);
     }
   }
