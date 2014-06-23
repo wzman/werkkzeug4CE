@@ -150,7 +150,23 @@ operator WpxCollider Collider (?Wz4Mesh)
   code
   {
     out->ParaBase = out->Para = *para;
-    out->CreateGeometry(in0);
+
+    // if hull or mesh type, in0 is required
+    if((para->GeometryType == 3 || para->GeometryType == 4) && !in0)
+    {
+      cmd->SetError(L"Required input is missing");
+      return 0;
+    }
+
+    // build collider geometry for collider mesh preview
+    if(!out->CreateGeometry(in0))
+    {
+      if(para->GeometryType == 3)
+        cmd->SetError(L"Failed to create hull from mesh, try to change mesh geometry (limited to 256 polygons)");
+      else
+        cmd->SetError(L"Failed to create collider");
+      return 0;
+    }
   }
 }
 

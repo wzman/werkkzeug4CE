@@ -450,7 +450,7 @@ void WpxCollider::CreatePhysxCollider(PxRigidActor * actor, sMatrix34 & mat)
     TriMesh->release();
 }
 
-void WpxCollider::CreateGeometry(Wz4Mesh * input)
+sBool WpxCollider::CreateGeometry(Wz4Mesh * input)
 {
   // if mesh input, add ref for clean delete
   if (input)
@@ -486,7 +486,7 @@ void WpxCollider::CreateGeometry(Wz4Mesh * input)
       // failed to create PxConvexMesh
       delete MeshCollider;
       MeshCollider = 0;
-      return;
+      return sFALSE;
     }
     else
     {
@@ -501,7 +501,7 @@ void WpxCollider::CreateGeometry(Wz4Mesh * input)
       // failed to create PxConvexMesh
       delete MeshCollider;
       MeshCollider = 0;
-      return;
+      return sFALSE;
     }
     else
     {
@@ -539,6 +539,8 @@ void WpxCollider::CreateGeometry(Wz4Mesh * input)
   mtrl->SetMtrl(sMTRL_ZOFF | sMTRL_CULLOFF | sMTRL_MSK_GREEN | sMTRL_MSK_BLUE, 0);
   mtrl->Prepare();
   MeshCollider->Clusters[0]->Mtrl = mtrl;
+
+  return sTRUE;
 }
 
 /****************************************************************************/

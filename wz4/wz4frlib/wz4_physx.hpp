@@ -188,7 +188,7 @@ public:
   void Transform(const sMatrix34 & mat, PxRigidActor * ptr);
   void Render(Wz4RenderContext &ctx, sMatrix34 &mat);
 
-  void CreateGeometry(Wz4Mesh * input);                               // create collider mesh (to preview collider shape)
+  sBool CreateGeometry(Wz4Mesh * input);                              // create collider mesh (to preview collider shape)
   void CreatePhysxCollider(PxRigidActor * actor, sMatrix34 & mat);    // create physx collider for actor
 };
 
