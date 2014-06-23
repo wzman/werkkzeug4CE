@@ -633,11 +633,7 @@ void WpxRigidBody::PhysxReset()
   // delete all actors
   sActor * a;
   sFORALL(AllActors, a)
-  {
-    a->actor->release();
-    delete a->matrix;
     delete a;
-  }
 
   AllActors.Clear();
 }
@@ -661,9 +657,6 @@ void WpxRigidBody::PhysxBuildActor(const sMatrix34 & mat, PxScene * scene)
     PxMat44 pxMat;
     sMatrix34ToPxMat44(mat, pxMat);
     PxTransform pose(pxMat);
-
-    // store actor matrix
-    actor->matrix = new sMatrix34(mat);
 
     // set actor pose
     actor->actor->setGlobalPose(pose);
