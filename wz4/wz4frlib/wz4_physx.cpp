@@ -364,7 +364,7 @@ void WpxCollider::Render(Wz4RenderContext &ctx, sMatrix34 &mat)
   }
 }
 
-void WpxCollider::Transform(const sMatrix34 & mat, void * ptr)
+void WpxCollider::Transform(const sMatrix34 & mat, PxRigidActor * ptr)
 {
   sMatrix34 mul;
   sSRT srt;
@@ -376,9 +376,8 @@ void WpxCollider::Transform(const sMatrix34 & mat, void * ptr)
     TransformChilds(mul*mat, 0);
   else
   {
-    // actor is not null : create physx collider for this actor
-    PxRigidActor * actor = static_cast<PxRigidActor*>(ptr);
-    CreatePhysxCollider(actor, mul*mat);
+    // ptr is not null : create physx collider for this actor
+    CreatePhysxCollider(ptr, mul*mat);
   }
 }
 
@@ -544,7 +543,7 @@ void WpxCollider::CreateGeometry(Wz4Mesh * input)
 
 /****************************************************************************/
 
-void WpxColliderTransform::Transform(const sMatrix34 & mat, void * ptr)
+void WpxColliderTransform::Transform(const sMatrix34 & mat, PxRigidActor * ptr)
 {
   sSRT srt;
   sMatrix34 mul;
@@ -559,7 +558,7 @@ void WpxColliderTransform::Transform(const sMatrix34 & mat, void * ptr)
 
 /****************************************************************************/
 
-void WpxColliderMul::Transform(const sMatrix34 & mat, void * ptr)
+void WpxColliderMul::Transform(const sMatrix34 & mat, PxRigidActor * ptr)
 {
   sSRT srt;
   sMatrix34 preMat;
@@ -684,7 +683,7 @@ void WpxRigidBody::PhysxBuildActor(const sMatrix34 & mat, PxScene * scene)
     }
 }
 
-void WpxRigidBody::Transform(const sMatrix34 & mat, void * ptr)
+void WpxRigidBody::Transform(const sMatrix34 & mat, PxScene * ptr)
 {
   sSRT srt;
   sMatrix34 mul, mulmat;
@@ -712,9 +711,7 @@ void WpxRigidBody::Transform(const sMatrix34 & mat, void * ptr)
   else
   {
     // ptr not null : transform is calling from Physx init to build physx objects
-
-    PxScene * scene = static_cast<PxScene*>(ptr);
-    PhysxBuildActor(mulmat, scene);
+    PhysxBuildActor(mulmat, ptr);
   }
 }
 
@@ -738,7 +735,7 @@ void WpxRigidBody::Render(Wz4RenderContext &ctx, sMatrix34 &mat)
 
 /****************************************************************************/
 
-void WpxRigidBodyTransform::Transform(const sMatrix34 & mat, void * ptr)
+void WpxRigidBodyTransform::Transform(const sMatrix34 & mat, PxScene * ptr)
 {
   sSRT srt;
   sMatrix34 mul;
@@ -753,7 +750,7 @@ void WpxRigidBodyTransform::Transform(const sMatrix34 & mat, void * ptr)
 
 /****************************************************************************/
 
-void WpxRigidBodyMul::Transform(const sMatrix34 & mat, void * ptr)
+void WpxRigidBodyMul::Transform(const sMatrix34 & mat, PxScene * ptr)
 {
   sSRT srt;
   sMatrix34 preMat;

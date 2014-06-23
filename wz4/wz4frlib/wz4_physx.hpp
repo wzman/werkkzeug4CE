@@ -76,7 +76,7 @@ struct sActor
 // A template tree scene for physx object
 // Transform and Render objects in a graph
 
-template <typename  T, class T2>
+template <typename  T, class T2, typename T3>
 class WpxGenericGraph : public T2
 {
 public:
@@ -86,23 +86,23 @@ public:
   ~WpxGenericGraph();
 
   virtual void Render(Wz4RenderContext &ctx, sMatrix34 &mat);     // render
-  virtual void Transform(const sMatrix34 & mat, void * ptr);      // build list of model matrices with GRAPH!
+  virtual void Transform(const sMatrix34 & mat, T3 * ptr);        // build list of model matrices with GRAPH!
   virtual void ClearMatricesR();                                  // clear matrices
   virtual void PhysxReset();                                      // clear physx
 
   void RenderChilds(Wz4RenderContext &ctx, sMatrix34 &mat);       // recurse to childs
-  void TransformChilds(const sMatrix34 & mat, void * ptr);        // recurse to childs
+  void TransformChilds(const sMatrix34 & mat, T3 * ptr);          // recurse to childs
   void PhysxResetChilds();                                        // recurse to childs
 };
 
-template <typename  T, class T2>
-WpxGenericGraph<T, T2>::~WpxGenericGraph()
+template <typename  T, class T2, typename T3>
+WpxGenericGraph<T, T2, T3>::~WpxGenericGraph()
 {
   sReleaseAll(Childs);
 }
 
-template <typename  T, class T2>
-void WpxGenericGraph<T, T2>::ClearMatricesR()
+template <typename  T, class T2, typename T3>
+void WpxGenericGraph<T, T2, T3>::ClearMatricesR()
 {
   T *c;
   Matrices.Clear();
@@ -110,14 +110,14 @@ void WpxGenericGraph<T, T2>::ClearMatricesR()
     c->ClearMatricesR();
 }
 
-template <typename  T, class T2>
-void WpxGenericGraph<T, T2>::Transform(const sMatrix34 &mat, void * ptr)
+template <typename  T, class T2, typename T3>
+void WpxGenericGraph<T, T2, T3>::Transform(const sMatrix34 &mat, T3 * ptr)
 {
   TransformChilds(mat, ptr);
 }
 
-template <typename  T, class T2>
-void WpxGenericGraph<T, T2>::TransformChilds(const sMatrix34 &mat, void * ptr)
+template <typename  T, class T2, typename T3>
+void WpxGenericGraph<T, T2, T3>::TransformChilds(const sMatrix34 &mat, T3 * ptr)
 {
   T *c;
 
@@ -127,14 +127,14 @@ void WpxGenericGraph<T, T2>::TransformChilds(const sMatrix34 &mat, void * ptr)
     c->Transform(mat, ptr);
 }
 
-template <typename  T, class T2>
-void WpxGenericGraph<T, T2>::Render(Wz4RenderContext &ctx, sMatrix34 &mat)
+template <typename  T, class T2, typename T3>
+void WpxGenericGraph<T, T2, T3>::Render(Wz4RenderContext &ctx, sMatrix34 &mat)
 {
   RenderChilds(ctx,mat);
 }
 
-template <typename  T, class T2>
-void WpxGenericGraph<T, T2>::RenderChilds(Wz4RenderContext &ctx, sMatrix34 &mat)
+template <typename  T, class T2, typename T3>
+void WpxGenericGraph<T, T2, T3>::RenderChilds(Wz4RenderContext &ctx, sMatrix34 &mat)
 {
   // recurse to childs
   T *c;
@@ -142,14 +142,14 @@ void WpxGenericGraph<T, T2>::RenderChilds(Wz4RenderContext &ctx, sMatrix34 &mat)
     c->Render(ctx,mat);
 }
 
-template <typename  T, class T2>
-void WpxGenericGraph<T, T2>::PhysxReset()
+template <typename  T, class T2, typename T3>
+void WpxGenericGraph<T, T2, T3>::PhysxReset()
 {
   PhysxResetChilds();
 }
 
-template <typename  T, class T2>
-void WpxGenericGraph<T, T2>::PhysxResetChilds()
+template <typename  T, class T2, typename T3>
+void WpxGenericGraph<T, T2, T3>::PhysxResetChilds()
 {
   T * c;
   sFORALL(Childs, c)
@@ -162,7 +162,7 @@ void WpxGenericGraph<T, T2>::PhysxResetChilds()
 // WpxColliderBase is the base type for all colliders operators
 // WpxColliderBase inherited classes are used to preview a graph of colliders
 
-class WpxColliderBase : public WpxGenericGraph<WpxColliderBase, wObject>
+class WpxColliderBase : public WpxGenericGraph<WpxColliderBase, wObject, PxRigidActor>
 {
 public:
   WpxColliderBase();
@@ -185,7 +185,7 @@ public:
 
   WpxCollider();
   ~WpxCollider();
-  void Transform(const sMatrix34 & mat, void * ptr);
+  void Transform(const sMatrix34 & mat, PxRigidActor * ptr);
   void Render(Wz4RenderContext &ctx, sMatrix34 &mat);
 
   void CreateGeometry(Wz4Mesh * input);                               // create collider mesh (to preview collider shape)
@@ -206,7 +206,7 @@ class WpxColliderTransform : public WpxColliderBase
 {
 public:
   WpxColliderTransformParaColliderTransform ParaBase, Para;
-  void Transform(const sMatrix34 & mat, void * ptr);
+  void Transform(const sMatrix34 & mat, PxRigidActor * ptr);
 };
 
 /****************************************************************************/
@@ -215,7 +215,7 @@ class WpxColliderMul : public WpxColliderBase
 {
 public:
   WpxColliderMulParaColliderMul ParaBase, Para;
-  void Transform(const sMatrix34 & mat, void * ptr);
+  void Transform(const sMatrix34 & mat, PxRigidActor * ptr);
 };
 
 /****************************************************************************/
@@ -224,7 +224,7 @@ public:
 // WpxActorBase is the base type for all actors operators
 // WpxActorBase inherited classes are used to preview a graph of actors + associated colliders graph
 
-class WpxActorBase : public WpxGenericGraph<WpxActorBase, Wz4Render>
+class WpxActorBase : public WpxGenericGraph<WpxActorBase, Wz4Render, PxScene>
 {
 public:
   WpxActorBase();
@@ -247,7 +247,7 @@ public:
 
   WpxRigidBody();
   ~WpxRigidBody();
-  void Transform(const sMatrix34 & mat, void * ptr);
+  void Transform(const sMatrix34 & mat, PxScene * ptr);
   void Render(Wz4RenderContext &ctx, sMatrix34 &mat);
   void ClearMatricesR();
   void PhysxReset();
@@ -268,7 +268,7 @@ class WpxRigidBodyTransform : public WpxActorBase
 {
 public:
   WpxRigidBodyTransformParaRigidBodyTransform ParaBase, Para;
-  void Transform(const sMatrix34 & mat, void * ptr);
+  void Transform(const sMatrix34 & mat, PxScene * ptr);
 };
 
 /****************************************************************************/
@@ -277,7 +277,7 @@ class WpxRigidBodyMul : public WpxActorBase
 {
 public:
   WpxRigidBodyMulParaRigidBodyMul ParaBase, Para;
-  void Transform(const sMatrix34 & mat, void * ptr);
+  void Transform(const sMatrix34 & mat, PxScene * ptr);
 };
 
 /****************************************************************************/
