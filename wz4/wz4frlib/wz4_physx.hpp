@@ -166,7 +166,9 @@ class WpxColliderBase : public WpxGenericGraph<WpxColliderBase, wObject, PxRigid
 {
 public:
   WpxColliderBase();
-  void AddCollidersChilds(wCommand *cmd);    // add childs
+  void AddCollidersChilds(wCommand *cmd);               // add childs
+  virtual void GetDensity(sArray<PxReal> * densities);  // get shape density to compute final mass and inertia
+  void GetDensityChilds(sArray<PxReal> * densities);    // recurse to childs
 };
 
 /****************************************************************************/
@@ -190,6 +192,7 @@ public:
 
   sBool CreateGeometry(Wz4Mesh * input);                              // create collider mesh (to preview collider shape)
   void CreatePhysxCollider(PxRigidActor * actor, sMatrix34 & mat);    // create physx collider for actor
+  void GetDensity(sArray<PxReal> * densities);                        // get shape density
 };
 
 /****************************************************************************/

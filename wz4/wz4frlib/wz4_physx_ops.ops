@@ -131,7 +131,7 @@ operator WpxCollider Collider (?Wz4Mesh)
   {
     group "Shape";
     layout flags GeometryType("box|sphere|plane|hullmesh|mesh");
-    if(GeometryType == 0)
+    if(GeometryType == 0 || GeometryType == 2)
     {
       float31 Dimension (0.001..0x10000 step 0.01) = 1;
     }
@@ -142,6 +142,8 @@ operator WpxCollider Collider (?Wz4Mesh)
     group "Transform";
     float30 Rot (-16..16 step 0.01) = 0;
     float31 Trans (-0x10000..0x10000 step 0.01) = 0;
+    group "Properties";
+    float Density (0.0001..0x10000 step 0.01) = 1.0;
     group "PhysX Material";
     float StaticFriction (0.001..0x10000 step 0.01) = 0.5;
     float DynamicFriction (0.001..0x10000 step 0.01) = 0.5;

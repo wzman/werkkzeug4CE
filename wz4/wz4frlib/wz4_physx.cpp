@@ -330,6 +330,20 @@ void WpxColliderBase::AddCollidersChilds(wCommand *cmd)
   }
 }
 
+void WpxColliderBase::GetDensity(sArray<PxReal> * densities)
+{
+  GetDensityChilds(densities);
+}
+
+void WpxColliderBase::GetDensityChilds(sArray<PxReal> * densities)
+{
+  WpxColliderBase * c;
+  sFORALL(Childs, c)
+  {
+    c->GetDensity(densities);
+  }
+}
+
 /****************************************************************************/
 
 WpxCollider::WpxCollider()
@@ -348,6 +362,12 @@ WpxCollider::~WpxCollider()
     ConvexMesh->release();
   if(TriMesh)
     TriMesh->release();
+}
+
+
+void WpxCollider::GetDensity(sArray<PxReal> * densities)
+{
+  densities->AddTail(Para.Density);
 }
 
 void WpxCollider::Render(Wz4RenderContext &ctx, sMatrix34 &mat)
@@ -377,7 +397,7 @@ void WpxCollider::Transform(const sMatrix34 & mat, PxRigidActor * ptr)
   else
   {
     // ptr is not null : create physx collider for this actor
-    CreatePhysxCollider(ptr, mul*mat);
+    CreatePhysxCollider(ptr, sMatrix34(mat));
   }
 }
 
@@ -425,7 +445,7 @@ void WpxCollider::CreatePhysxCollider(PxRigidActor * actor, sMatrix34 & mat)
   }
   sVERIFY(geometry != 0);
 
-  // apply transformation to collider
+  // compute matrix transformation
   sMatrix34 wzMat34;
   sSRT srt;
   srt.Scale = sVector31(1.0f);
@@ -434,6 +454,11 @@ void WpxCollider::CreatePhysxCollider(PxRigidActor * actor, sMatrix34 & mat)
     srt.Rotate.z += 0.25;
   srt.Translate = Para.Trans;
   srt.MakeMatrix(wzMat34);
+
+  // multiply by result graph matrices
+  wzMat34 *= mat;
+
+  // apply transformation to collider
   PxMat44 pxMat;
   sMatrix34ToPxMat44(wzMat34, pxMat);
   PxTransform transform(pxMat);
@@ -652,8 +677,9 @@ void WpxRigidBody::PhysxBuildActor(const sMatrix34 & mat, PxScene * scene)
       actor->actor = gPhysicsSDK->createRigidDynamic(PxTransform::createIdentity());
 
     // process collider graph transformations to create colliders for this actors
-    PxRigidActor * a = static_cast<PxRigidActor*>(actor->actor);
-    RootCollider->Transform(mat, a);
+    sMatrix34 initMat;
+    initMat.Init();
+    RootCollider->Transform(initMat, actor->actor);
 
     // compute actor pose
     PxMat44 pxMat;
@@ -662,6 +688,16 @@ void WpxRigidBody::PhysxBuildActor(const sMatrix34 & mat, PxScene * scene)
 
     // set actor pose
     actor->actor->setGlobalPose(pose);
+
+    // compute mass and inertia
+    if (Para.ActorType == 1)
+    {
+      sArray<PxReal> Densities;
+      RootCollider->GetDensity(&Densities);
+      PxReal * sd = Densities.GetData();
+      PxRigidDynamic * rigidDynamic = static_cast<PxRigidDynamic*>(actor->actor);
+      PxRigidBodyExt::updateMassAndInertia(*rigidDynamic, sd, Densities.GetCount());
+    }
 
     // add actor to physx scene
     scene->addActor(*actor->actor);
