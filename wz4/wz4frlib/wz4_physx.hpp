@@ -296,19 +296,38 @@ public:
 
 class WpxRigidBodyNode : public  Wz4RenderNode
 {
+public:
+  sArray<sActor*> * AllActorsPtr;     // ptr to an actors list (in WpxRigidBody)
+  virtual void Init() {}
+
+  WpxRigidBodyParaRigidBody ParaBase, Para;
 };
 
 class WpxRigidBodyNodeDynamic : public WpxRigidBodyNode
 {
 public:
-  sArray<sActor*> * AllActorsPtr;   // ptr to an actors list (in WpxRigidBody)
-
-  WpxRigidBodyParaRigidBody ParaBase, Para;
-
-  WpxRigidBodyNodeDynamic();
-  ~WpxRigidBodyNodeDynamic();
   void Transform(Wz4RenderContext *ctx, const sMatrix34 & mat);
 };
+
+class WpxRigidBodyNodeStatic : public WpxRigidBodyNode
+{
+private:
+  sMatrix34 Matrix;     // static matrix actor
+public:
+  void Init();
+  void Transform(Wz4RenderContext *ctx, const sMatrix34 & mat);
+};
+
+class WpxRigidBodyNodeKinematic : public WpxRigidBodyNodeDynamic
+{
+public:
+  void Simulate(Wz4RenderContext *ctx);
+};
+
+
+
+
+
 
 class WpxRigidBodyNodeDynamicTransform : public WpxRigidBodyNode
 {

@@ -667,51 +667,78 @@ void WpxRigidBody::PhysxReset()
 
 void WpxRigidBody::PhysxBuildActor(const sMatrix34 & mat, PxScene * scene)
 {
-    // create new actor
-    sActor * actor = new sActor;
+  // ptr for local use
+  PxRigidDynamic * rigidDynamic = 0;
+  PxRigidStatic * rigidStatic = 0;
 
-    // create physx rigid body
-    if (Para.ActorType == 0)
-      actor->actor = gPhysicsSDK->createRigidStatic(PxTransform::createIdentity());
-    else
-      actor->actor = gPhysicsSDK->createRigidDynamic(PxTransform::createIdentity());
+  // create new actor
+  sActor * actor = new sActor;
 
-    // process collider graph transformations to create colliders for this actors
-    sMatrix34 initMat;
-    initMat.Init();
-    RootCollider->Transform(initMat, actor->actor);
+  // create physx rigid body
+  if (Para.ActorType == 0)
+  {
+    // create static actor
+    actor->actor = gPhysicsSDK->createRigidStatic(PxTransform::createIdentity());
 
-    // compute actor pose
-    PxMat44 pxMat;
-    sMatrix34ToPxMat44(mat, pxMat);
-    PxTransform pose(pxMat);
+    // set static ptr
+    rigidStatic = static_cast<PxRigidStatic*>(actor->actor);
+  }
+  else
+  {
+    // dynamic actor
+    actor->actor = gPhysicsSDK->createRigidDynamic(PxTransform::createIdentity());
 
-    // set actor pose
-    actor->actor->setGlobalPose(pose);
+    // set dynamic ptr
+    rigidDynamic = static_cast<PxRigidDynamic*>(actor->actor);
 
-    // compute mass and inertia
-    if (Para.ActorType == 1)
-    {
-      sArray<PxReal> Densities;
-      RootCollider->GetDensity(&Densities);
-      PxReal * sd = Densities.GetData();
-      PxRigidDynamic * rigidDynamic = static_cast<PxRigidDynamic*>(actor->actor);
-      PxRigidBodyExt::updateMassAndInertia(*rigidDynamic, sd, Densities.GetCount());
-    }
+    // kinematic ?
+    if (Para.ActorType == 1 && Para.DynamicType == 1)
+      rigidDynamic->setRigidDynamicFlag(PxRigidDynamicFlag::eKINEMATIC, true);
+  }
 
-    // add actor to physx scene
-    scene->addActor(*actor->actor);
+  // process collider graph transformations to create colliders for this actors
+  sMatrix34 initMat;
+  initMat.Init();
+  RootCollider->Transform(initMat, actor->actor);
 
-    // add actor to list
-    AllActors.AddTail(actor);
+  // compute actor pose
+  PxMat44 pxMat;
+  sMatrix34ToPxMat44(mat, pxMat);
+  PxTransform pose(pxMat);
 
-    // get WpxRigidBodyNodeDynamic from rootnode
-    WpxRigidBodyNodeDynamic * rigidNode = static_cast<WpxRigidBodyNodeDynamic *>(RootNode);
-    if (rigidNode)
-    {
-      // set actor list ptr
-      rigidNode->AllActorsPtr = &AllActors;
-    }
+  // set actor pose
+  actor->actor->setGlobalPose(pose);
+
+  // compute mass and inertia
+  if (Para.ActorType == 1)
+  {
+    sArray<PxReal> Densities;
+    RootCollider->GetDensity(&Densities);
+    PxReal * sd = Densities.GetData();
+    PxRigidBodyExt::updateMassAndInertia(*rigidDynamic, sd, Densities.GetCount());
+  }
+
+  // add actor to physx scene
+  scene->addActor(*actor->actor);
+
+  // add actor to list
+  AllActors.AddTail(actor);
+
+  // get WpxRigidBodyNodeDynamic from rootnode
+  /*WpxRigidBodyNodeDynamic * rigidNode = static_cast<WpxRigidBodyNodeDynamic *>(RootNode);
+  if (rigidNode)
+  {
+    // set actor list ptr
+    rigidNode->AllActorsPtr = &AllActors;
+  }*/
+
+  // get WpxRigidBodyNodeDynamic from rootnode
+  WpxRigidBodyNode * rigidNode = static_cast<WpxRigidBodyNode *>(RootNode);
+  if (rigidNode)
+  {
+    // set actor list ptr
+    rigidNode->AllActorsPtr = &AllActors;
+  }
 }
 
 void WpxRigidBody::Transform(const sMatrix34 & mat, PxScene * ptr)
@@ -814,14 +841,6 @@ void WpxRigidBodyMul::Transform(const sMatrix34 & mat, PxScene * ptr)
 /****************************************************************************/
 /****************************************************************************/
 
-WpxRigidBodyNodeDynamic::WpxRigidBodyNodeDynamic()
-{
-}
-
-WpxRigidBodyNodeDynamic::~WpxRigidBodyNodeDynamic()
-{
-}
-
 void WpxRigidBodyNodeDynamic::Transform(Wz4RenderContext *ctx, const sMatrix34 & mat)
 {
   if (ctx)
@@ -850,6 +869,68 @@ void WpxRigidBodyNodeDynamic::Transform(Wz4RenderContext *ctx, const sMatrix34 &
 
     TransformChilds(ctx, mat);
   }
+}
+
+/****************************************************************************/
+
+void WpxRigidBodyNodeStatic::Init()
+{
+  Para = ParaBase;
+
+  sMatrix34 m;
+  sSRT srt;
+  srt.Scale = Para.Scale;
+  srt.Rotate = Para.Rot;
+  srt.Translate = Para.Trans;
+  srt.MakeMatrix(Matrix);
+}
+
+void WpxRigidBodyNodeStatic::Transform(Wz4RenderContext *ctx, const sMatrix34 & mat)
+{
+  if (ctx)
+  {
+    sMatrix34CM matRes = sMatrix34CM(Matrix*mat);
+    sActor * a;
+    sFORALL(*AllActorsPtr, a)
+    {
+      Childs[0]->Matrices.AddTail(matRes);
+    }
+  }
+  else
+  {
+    // transformed by WpxRigidBody (preview actors positions without physx)
+    // transform associated scene node without physx
+
+    TransformChilds(ctx, mat);
+  }
+}
+
+/****************************************************************************/
+
+void WpxRigidBodyNodeKinematic::Simulate(Wz4RenderContext *ctx)
+{
+  Para = ParaBase;
+
+  sActor * a;
+  sMatrix34 wzMat34;
+  sSRT srt;
+
+  sFORALL(*AllActorsPtr, a)
+  {
+    srt.Scale = sVector31(1.0f);
+    srt.Rotate = Para.Rot;
+    srt.Translate = Para.Trans;
+    srt.MakeMatrix(wzMat34);
+
+    PxMat44 pxMat;
+    sMatrix34ToPxMat44(wzMat34, pxMat);
+    PxTransform transform(pxMat);
+
+    PxRigidDynamic * r = static_cast<PxRigidDynamic*>(a->actor);
+    r->setKinematicTarget(transform);
+  }
+
+  SimulateChilds(ctx);
 }
 
 /****************************************************************************/
