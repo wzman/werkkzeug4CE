@@ -14,11 +14,12 @@
 /****************************************************************************/
 /****************************************************************************/
 
+//#define COMPIL_WITH_PVD
+
 #ifdef _DEBUG
 #undef _DEBUG
 #define _DEBUG_WAS_DEFINED
 #endif
-
 
 #undef new
 #include "C:/library/PhysX-3.2.3_PC_SDK_Core/Include/PxPhysicsAPI.h"
@@ -35,15 +36,18 @@
 #pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win64/PhysX3CommonCHECKED_x64.lib")
 #pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win64/PhysX3ExtensionsCHECKED.lib")
 #pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win64/PhysX3CookingCHECKED_x64.lib")
+#ifdef COMPIL_WITH_PVD
+#pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win64/PhysXVisualDebuggerSDKCHECKED.lib")
+#endif
 #else
 // 32 bits
-
 #pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win32/PhysX3CHECKED_x86.lib")
 #pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win32/PhysX3CommonCHECKED_x86.lib")
 #pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win32/PhysX3ExtensionsCHECKED.lib")
 #pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win32/PhysX3CookingCHECKED_x86.lib")
-
-
+#ifdef COMPIL_WITH_PVD
+#pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win32/PhysXVisualDebuggerSDKCHECKED.lib")
+#endif
 #endif
 
 #ifdef _DEBUG
@@ -51,9 +55,6 @@
 #endif
 
 using namespace physx;
-
-
-
 
 /****************************************************************************/
 /****************************************************************************/
@@ -174,11 +175,10 @@ public:
 class WpxCollider : public WpxColliderBase
 {
 private:
-  Wz4Mesh * MeshCollider;   // collider mesh, used to preview collider geometry
-  Wz4Mesh * MeshInput;      // ptr to optional mesh used to compute collider geometry (hullmesh or mesh collider type)
-
-  PxConvexMesh * ConvexMesh;           // convex mesh (when GeometryType is hull)
-  PxTriangleMesh * TriMesh;            // triangle mesh (when GeometryType is mesh)
+  Wz4Mesh * MeshCollider;         // collider mesh, used to preview collider shape
+  Wz4Mesh * MeshInput;            // ptr to optional mesh used to generate collider geometry (when GeometryType is hull or mesh)
+  PxConvexMesh * ConvexMesh;      // convex mesh (when GeometryType is hull)
+  PxTriangleMesh * TriMesh;       // triangle mesh (when GeometryType is mesh)
 
 public:
   WpxColliderParaCollider ParaBase, Para;
@@ -188,8 +188,8 @@ public:
   void Transform(const sMatrix34 & mat, PxScene * scene, PxRigidActor * actor);
   void Render(Wz4RenderContext &ctx, sMatrix34 &mat);
 
-  void CreateGeometry(Wz4Mesh * input);             // create rendering geometry
-  void CreatePhysxCollider(PxRigidActor * actor, sMatrix34 & mat);   // create physx collider for actor
+  void CreateGeometry(Wz4Mesh * input);                               // create collider mesh (to preview collider shape)
+  void CreatePhysxCollider(PxRigidActor * actor, sMatrix34 & mat);    // create physx collider for actor
 };
 
 /****************************************************************************/
@@ -206,7 +206,6 @@ class WpxColliderTransform : public WpxColliderBase
 {
 public:
   WpxColliderTransformParaColliderTransform ParaBase, Para;
-
   void Transform(const sMatrix34 & mat, PxScene * scene, PxRigidActor * actor);
 };
 
@@ -214,12 +213,8 @@ public:
 
 class WpxColliderMul : public WpxColliderBase
 {
-private:
-  sMatrix34 MulMatrix;
-
 public:
   WpxColliderMulParaColliderMul ParaBase, Para;
-
   void Transform(const sMatrix34 & mat, PxScene * scene, PxRigidActor * actor);
 };
 
@@ -241,6 +236,9 @@ public:
 
 class WpxRigidBody : public WpxActorBase
 {
+private:
+  void PhysxBuildActor(const sMatrix34 & mat, PxScene * scene);   // build physx actor
+
 public:
   WpxColliderBase * RootCollider;     // associated colliders geometries, root collider in collider graph
   sArray<sActor*> AllActors;          // list of actors
@@ -270,7 +268,6 @@ class WpxRigidBodyTransform : public WpxActorBase
 {
 public:
   WpxRigidBodyTransformParaRigidBodyTransform ParaBase, Para;
-
   void Transform(const sMatrix34 & mat, PxScene * scene, PxRigidActor * actor);
 };
 
@@ -280,7 +277,6 @@ class WpxRigidBodyMul : public WpxActorBase
 {
 public:
   WpxRigidBodyMulParaRigidBodyMul ParaBase, Para;
-
   void Transform(const sMatrix34 & mat, PxScene * scene, PxRigidActor * actor);
 };
 

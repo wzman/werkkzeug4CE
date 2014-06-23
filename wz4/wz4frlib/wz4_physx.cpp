@@ -22,9 +22,6 @@ static PxSimulationFilterShader gDefaultFilterShader=PxDefaultSimulationFilterSh
 /****************************************************************************/
 /****************************************************************************/
 
-
-
-
 void PhysXInitEngine()
 {
   // create foundation object with default error and allocator callbacks.
@@ -51,10 +48,9 @@ void PhysXInitEngine()
     return;
   }
 
-
-  // PVD
-
-  /*// check if PvdConnection manager is available on this platform
+  // PVD - init the Physx visual debugger
+#ifdef COMPIL_WITH_PVD
+  // check if PvdConnection manager is available on this platform
   if (gPhysicsSDK->getPvdConnectionManager() == NULL)
     return;
 
@@ -71,32 +67,8 @@ void PhysXInitEngine()
 
   // remember to release the connection by manual in the end
   if (theConnection)
-    theConnection->release();*/
-
-  
-
-  // check if PvdConnection manager is available on this platform
-  if (gPhysicsSDK->getPvdConnectionManager() == NULL)
-    printf("PVD FAILED");
-
-  // setup connection parameters
-  const char* pvd_host_ip = "127.0.0.1"; // IP of the PC which is running PVD
-  int port = 5425; // TCP port to connect to, where PVD is listening
-  unsigned int timeout = 100; // timeout in milliseconds to wait for PVD to respond,
-  // consoles and remote PCs need a higher timeout.
-  PxVisualDebuggerConnectionFlags connectionFlags = PxVisualDebuggerExt::getAllConnectionFlags();
-
-  // and now try to connect
- // PVD::PvdConnection* theConnection = PxVisualDebuggerExt::createConnection(gPhysicsSDK->getPvdConnectionManager(), pvd_host_ip, port, timeout, connectionFlags);
-
-  PxVisualDebuggerExt::createConnection(gPhysicsSDK->getPvdConnectionManager(), pvd_host_ip, port, timeout, connectionFlags);
-
-  // remember to release the connection by manual in the end
-
-
-
-
-
+    theConnection->release();
+#endif
 }
 
 /****************************************************************************/
@@ -372,6 +344,10 @@ WpxCollider::~WpxCollider()
 {
   MeshCollider->Release();
   MeshInput->Release();
+  if(ConvexMesh)
+    ConvexMesh->release();
+  if(TriMesh)
+    TriMesh->release();
 }
 
 void WpxCollider::Render(Wz4RenderContext &ctx, sMatrix34 &mat)
@@ -396,24 +372,21 @@ void WpxCollider::Transform(const sMatrix34 & mat, PxScene * scene, PxRigidActor
   srt.Translate = Para.Trans;
   srt.MakeMatrix(mul);
 
-  //if (!actor)
+  if (!actor)
     TransformChilds(mul*mat, scene, actor);
-  //else
-   if (actor)
+  else
   {
-    // actor is not null : create shape for this actor
+    // actor is not null : create physx collider for this actor
     CreatePhysxCollider(actor, mul*mat);
   }
 }
 
 void WpxCollider::CreatePhysxCollider(PxRigidActor * actor, sMatrix34 & mat)
 {
-  PxMaterial* mMaterial;
-  mMaterial = gPhysicsSDK->createMaterial(0.5f, 0.5f, 0.1f);    //static friction, dynamic friction, restitution
-  if (!mMaterial)
-    sLogF(L"PhysX", L"createMaterial failed!\n");
-
-
+  // create a physx material
+  PxMaterial* material = 0;
+  material = gPhysicsSDK->createMaterial(Para.StaticFriction, Para.DynamicFriction, Para.Restitution);
+  sVERIFY(material != 0);
 
   // create geometry according type
   PxGeometry * geometry = 0;
@@ -450,29 +423,27 @@ void WpxCollider::CreatePhysxCollider(PxRigidActor * actor, sMatrix34 & mat)
     }
     break;
   }
-
   sVERIFY(geometry != 0);
 
-  // apply shape transformation
-  /*sMatrix34 wzMat34;
+  // apply transformation to collider
+  sMatrix34 wzMat34;
   sSRT srt;
-  srt.Scale = sVector31(1.0f); //rbi[i]->Scale;
-  srt.Rotate = ParRot;
-  if (colliderObj->ParaPtr->GeometryType == EGT_PLANE)
+  srt.Scale = sVector31(1.0f);
+  srt.Rotate = Para.Rot;
+  if (Para.GeometryType == EGT_PLANE)
     srt.Rotate.z += 0.25;
-  srt.Translate = colliderObj->ParaPtr->Trans;
-  srt.MakeMatrix(wzMat34);*/
+  srt.Translate = Para.Trans;
+  srt.MakeMatrix(wzMat34);
   PxMat44 pxMat;
-  sMatrix34ToPxMat44(mat, pxMat);
+  sMatrix34ToPxMat44(wzMat34, pxMat);
   PxTransform transform(pxMat);
 
-
-
-  actor->createShape(*geometry, *mMaterial, transform);
+  // create shape for actor
+  actor->createShape(*geometry, *material, transform);
 
   // delete no more used stuff
   delete geometry;
-  mMaterial->release();
+  material->release();
   if (ConvexMesh)
     ConvexMesh->release();
   if (TriMesh)
@@ -489,9 +460,7 @@ void WpxCollider::CreateGeometry(Wz4Mesh * input)
   }
 
   sVector31 ShapeSize(1.0f);
-
   MeshCollider = new Wz4Mesh();
-  MeshCollider->AddRef();
 
   switch (Para.GeometryType)
   {
@@ -673,6 +642,46 @@ void WpxRigidBody::PhysxReset()
   AllActors.Clear();
 }
 
+void WpxRigidBody::PhysxBuildActor(const sMatrix34 & mat, PxScene * scene)
+{
+    // create new actor
+    sActor * actor = new sActor;
+
+    // create physx rigid body
+    if (Para.ActorType == 0)
+      actor->actor = gPhysicsSDK->createRigidStatic(PxTransform::createIdentity());
+    else
+      actor->actor = gPhysicsSDK->createRigidDynamic(PxTransform::createIdentity());
+
+    // process collider graph transformations to create colliders for this actors
+    RootCollider->Transform(mat, 0, actor->actor);
+
+    // compute actor pose
+    PxMat44 pxMat;
+    sMatrix34ToPxMat44(mat, pxMat);
+    PxTransform pose(pxMat);
+
+    // store actor matrix
+    actor->matrix = new sMatrix34(mat);
+
+    // set actor pose
+    actor->actor->setGlobalPose(pose);
+
+    // add actor to physx scene
+    scene->addActor(*actor->actor);
+
+    // add actor to list
+    AllActors.AddTail(actor);
+
+    // get WpxRigidBodyNodeDynamic from rootnode
+    WpxRigidBodyNodeDynamic * rigidNode = static_cast<WpxRigidBodyNodeDynamic *>(RootNode);
+    if (rigidNode)
+    {
+      // set actor list ptr
+      rigidNode->AllActorsPtr = &AllActors;
+    }
+}
+
 void WpxRigidBody::Transform(const sMatrix34 & mat, PxScene * scene, PxRigidActor * actor)
 {
   sSRT srt;
@@ -702,61 +711,8 @@ void WpxRigidBody::Transform(const sMatrix34 & mat, PxScene * scene, PxRigidActo
   {
     // scene not null : transform is calling from Physx init to build physx objects
 
-    // create new actor
-    sActor * actor = new sActor;
-
-    // compute actor pose
-    PxMat44 pxMat;
-    sMatrix34ToPxMat44(mulmat, pxMat);
-    PxTransform pose(pxMat);
-    actor->matrix = new sMatrix34(mulmat);
-
-    // create physx rigid body
-    if (Para.ActorType == 0)
-      actor->actor = gPhysicsSDK->createRigidStatic(PxTransform::createIdentity());
-    else
-      actor->actor = gPhysicsSDK->createRigidDynamic(PxTransform::createIdentity());
-
-    // create colliders for this actors
-    RootCollider->Transform(mulmat, scene, actor->actor);
-    // TO DELETE (create a temp collider and a temp material for rigidbody during test)
-    /*PxMaterial* mMaterial;
-    mMaterial = gPhysicsSDK->createMaterial(0.5f, 0.5f, 0.1f);    //static friction, dynamic friction, restitution
-    if (!mMaterial)
-      sLogF(L"PhysX", L"createMaterial failed!\n");
-    actor->actor->createShape(PxSphereGeometry(0.5), *mMaterial);
-    */
-
-
-    actor->actor->setGlobalPose(pose);
-    //rigidStatic->setGlobalPose(pose);
-
-    // add actor to physx scene
-    scene->addActor(*actor->actor);
-
-    // add actor to list
-    AllActors.AddTail(actor);
-
-    // get WpxRigidBodyNodeDynamic from rootnode
-    WpxRigidBodyNodeDynamic * rigidNode = static_cast<WpxRigidBodyNodeDynamic *>(RootNode);
-    if (rigidNode)
-    {
-      // set actor list ptr
-      rigidNode->AllActorsPtr = &AllActors;
-    }
-
-
-    // TEST create plane static
-    PxRigidStatic * s = gPhysicsSDK->createRigidStatic(PxTransform::createIdentity());
-    PxMaterial* mMaterial;
-    mMaterial = gPhysicsSDK->createMaterial(0.5f, 0.5f, 0.1f);    //static friction, dynamic friction, restitution
-    if (!mMaterial)
-      sLogF(L"PhysX", L"createMaterial failed!\n");
-    s->createShape(/*PxSphereGeometry(0.5)*/ PxPlaneGeometry(), *mMaterial);
-    scene->addActor(*s);
-
-
-
+    //PxScene * Scene = static_cast<PxScene*>(scene);
+    PhysxBuildActor(mulmat, scene);
   }
 }
 
@@ -849,24 +805,12 @@ void WpxRigidBodyNodeDynamic::Transform(Wz4RenderContext *ctx, const sMatrix34 &
     sMatrix34CM matRes;
     sFORALL(*AllActorsPtr, a)
     {
-      if (a->actor->isRigidDynamic())
-      {
-
-        pT = a->actor->getGlobalPose();
-        PxMat44TosMatrix34(pT, mmat);
-
-        matRes = mmat*mat;
-        Childs[0]->Matrices.AddTail(matRes);
-        //Childs[0]->Matrices.AddTail(sMatrix34CM(mmat*mat));
-        //TransformChilds(ctx, mmat);
-
-      }
-      else
-      {
-        sInt a;
-        a = 2;
-      }
-        
+      pT = a->actor->getGlobalPose();
+      PxMat44TosMatrix34(pT, mmat);
+      matRes = mmat*mat;
+      Childs[0]->Matrices.AddTail(matRes);
+      //Childs[0]->Matrices.AddTail(sMatrix34CM(mmat*mat));
+      //TransformChilds(ctx, mmat);
     }
   }
   else
