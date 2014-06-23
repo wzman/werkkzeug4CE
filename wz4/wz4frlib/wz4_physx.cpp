@@ -364,7 +364,7 @@ void WpxCollider::Render(Wz4RenderContext &ctx, sMatrix34 &mat)
   }
 }
 
-void WpxCollider::Transform(const sMatrix34 & mat, PxScene * scene, PxRigidActor * actor)
+void WpxCollider::Transform(const sMatrix34 & mat, void * ptr)
 {
   sMatrix34 mul;
   sSRT srt;
@@ -372,11 +372,12 @@ void WpxCollider::Transform(const sMatrix34 & mat, PxScene * scene, PxRigidActor
   srt.Translate = Para.Trans;
   srt.MakeMatrix(mul);
 
-  if (!actor)
-    TransformChilds(mul*mat, scene, actor);
+  if (!ptr)
+    TransformChilds(mul*mat, 0);
   else
   {
     // actor is not null : create physx collider for this actor
+    PxRigidActor * actor = static_cast<PxRigidActor*>(ptr);
     CreatePhysxCollider(actor, mul*mat);
   }
 }
@@ -543,7 +544,7 @@ void WpxCollider::CreateGeometry(Wz4Mesh * input)
 
 /****************************************************************************/
 
-void WpxColliderTransform::Transform(const sMatrix34 & mat, PxScene * scene, PxRigidActor * actor)
+void WpxColliderTransform::Transform(const sMatrix34 & mat, void * ptr)
 {
   sSRT srt;
   sMatrix34 mul;
@@ -553,12 +554,12 @@ void WpxColliderTransform::Transform(const sMatrix34 & mat, PxScene * scene, PxR
   srt.Translate = Para.Trans;
   srt.MakeMatrix(mul);
 
-  TransformChilds(mul*mat, scene, actor);
+  TransformChilds(mul*mat, ptr);
 }
 
 /****************************************************************************/
 
-void WpxColliderMul::Transform(const sMatrix34 & mat, PxScene * scene, PxRigidActor * actor)
+void WpxColliderMul::Transform(const sMatrix34 & mat, void * ptr)
 {
   sSRT srt;
   sMatrix34 preMat;
@@ -580,7 +581,7 @@ void WpxColliderMul::Transform(const sMatrix34 & mat, PxScene * scene, PxRigidAc
 
   for (sInt i = 0; i<sMax(1, Para.Count); i++)
   {
-    TransformChilds(preMat*accu*mat, scene, actor);
+    TransformChilds(preMat*accu*mat, ptr);
     accu = accu * mulMat;
   }
 }
@@ -654,7 +655,8 @@ void WpxRigidBody::PhysxBuildActor(const sMatrix34 & mat, PxScene * scene)
       actor->actor = gPhysicsSDK->createRigidDynamic(PxTransform::createIdentity());
 
     // process collider graph transformations to create colliders for this actors
-    RootCollider->Transform(mat, 0, actor->actor);
+    PxRigidActor * a = static_cast<PxRigidActor*>(actor->actor);
+    RootCollider->Transform(mat, a);
 
     // compute actor pose
     PxMat44 pxMat;
@@ -682,7 +684,7 @@ void WpxRigidBody::PhysxBuildActor(const sMatrix34 & mat, PxScene * scene)
     }
 }
 
-void WpxRigidBody::Transform(const sMatrix34 & mat, PxScene * scene, PxRigidActor * actor)
+void WpxRigidBody::Transform(const sMatrix34 & mat, void * ptr)
 {
   sSRT srt;
   sMatrix34 mul, mulmat;
@@ -694,24 +696,24 @@ void WpxRigidBody::Transform(const sMatrix34 & mat, PxScene * scene, PxRigidActo
 
   mulmat = mul*mat;
 
-  if (!scene)
+  if (!ptr)
   {
-    // scene is null : transform is calling for WpxRigidBody Rendering
+    // ptr is null : transform is calling for WpxRigidBody Rendering
 
     // a WpxRigidBody has no WpxRigidBody childs, so no need to transform Childs
     // but need at least one matrix when building physx actor
     Matrices.AddTail(sMatrix34CM(mulmat));
 
     // instead of WpxRigidBody it has a RootCollider and a RootNode, so transform them
-    RootCollider->Transform(mulmat, 0, 0);
+    RootCollider->Transform(mulmat, 0);
     RootNode->Transform(0, mulmat);
 
   }
   else
   {
-    // scene not null : transform is calling from Physx init to build physx objects
+    // ptr not null : transform is calling from Physx init to build physx objects
 
-    //PxScene * Scene = static_cast<PxScene*>(scene);
+    PxScene * scene = static_cast<PxScene*>(ptr);
     PhysxBuildActor(mulmat, scene);
   }
 }
@@ -736,7 +738,7 @@ void WpxRigidBody::Render(Wz4RenderContext &ctx, sMatrix34 &mat)
 
 /****************************************************************************/
 
-void WpxRigidBodyTransform::Transform(const sMatrix34 & mat, PxScene * scene, PxRigidActor * actor)
+void WpxRigidBodyTransform::Transform(const sMatrix34 & mat, void * ptr)
 {
   sSRT srt;
   sMatrix34 mul;
@@ -746,12 +748,12 @@ void WpxRigidBodyTransform::Transform(const sMatrix34 & mat, PxScene * scene, Px
   srt.Translate = Para.Trans;
   srt.MakeMatrix(mul);
 
-  TransformChilds(mul*mat, scene, actor);
+  TransformChilds(mul*mat, ptr);
 }
 
 /****************************************************************************/
 
-void WpxRigidBodyMul::Transform(const sMatrix34 & mat, PxScene * scene, PxRigidActor * actor)
+void WpxRigidBodyMul::Transform(const sMatrix34 & mat, void * ptr)
 {
   sSRT srt;
   sMatrix34 preMat;
@@ -773,7 +775,7 @@ void WpxRigidBodyMul::Transform(const sMatrix34 & mat, PxScene * scene, PxRigidA
 
   for (sInt i = 0; i<sMax(1, Para.Count); i++)
   {
-    TransformChilds(preMat*accu*mat, scene, actor);
+    TransformChilds(preMat*accu*mat, ptr);
     accu = accu * mulMat;
   }
 }
@@ -863,7 +865,7 @@ sBool RNPhysx::Init(wCommand *cmd)
       in->PhysxReset();
 
       // process graph transformation, create physx objects and add them to physx scene
-      in->Transform(mat, Scene, 0);
+      in->Transform(mat, Scene);
     }
   }
 

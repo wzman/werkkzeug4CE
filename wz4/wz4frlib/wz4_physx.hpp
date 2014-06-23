@@ -86,12 +86,12 @@ public:
   ~WpxGenericGraph();
 
   virtual void Render(Wz4RenderContext &ctx, sMatrix34 &mat);     // render
-  virtual void Transform(const sMatrix34 & mat, PxScene * scene, PxRigidActor * actor); // build list of model matrices with GRAPH!, if scene is not null build physx object
+  virtual void Transform(const sMatrix34 & mat, void * ptr);      // build list of model matrices with GRAPH!
   virtual void ClearMatricesR();                                  // clear matrices
   virtual void PhysxReset();                                      // clear physx
 
   void RenderChilds(Wz4RenderContext &ctx, sMatrix34 &mat);       // recurse to childs
-  void TransformChilds(const sMatrix34 & mat, PxScene * scene, PxRigidActor * actor);   // recurse to childs
+  void TransformChilds(const sMatrix34 & mat, void * ptr);        // recurse to childs
   void PhysxResetChilds();                                        // recurse to childs
 };
 
@@ -111,20 +111,20 @@ void WpxGenericGraph<T, T2>::ClearMatricesR()
 }
 
 template <typename  T, class T2>
-void WpxGenericGraph<T, T2>::Transform(const sMatrix34 &mat, PxScene * scene, PxRigidActor * actor)
+void WpxGenericGraph<T, T2>::Transform(const sMatrix34 &mat, void * ptr)
 {
-  TransformChilds(mat, scene, actor);
+  TransformChilds(mat, ptr);
 }
 
 template <typename  T, class T2>
-void WpxGenericGraph<T, T2>::TransformChilds(const sMatrix34 &mat, PxScene * scene, PxRigidActor * actor)
+void WpxGenericGraph<T, T2>::TransformChilds(const sMatrix34 &mat, void * ptr)
 {
   T *c;
 
   Matrices.AddTail(sMatrix34CM(mat));
 
   sFORALL(Childs, c)
-    c->Transform(mat, scene, actor);
+    c->Transform(mat, ptr);
 }
 
 template <typename  T, class T2>
@@ -185,7 +185,7 @@ public:
 
   WpxCollider();
   ~WpxCollider();
-  void Transform(const sMatrix34 & mat, PxScene * scene, PxRigidActor * actor);
+  void Transform(const sMatrix34 & mat, void * ptr);
   void Render(Wz4RenderContext &ctx, sMatrix34 &mat);
 
   void CreateGeometry(Wz4Mesh * input);                               // create collider mesh (to preview collider shape)
@@ -206,7 +206,7 @@ class WpxColliderTransform : public WpxColliderBase
 {
 public:
   WpxColliderTransformParaColliderTransform ParaBase, Para;
-  void Transform(const sMatrix34 & mat, PxScene * scene, PxRigidActor * actor);
+  void Transform(const sMatrix34 & mat, void * ptr);
 };
 
 /****************************************************************************/
@@ -215,7 +215,7 @@ class WpxColliderMul : public WpxColliderBase
 {
 public:
   WpxColliderMulParaColliderMul ParaBase, Para;
-  void Transform(const sMatrix34 & mat, PxScene * scene, PxRigidActor * actor);
+  void Transform(const sMatrix34 & mat, void * ptr);
 };
 
 /****************************************************************************/
@@ -247,7 +247,7 @@ public:
 
   WpxRigidBody();
   ~WpxRigidBody();
-  void Transform(const sMatrix34 & mat, PxScene * scene, PxRigidActor * actor);
+  void Transform(const sMatrix34 & mat, void * ptr);
   void Render(Wz4RenderContext &ctx, sMatrix34 &mat);
   void ClearMatricesR();
   void PhysxReset();
@@ -268,7 +268,7 @@ class WpxRigidBodyTransform : public WpxActorBase
 {
 public:
   WpxRigidBodyTransformParaRigidBodyTransform ParaBase, Para;
-  void Transform(const sMatrix34 & mat, PxScene * scene, PxRigidActor * actor);
+  void Transform(const sMatrix34 & mat, void * ptr);
 };
 
 /****************************************************************************/
@@ -277,7 +277,7 @@ class WpxRigidBodyMul : public WpxActorBase
 {
 public:
   WpxRigidBodyMulParaRigidBodyMul ParaBase, Para;
-  void Transform(const sMatrix34 & mat, PxScene * scene, PxRigidActor * actor);
+  void Transform(const sMatrix34 & mat, void * ptr);
 };
 
 /****************************************************************************/
@@ -304,7 +304,6 @@ public:
 
   WpxRigidBodyNodeDynamic();
   ~WpxRigidBodyNodeDynamic();
-
   void Transform(Wz4RenderContext *ctx, const sMatrix34 & mat);
 };
 
