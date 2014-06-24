@@ -404,6 +404,12 @@ operator WpxRigidBodyDebris RigidBodyDebris "Debris" (Wz4Render)
   parameter
   {
     int Renderpass(-127..127);
+
+    group "Transform";
+    anim float31 Scale (-0x10000..0x10000 step 0.01) = 1;
+    anim float30 Rot (-16..16 step 0.01) = 0;
+    anim float31 Trans (-0x10000..0x10000 step 0.01) = 0;
+
   }
   code
   {
@@ -412,7 +418,7 @@ operator WpxRigidBodyDebris RigidBodyDebris "Debris" (Wz4Render)
 
     //out->AddActorsChilds(cmd);
 
-    sInt errcode = node->GetChunkedMesh(in0);
+    sInt errcode = out->GetChunkedMesh(in0);
     if(errcode == 1)
     {
       cmd->SetError(L"Need a mesh as input...");
@@ -424,11 +430,14 @@ operator WpxRigidBodyDebris RigidBodyDebris "Debris" (Wz4Render)
       return 0;
     }
 
+    node->ChunkedMeshPtr = out->ChunkedMesh;
+
     out->RootNode = node;
     out->AddChilds(cmd, para->Renderpass);
   }
 }
 
+/****************************************************************************/
 
 operator WpxRigidBodyAdd RigidBodyAdd "Add" (*WpxActorBase)
 {

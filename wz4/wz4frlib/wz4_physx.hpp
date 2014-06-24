@@ -289,7 +289,15 @@ public:
 class WpxRigidBodyDebris : public WpxActorBase
 {
 public:
+  Wz4Mesh * ChunkedMesh;              // chunked mesh on input
+  sArray<sActor*> AllActors;          // list of actors
+
   WpxRigidBodyDebrisParaRigidBodyDebris Para, ParaBase;
+
+  WpxRigidBodyDebris() { ChunkedMesh = 0; }
+  void Transform(const sMatrix34 & mat, PxScene * ptr);
+  void PhysxBuildDebris(const sMatrix34 & mat, PxScene * ptr);
+  int GetChunkedMesh(Wz4Render * in);
 };
 
 /****************************************************************************/
@@ -339,15 +347,15 @@ public:
 
 class WpxRigidBodyNodeDebris : public WpxRigidBodyNodeActor
 {
-  Wz4Mesh * ChunkedMesh;
 public:
+  Wz4Mesh * ChunkedMeshPtr;
 
   WpxRigidBodyDebrisParaRigidBodyDebris Para, ParaBase;
   WpxRigidBodyDebrisAnimRigidBodyDebris Anim;
 
   WpxRigidBodyNodeDebris();
   ~WpxRigidBodyNodeDebris();
-  int GetChunkedMesh(Wz4Render * in);
+  //int GetChunkedMesh(Wz4Render * in);
 
   void Transform(Wz4RenderContext *ctx, const sMatrix34 & mat);
   void Render(Wz4RenderContext *ctx);
