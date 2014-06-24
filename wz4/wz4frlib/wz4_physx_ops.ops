@@ -425,8 +425,8 @@ operator WpxRigidBodyTransform RigidBodyTransform "Transform" (WpxActorBase)
   }
   code
   {
-    WpxRigidBodyNodeDynamicTransform * node = new WpxRigidBodyNodeDynamicTransform();
-    node->ParaBase = out->ParaBase = out->Para = *para;
+    WpxRigidBodyNodeBase * node = new WpxRigidBodyNodeBase();
+    out->ParaBase = out->Para = *para;
 
     out->AddActorsChilds(cmd);
 
@@ -458,8 +458,8 @@ operator WpxRigidBodyMul RigidBodyMul "Multiply" (WpxActorBase)
   }
   code
   {
-    WpxRigidBodyNodeDynamicMul * node = new WpxRigidBodyNodeDynamicMul();
-    node->ParaBase = out->ParaBase = out->Para = *para;
+    WpxRigidBodyNodeBase * node = new WpxRigidBodyNodeBase();
+    out->ParaBase = out->Para = *para;
 
     out->AddActorsChilds(cmd);
 

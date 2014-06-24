@@ -67,7 +67,8 @@ void PhysXInitEngine();
 
 struct sActor
 {
-  PxRigidActor * actor;
+  PxRigidActor * actor;   // physx actor ptr
+  sMatrix34 * matrix;     // store matrix at actor creation (used by kinematics)
 };
 
 /****************************************************************************/
@@ -299,6 +300,7 @@ class WpxRigidBodyNodeBase : public  Wz4RenderNode
 public:
   virtual void Init() {}
   WpxRigidBodyParaRigidBody ParaBase, Para;
+  WpxRigidBodyAnimRigidBody Anim;
 };
 
 class WpxRigidBodyNodeActor : public  WpxRigidBodyNodeBase
@@ -323,24 +325,8 @@ public:
 class WpxRigidBodyNodeKinematic : public WpxRigidBodyNodeActor
 {
 public:
+  WpxRigidBodyNodeKinematic();
   void Simulate(Wz4RenderContext *ctx);
-};
-
-
-
-
-
-
-class WpxRigidBodyNodeDynamicTransform : public WpxRigidBodyNodeBase
-{
-public:
-  WpxRigidBodyTransformParaRigidBodyTransform ParaBase, Para;
-};
-
-class WpxRigidBodyNodeDynamicMul : public WpxRigidBodyNodeBase
-{
-public:
-  WpxRigidBodyMulParaRigidBodyMul ParaBase, Para;
 };
 
 /****************************************************************************/

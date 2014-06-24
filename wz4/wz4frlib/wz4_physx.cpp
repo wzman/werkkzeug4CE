@@ -660,7 +660,10 @@ void WpxRigidBody::PhysxReset()
   // delete all actors
   sActor * a;
   sFORALL(AllActors, a)
+  {
+    delete a->matrix;
     delete a;
+  }
 
   AllActors.Clear();
 }
@@ -720,6 +723,9 @@ void WpxRigidBody::PhysxBuildActor(const sMatrix34 & mat, PxScene * scene)
 
   // add actor to physx scene
   scene->addActor(*actor->actor);
+
+  // copy matrix (used by kinematics)
+  actor->matrix = new sMatrix34(mat);
 
   // add actor to list
   AllActors.AddTail(actor);
@@ -873,9 +879,16 @@ void WpxRigidBodyNodeActor::Transform(Wz4RenderContext *ctx, const sMatrix34 & m
 
 /****************************************************************************/
 
+WpxRigidBodyNodeKinematic::WpxRigidBodyNodeKinematic()
+{
+  Anim.Init(Wz4RenderType->Script);
+}
+
 void WpxRigidBodyNodeKinematic::Simulate(Wz4RenderContext *ctx)
 {
   Para = ParaBase;
+  Anim.Bind(ctx->Script, &Para);
+  SimulateCalc(ctx);
 
   sActor * a;
   sMatrix34 wzMat34;
@@ -889,7 +902,7 @@ void WpxRigidBodyNodeKinematic::Simulate(Wz4RenderContext *ctx)
     srt.MakeMatrix(wzMat34);
 
     PxMat44 pxMat;
-    sMatrix34ToPxMat44(wzMat34, pxMat);
+    sMatrix34ToPxMat44(wzMat34**a->matrix, pxMat);
     PxTransform transform(pxMat);
 
     PxRigidDynamic * r = static_cast<PxRigidDynamic*>(a->actor);
