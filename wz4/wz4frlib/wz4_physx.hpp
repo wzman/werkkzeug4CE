@@ -285,6 +285,14 @@ public:
 };
 
 /****************************************************************************/
+
+class WpxRigidBodyDebris : public WpxActorBase
+{
+public:
+  WpxRigidBodyDebrisParaRigidBodyDebris Para, ParaBase;
+};
+
+/****************************************************************************/
 /****************************************************************************/
 
 /****************************************************************************/
@@ -327,6 +335,22 @@ class WpxRigidBodyNodeKinematic : public WpxRigidBodyNodeActor
 public:
   WpxRigidBodyNodeKinematic();
   void Simulate(Wz4RenderContext *ctx);
+};
+
+class WpxRigidBodyNodeDebris : public WpxRigidBodyNodeActor
+{
+  Wz4Mesh * ChunkedMesh;
+public:
+
+  WpxRigidBodyDebrisParaRigidBodyDebris Para, ParaBase;
+  WpxRigidBodyDebrisAnimRigidBodyDebris Anim;
+
+  WpxRigidBodyNodeDebris();
+  ~WpxRigidBodyNodeDebris();
+  int GetChunkedMesh(Wz4Render * in);
+
+  void Transform(Wz4RenderContext *ctx, const sMatrix34 & mat);
+  void Render(Wz4RenderContext *ctx);
 };
 
 /****************************************************************************/

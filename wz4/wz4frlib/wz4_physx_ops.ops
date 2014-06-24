@@ -328,6 +328,14 @@ type WpxRigidBodyMul : WpxActorBase
   color = 0xFF9CCC52;
 }
 
+type WpxRigidBodyDebris : WpxActorBase
+{
+  name = "WpxRigidBodyDebris";
+  gui = base3d;
+  flags = render3d|notab;
+  color = 0xFF9CCC52;
+}
+
 /****************************************************************************/
 /****************************************************************************/
 
@@ -387,6 +395,40 @@ operator WpxRigidBody RigidBody (Wz4Render, WpxColliderBase)
 }
 
 /****************************************************************************/
+
+operator WpxRigidBodyDebris RigidBodyDebris "Debris" (Wz4Render)
+{
+  tab = PhysXTab;
+  column = 1;
+
+  parameter
+  {
+    int Renderpass(-127..127);
+  }
+  code
+  {
+    WpxRigidBodyNodeDebris * node = new WpxRigidBodyNodeDebris();
+    out->ParaBase = out->Para = *para;
+
+    //out->AddActorsChilds(cmd);
+
+    sInt errcode = node->GetChunkedMesh(in0);
+    if(errcode == 1)
+    {
+      cmd->SetError(L"Need a mesh as input...");
+      return 0;
+    }
+    else if(errcode == 2)
+    {
+      cmd->SetError(L"Mesh is not chunked...");
+      return 0;
+    }
+
+    out->RootNode = node;
+    out->AddChilds(cmd, para->Renderpass);
+  }
+}
+
 
 operator WpxRigidBodyAdd RigidBodyAdd "Add" (*WpxActorBase)
 {

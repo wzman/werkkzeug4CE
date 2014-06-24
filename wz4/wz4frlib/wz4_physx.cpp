@@ -905,6 +905,63 @@ void WpxRigidBodyNodeKinematic::Simulate(Wz4RenderContext *ctx)
 }
 
 /****************************************************************************/
+
+WpxRigidBodyNodeDebris::WpxRigidBodyNodeDebris()
+{
+  ChunkedMesh = 0;
+}
+
+WpxRigidBodyNodeDebris::~WpxRigidBodyNodeDebris()
+{
+}
+
+int WpxRigidBodyNodeDebris::GetChunkedMesh(Wz4Render * in)
+{
+  RNRenderMesh * rm = static_cast<RNRenderMesh*>(in->RootNode);
+  if (rm && rm->Mesh)
+  {
+    if (rm->Mesh->Chunks.GetCount() > 0)
+      ChunkedMesh = rm->Mesh;
+    else
+      return 2;  // error, need a chunked mesh
+  }
+  else
+    return 1;   // error, need a mesh input
+
+  return 0;
+}
+
+void WpxRigidBodyNodeDebris::Transform(Wz4RenderContext *ctx, const sMatrix34 & mat)
+{
+  TransformChilds(ctx, mat);
+}
+
+void WpxRigidBodyNodeDebris::Render(Wz4RenderContext *ctx)
+{
+  sMatrix34 tmp;
+  tmp.Init();
+
+  sInt max = ChunkedMesh->Chunks.GetCount();
+  sMatrix34CM *mats = new sMatrix34CM[max];
+  for (sInt i = 0; i<max; i++)
+    mats[i] = sMatrix34CM(tmp);
+
+  sMatrix34CM *mats0 = new sMatrix34CM[max];
+  sMatrix34CM *matp;
+
+  sFORALL(Matrices, matp)
+  {
+    for (sInt i = 0; i<max; i++)
+      mats0[i] = mats[i] * (*matp);
+
+    ChunkedMesh->RenderBone(ctx->RenderMode, /*Para.EnvNum*/0, max, mats0, max);
+  }
+
+  delete[] mats;
+  delete[] mats0;
+}
+
+/****************************************************************************/
 /****************************************************************************/
 
 RNPhysx::RNPhysx()
