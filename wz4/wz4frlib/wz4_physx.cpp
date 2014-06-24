@@ -890,22 +890,22 @@ void WpxRigidBodyNodeKinematic::Simulate(Wz4RenderContext *ctx)
   Anim.Bind(ctx->Script, &Para);
   SimulateCalc(ctx);
 
+  PxMat44 pxMat;
   sActor * a;
   sMatrix34 wzMat34;
   sSRT srt;
+  srt.Scale = sVector31(1.0f);
+  srt.Rotate = Para.Rot;
+  srt.Translate = Para.Trans;
+  srt.MakeMatrix(wzMat34);
 
+  PxRigidDynamic * r;
   sFORALL(*AllActorsPtr, a)
   {
-    srt.Scale = sVector31(1.0f);
-    srt.Rotate = Para.Rot;
-    srt.Translate = Para.Trans;
-    srt.MakeMatrix(wzMat34);
-
-    PxMat44 pxMat;
     sMatrix34ToPxMat44(wzMat34**a->matrix, pxMat);
     PxTransform transform(pxMat);
 
-    PxRigidDynamic * r = static_cast<PxRigidDynamic*>(a->actor);
+    r = static_cast<PxRigidDynamic*>(a->actor);
     r->setKinematicTarget(transform);
   }
 
