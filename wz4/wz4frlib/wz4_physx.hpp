@@ -240,8 +240,8 @@ public:
 
 class WpxRigidBody : public WpxActorBase
 {
-private:
-  void PhysxBuildActor(const sMatrix34 & mat, PxScene * scene);   // build physx actor
+public:
+  void PhysxBuildActor(const sMatrix34 & mat, PxScene * scene, sArray<sActor*> &allActors);   // build physx actor
 
 public:
   WpxColliderBase * RootCollider;     // associated colliders geometries, root collider in collider graph
@@ -290,6 +290,7 @@ class WpxRigidBodyDebris : public WpxActorBase
 {
 public:
   Wz4Mesh * ChunkedMesh;              // chunked mesh on input
+  sArray<Wz4Mesh *> Chunks;           // list of all meshes extracted from chunked mesh
   sArray<sActor*> AllActors;          // list of actors
 
   WpxRigidBodyDebrisParaRigidBodyDebris Para, ParaBase;
@@ -349,6 +350,7 @@ class WpxRigidBodyNodeDebris : public WpxRigidBodyNodeActor
 {
 public:
   Wz4Mesh * ChunkedMeshPtr;
+  sArray<sActor*> * AllActorsPtr;          // list of actors
 
   WpxRigidBodyDebrisParaRigidBodyDebris Para, ParaBase;
   WpxRigidBodyDebrisAnimRigidBodyDebris Anim;
