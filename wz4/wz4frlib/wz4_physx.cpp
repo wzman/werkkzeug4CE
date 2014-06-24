@@ -731,14 +731,6 @@ void WpxRigidBody::PhysxBuildActor(const sMatrix34 & mat, PxScene * scene)
   AllActors.AddTail(actor);
 
   // get WpxRigidBodyNodeDynamic from rootnode
-  /*WpxRigidBodyNodeDynamic * rigidNode = static_cast<WpxRigidBodyNodeDynamic *>(RootNode);
-  if (rigidNode)
-  {
-    // set actor list ptr
-    rigidNode->AllActorsPtr = &AllActors;
-  }*/
-
-  // get WpxRigidBodyNodeDynamic from rootnode
   WpxRigidBodyNodeActor * rigidNode = static_cast<WpxRigidBodyNodeActor *>(RootNode);
   if (rigidNode)
   {
