@@ -294,31 +294,33 @@ public:
 // - simulate and process manually physx features like kinematics, add forces, etc...
 /****************************************************************************/
 
-class WpxRigidBodyNode : public  Wz4RenderNode
+class WpxRigidBodyNodeBase : public  Wz4RenderNode
+{
+public:
+  virtual void Init() {}
+  WpxRigidBodyParaRigidBody ParaBase, Para;
+};
+
+class WpxRigidBodyNodeActor : public  WpxRigidBodyNodeBase
 {
 public:
   sArray<sActor*> * AllActorsPtr;     // ptr to an actors list (in WpxRigidBody)
   virtual void Init() {}
 
-  WpxRigidBodyParaRigidBody ParaBase, Para;
-};
-
-class WpxRigidBodyNodeDynamic : public WpxRigidBodyNode
-{
-public:
   void Transform(Wz4RenderContext *ctx, const sMatrix34 & mat);
 };
 
-class WpxRigidBodyNodeStatic : public WpxRigidBodyNode
+class WpxRigidBodyNodeDynamic : public WpxRigidBodyNodeActor
 {
-private:
-  sMatrix34 Matrix;     // static matrix actor
 public:
-  void Init();
-  void Transform(Wz4RenderContext *ctx, const sMatrix34 & mat);
 };
 
-class WpxRigidBodyNodeKinematic : public WpxRigidBodyNodeDynamic
+class WpxRigidBodyNodeStatic : public WpxRigidBodyNodeActor
+{
+public:
+};
+
+class WpxRigidBodyNodeKinematic : public WpxRigidBodyNodeActor
 {
 public:
   void Simulate(Wz4RenderContext *ctx);
@@ -329,13 +331,13 @@ public:
 
 
 
-class WpxRigidBodyNodeDynamicTransform : public WpxRigidBodyNode
+class WpxRigidBodyNodeDynamicTransform : public WpxRigidBodyNodeBase
 {
 public:
   WpxRigidBodyTransformParaRigidBodyTransform ParaBase, Para;
 };
 
-class WpxRigidBodyNodeDynamicMul : public WpxRigidBodyNode
+class WpxRigidBodyNodeDynamicMul : public WpxRigidBodyNodeBase
 {
 public:
   WpxRigidBodyMulParaRigidBodyMul ParaBase, Para;

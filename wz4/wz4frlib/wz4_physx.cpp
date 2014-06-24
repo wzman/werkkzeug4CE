@@ -733,7 +733,7 @@ void WpxRigidBody::PhysxBuildActor(const sMatrix34 & mat, PxScene * scene)
   }*/
 
   // get WpxRigidBodyNodeDynamic from rootnode
-  WpxRigidBodyNode * rigidNode = static_cast<WpxRigidBodyNode *>(RootNode);
+  WpxRigidBodyNodeActor * rigidNode = static_cast<WpxRigidBodyNodeActor *>(RootNode);
   if (rigidNode)
   {
     // set actor list ptr
@@ -841,7 +841,7 @@ void WpxRigidBodyMul::Transform(const sMatrix34 & mat, PxScene * ptr)
 /****************************************************************************/
 /****************************************************************************/
 
-void WpxRigidBodyNodeDynamic::Transform(Wz4RenderContext *ctx, const sMatrix34 & mat)
+void WpxRigidBodyNodeActor::Transform(Wz4RenderContext *ctx, const sMatrix34 & mat)
 {
   if (ctx)
   {
@@ -860,40 +860,6 @@ void WpxRigidBodyNodeDynamic::Transform(Wz4RenderContext *ctx, const sMatrix34 &
       Childs[0]->Matrices.AddTail(matRes);
       //Childs[0]->Matrices.AddTail(sMatrix34CM(mmat*mat));
       //TransformChilds(ctx, mmat);
-    }
-  }
-  else
-  {
-    // transformed by WpxRigidBody (preview actors positions without physx)
-    // transform associated scene node without physx
-
-    TransformChilds(ctx, mat);
-  }
-}
-
-/****************************************************************************/
-
-void WpxRigidBodyNodeStatic::Init()
-{
-  Para = ParaBase;
-
-  sMatrix34 m;
-  sSRT srt;
-  srt.Scale = Para.Scale;
-  srt.Rotate = Para.Rot;
-  srt.Translate = Para.Trans;
-  srt.MakeMatrix(Matrix);
-}
-
-void WpxRigidBodyNodeStatic::Transform(Wz4RenderContext *ctx, const sMatrix34 & mat)
-{
-  if (ctx)
-  {
-    sMatrix34CM matRes = sMatrix34CM(Matrix*mat);
-    sActor * a;
-    sFORALL(*AllActorsPtr, a)
-    {
-      Childs[0]->Matrices.AddTail(matRes);
     }
   }
   else

@@ -354,7 +354,7 @@ operator WpxRigidBody RigidBody (Wz4Render, WpxColliderBase)
   }
   code
   {
-    WpxRigidBodyNode * node = 0;
+    WpxRigidBodyNodeBase * node = 0;
     if(para->ActorType == 0)
     {
       node = new WpxRigidBodyNodeStatic();
@@ -399,7 +399,7 @@ operator WpxRigidBodyAdd RigidBodyAdd "Add" (*WpxActorBase)
   }
   code
   {
-    WpxRigidBodyNode * node = new WpxRigidBodyNode();
+    WpxRigidBodyNodeBase * node = new WpxRigidBodyNodeBase();
     out->ParaBase = out->Para = *para;
 
     out->AddActorsChilds(cmd);
