@@ -354,6 +354,7 @@ operator WpxRigidBody RigidBody (Wz4Render, WpxColliderBase)
     anim float30 Rot (-16..16 step 0.01) = 0;
     anim float31 Trans (-0x10000..0x10000 step 0.01) = 0;
 
+    group "Actor type";
     layout flags ActorType("static|dynamic") = 0;
     if(ActorType == 1)
       layout flags DynamicType("-|kinematic") = 0;
