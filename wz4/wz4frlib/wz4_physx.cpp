@@ -1117,7 +1117,7 @@ void WpxRigidBodyNodeDebris::Transform(Wz4RenderContext *ctx, const sMatrix34 & 
     {
       pT = a->actor->getGlobalPose();
       PxMat44TosMatrix34(pT, mmat);
-      matRes = mmat*mat;
+      matRes = mmat;//*mat;
       *a->matrix = matRes;
     }
   }
@@ -1128,27 +1128,28 @@ void WpxRigidBodyNodeDebris::Transform(Wz4RenderContext *ctx, const sMatrix34 & 
 void WpxRigidBodyNodeDebris::Render(Wz4RenderContext *ctx)
 {
   sInt max = ChunkedMeshPtr->Chunks.GetCount();
-  sMatrix34CM *mats = new sMatrix34CM[max];
 
-  sActor * a;
-  sFORALL(*AllActorsPtr, a)
-    mats[_i] = *a->matrix;
+#ifdef _DEBUG
+  // nb chunk should be the same as all actor
+  sVERIFY(max == AllActorsPtr->GetCount());
+#endif
 
   sMatrix34CM *mats0 = new sMatrix34CM[max];
   sMatrix34CM *matp;
+  sMatrix34CM actorMat;
 
   sFORALL(Matrices, matp)
   {
+    sActor ** a = AllActorsPtr->GetData();
     for (sInt i = 0; i < max; i++)
-      mats0[i] = mats[i] *(*matp);
-
+    {
+      actorMat = *a++[0]->matrix;
+      mats0[i] = actorMat * (*matp);
+    }
     ChunkedMeshPtr->RenderBone(ctx->RenderMode, /*Para.EnvNum*/0, max, mats0, max);
-    
   }
 
-  delete[] mats;
   delete[] mats0;
-
 }
 
 /****************************************************************************/
