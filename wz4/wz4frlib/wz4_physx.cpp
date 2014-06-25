@@ -866,6 +866,20 @@ WpxRigidBodyDebris::~WpxRigidBodyDebris()
   }
 }
 
+void WpxRigidBodyDebris::Render(Wz4RenderContext &ctx, sMatrix34 &mat)
+{
+  // render every colliders/chunks
+
+  sChunkDebris * o;
+  sFORALL(ChunksObj, o)
+  {
+    sVERIFY(o->wCollider->Matrices.GetCount() > 0);
+
+    o->wCollider->Render(ctx, mat);
+    o->wCollider->ClearMatricesR();
+  }
+}
+
 void WpxRigidBodyDebris::PhysxReset()
 {
   // delete all rigidbodies
@@ -999,14 +1013,10 @@ void WpxRigidBodyDebris::Transform(const sMatrix34 & mat, PxScene * ptr)
   {
     // ptr is null : transform is calling for WpxRigidBody Rendering
 
-    // a WpxRigidBody has no WpxRigidBody childs, so no need to transform Childs
-    // but need at least one matrix when building physx actor
-    //Matrices.AddTail(sMatrix34CM(mulmat));
-
-    // instead of WpxRigidBody it has a RootCollider and a RootNode, so transform them
-    //RootCollider->Transform(mulmat, 0);
-    //RootNode->Transform(0, mulmat);
-
+    // transform each chunk object to set the matrix used for rendering
+    sChunkDebris * o;
+    sFORALL(ChunksObj, o)
+      o->wCollider->Matrices.AddTail(sMatrix34CM(mulmat));
   }
   else
   {

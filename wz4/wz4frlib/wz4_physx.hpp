@@ -307,6 +307,8 @@ public:
   void PhysxBuildDebris(const sMatrix34 & mat, PxScene * ptr);
   int GetChunkedMesh(Wz4Render * in);
 
+  void Render(Wz4RenderContext &ctx, sMatrix34 &mat);
+
   void PhysxReset();
 
   sArray<sChunkDebris *> ChunksObj;
