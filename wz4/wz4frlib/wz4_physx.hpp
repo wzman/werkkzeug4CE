@@ -286,9 +286,9 @@ public:
 
 struct sChunkDebris
 {
-  WpxCollider * wCollider;
-  WpxRigidBody * wRigidBody;
-  Wz4Mesh * Mesh;
+  WpxCollider * wCollider;      // physx collider
+  WpxRigidBody * wRigidBody;    // physx rigid body
+  Wz4Mesh * Mesh;               // chunk mesh, used to compute collider shape
 
   sChunkDebris() { wCollider=0; wRigidBody=0; Mesh=0; }
 };
@@ -297,12 +297,11 @@ class WpxRigidBodyDebris : public WpxActorBase
 {
 public:
   Wz4Mesh * ChunkedMesh;              // chunked mesh to render
-  //sArray<Wz4Mesh *> Chunks;           // list of all meshes extracted from chunked mesh
   sArray<sActor*> AllActors;          // list of actors
 
   WpxRigidBodyDebrisParaRigidBodyDebris Para, ParaBase;
 
-  WpxRigidBodyDebris();// { ChunkedMesh = 0; }
+  WpxRigidBodyDebris();
   ~WpxRigidBodyDebris();
   void Transform(const sMatrix34 & mat, PxScene * ptr);
   void PhysxBuildDebris(const sMatrix34 & mat, PxScene * ptr);
