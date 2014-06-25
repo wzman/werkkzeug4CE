@@ -728,17 +728,7 @@ void WpxRigidBody::PhysxBuildActor(const sMatrix34 & mat, PxScene * scene, sArra
   actor->matrix = new sMatrix34(mat);
 
   // add actor to list
-  //AllActors.AddTail(actor);
   allActors.AddTail(actor);
-
-  // get WpxRigidBodyNodeDynamic from rootnode
-  WpxRigidBodyNodeActor * rigidNode = static_cast<WpxRigidBodyNodeActor *>(RootNode);
-  if (rigidNode)
-  {
-    // set actor list ptr
-    //rigidNode->AllActorsPtr = &AllActors;
-    rigidNode->AllActorsPtr = &allActors;
-  }
 }
 
 void WpxRigidBody::Transform(const sMatrix34 & mat, PxScene * ptr)
@@ -770,6 +760,16 @@ void WpxRigidBody::Transform(const sMatrix34 & mat, PxScene * ptr)
   {
     // ptr not null : transform is calling from Physx init to build physx objects
     PhysxBuildActor(mulmat, ptr, AllActors);
+
+    // copy AllActor adress in RootNode
+    WpxRigidBodyNodeActor * rigidNode = static_cast<WpxRigidBodyNodeActor *>(RootNode);
+    if (rigidNode)
+      rigidNode->AllActorsPtr = &AllActors;
+
+    // AllActors is used in RenderNode to get global pose of physx actors
+    // its pointer in RootNode must not be null
+    sVERIFY(rigidNode!=0);
+    sVERIFY(rigidNode->AllActorsPtr!=0);
   }
 }
 
@@ -964,15 +964,19 @@ void WpxRigidBodyDebris::PhysxBuildDebris(const sMatrix34 & mat, PxScene * ptr)
     rb->AddRootCollider(d->wCollider);
     rb->Para.ActorType = 1;
     rb->Para.DynamicType = 0;
-    //rb->RootNode = RootNode;
     rb->PhysxBuildActor(mat, ptr, AllActors);
 
+    sVERIFY(RootNode!=0)
+
+    // copy AllActor adress in RootNode
     WpxRigidBodyNodeDebris * rigidNode = static_cast<WpxRigidBodyNodeDebris *>(RootNode);
     if (rigidNode)
-    {
-      // copy actor list ptr
       rigidNode->AllActorsPtr = &AllActors;
-    }
+
+    // AllActors is used in RenderNode to get global pose of physx actors
+    // its pointer in RootNode must not be null
+    sVERIFY(rigidNode!=0);
+    sVERIFY(rigidNode->AllActorsPtr!=0);
 
     // complete chunkdebris object with rigidbody value
     d->wRigidBody = rb;
@@ -1016,6 +1020,11 @@ void WpxRigidBodyDebris::Transform(const sMatrix34 & mat, PxScene * ptr)
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
+
+WpxRigidBodyNodeActor::WpxRigidBodyNodeActor()
+{
+  AllActorsPtr = 0;
+}
 
 void WpxRigidBodyNodeActor::Transform(Wz4RenderContext *ctx, const sMatrix34 & mat)
 {
@@ -1087,6 +1096,7 @@ void WpxRigidBodyNodeKinematic::Simulate(Wz4RenderContext *ctx)
 WpxRigidBodyNodeDebris::WpxRigidBodyNodeDebris()
 {
   ChunkedMeshPtr = 0;
+  AllActorsPtr = 0;
 }
 
 WpxRigidBodyNodeDebris::~WpxRigidBodyNodeDebris()

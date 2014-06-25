@@ -340,6 +340,7 @@ public:
   sArray<sActor*> * AllActorsPtr;     // ptr to an actors list (in WpxRigidBody)
   virtual void Init() {}
 
+  WpxRigidBodyNodeActor();
   void Transform(Wz4RenderContext *ctx, const sMatrix34 & mat);
 };
 
@@ -372,7 +373,6 @@ class WpxRigidBodyNodeDebris : public WpxRigidBodyNodeActor
 {
 public:
   Wz4Mesh * ChunkedMeshPtr;             // ptr to single chunked mesh to render (init in WpxRigidBodyDebris)
-  sArray<sActor*> * AllActorsPtr;       // ptr to list of actors (one actor per chunk) (init in WpxRigidBodyDebris)
 
   WpxRigidBodyDebrisParaRigidBodyDebris Para, ParaBase;
   WpxRigidBodyDebrisAnimRigidBodyDebris Anim;

@@ -416,8 +416,6 @@ operator WpxRigidBodyDebris RigidBodyDebris "Debris" (Wz4Render)
     WpxRigidBodyNodeDebris * node = new WpxRigidBodyNodeDebris();
     out->ParaBase = out->Para = *para;
 
-    //out->AddActorsChilds(cmd);
-
     sInt errcode = out->GetChunkedMesh(in0);
     if(errcode == 1)
     {
