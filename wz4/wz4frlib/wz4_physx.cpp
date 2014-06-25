@@ -837,33 +837,44 @@ void WpxRigidBodyMul::Transform(const sMatrix34 & mat, PxScene * ptr)
 
 /****************************************************************************/
 
+WpxRigidBodyDebris::WpxRigidBodyDebris()
+{
+  ChunkedMesh = 0;
+}
+
 WpxRigidBodyDebris::~WpxRigidBodyDebris()
 {
-  sChunkObj * o;
+  // delete all elements of sChunkDebris stuct
+  sChunkDebris * o;
   sFORALL(ChunksObj, o)
   {
     o->wCollider->Release();
     o->wRigidBody->Release();
+    o->Mesh->Release();
+    delete o;
   }
 
-  // delete all debris meshes
-  sDeleteAll(Chunks);
+  // delete chunked mesh
+  ChunkedMesh->Release();
 
   // delete physx actors
-  PhysxReset();
-
+  sActor * a;
+  sFORALL(AllActors, a)
+  {
+    delete a->matrix;
+    delete a;
+  }
 }
 
 void WpxRigidBodyDebris::PhysxReset()
 {
-  sChunkObj * o;
-  sFORALL(ChunksObj, o)
+  // delete all rigidbodies
+  sChunkDebris * d;
+  sFORALL(ChunksObj, d)
   {
-    o->wCollider->Release();
-    o->wRigidBody->Release();
+    if(d->wRigidBody)
+      d->wRigidBody->Release();
   }
-  ChunksObj.Clear();
-
 
   // delete all actors
   sActor * a;
@@ -872,17 +883,22 @@ void WpxRigidBodyDebris::PhysxReset()
     delete a->matrix;
     delete a;
   }
-
   AllActors.Clear();
 }
 
 int WpxRigidBodyDebris::GetChunkedMesh(Wz4Render * in)
 {
+  // get mesh from Wz4RenderNode
+  // mesh must be chunked
+
   RNRenderMesh * rm = static_cast<RNRenderMesh*>(in->RootNode);
   if (rm && rm->Mesh)
   {
     if (rm->Mesh->Chunks.GetCount() > 0)
+    {
       ChunkedMesh = rm->Mesh;
+      ChunkedMesh->AddRef();
+    }
     else
       return 2;  // error, need a chunked mesh
   }
@@ -890,13 +906,14 @@ int WpxRigidBodyDebris::GetChunkedMesh(Wz4Render * in)
     return 1;   // error, need a mesh input
 
 
-  // extract all chunks from mesh, to get colliders shapes
+  // extract all chunks from input mesh
+  // and create colliders shapes
 
   Wz4ChunkPhysics *ch;
   sArray<Wz4MeshVertex> vertices;
   sFORALL(ChunkedMesh->Chunks, ch)
   {
-    // get first and last index in chunk
+    // get first and last vertices index for current chunk
     sInt start = ch->FirstVert;
     sInt end = -1;
     if (_i + 1 <= ChunkedMesh->Chunks.GetCount() - 1)
@@ -904,29 +921,16 @@ int WpxRigidBodyDebris::GetChunkedMesh(Wz4Render * in)
     else
       end = ChunkedMesh->Vertices.GetCount();
 
-    // add all vertices in chunk
+    // get all chunk's vertices
     for (int i = start; i<end; i++)
       vertices.AddTail(ChunkedMesh->Vertices[i]);
 
-    // create new mesh with all chunk vertices
+    // create a new mesh with all theses vertices
     Wz4Mesh * m = new Wz4Mesh;
     m->Vertices.Add(vertices);
     vertices.Clear();
 
-    // add mesh to list
-    Chunks.AddTail(m);
-  }
-
-  return 0;
-}
-
-void WpxRigidBodyDebris::PhysxBuildDebris(const sMatrix34 & mat, PxScene * ptr)
-{
-  // for all chunks, create an actor with same collider shape (convex hull)
-
-  Wz4Mesh * m;
-  sFORALL(Chunks, m)
-  {
+    // create a collider from this new mesh (convex hull shape)
     WpxCollider * col = new WpxCollider();
     col->Para.GeometryType = EGT_HULL;
     col->Para.StaticFriction = 0.5;
@@ -937,8 +941,27 @@ void WpxRigidBodyDebris::PhysxBuildDebris(const sMatrix34 & mat, PxScene * ptr)
     col->Para.Trans = sVector31(0.0f);
     col->CreateGeometry(m);
 
+    // create new chunkdebris object and fill Mesh and wCollider data
+    sChunkDebris * d = new sChunkDebris;
+    d->Mesh = m;
+    d->wCollider = col;
+
+    // add chunkdebris object to list
+    ChunksObj.AddTail(d);
+  }
+
+  return 0;
+}
+
+void WpxRigidBodyDebris::PhysxBuildDebris(const sMatrix34 & mat, PxScene * ptr)
+{
+  // for all chunkdebris object, create an actor
+
+  sChunkDebris * d;
+  sFORALL(ChunksObj, d)
+  {
     WpxRigidBody * rb = new WpxRigidBody();
-    rb->AddRootCollider(col);
+    rb->AddRootCollider(d->wCollider);
     rb->Para.ActorType = 1;
     rb->Para.DynamicType = 0;
     //rb->RootNode = RootNode;
@@ -951,11 +974,8 @@ void WpxRigidBodyDebris::PhysxBuildDebris(const sMatrix34 & mat, PxScene * ptr)
       rigidNode->AllActorsPtr = &AllActors;
     }
 
-    // store created objects
-    sChunkObj o;
-    o.wCollider = col;
-    o.wRigidBody = rb;
-    ChunksObj.AddTail(o);
+    // complete chunkdebris object with rigidbody value
+    d->wRigidBody = rb;
   }
 }
 

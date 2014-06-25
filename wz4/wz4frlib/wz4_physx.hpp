@@ -284,22 +284,25 @@ public:
 
 /****************************************************************************/
 
-struct sChunkObj
+struct sChunkDebris
 {
   WpxCollider * wCollider;
   WpxRigidBody * wRigidBody;
+  Wz4Mesh * Mesh;
+
+  sChunkDebris() { wCollider=0; wRigidBody=0; Mesh=0; }
 };
 
 class WpxRigidBodyDebris : public WpxActorBase
 {
 public:
   Wz4Mesh * ChunkedMesh;              // chunked mesh to render
-  sArray<Wz4Mesh *> Chunks;           // list of all meshes extracted from chunked mesh
+  //sArray<Wz4Mesh *> Chunks;           // list of all meshes extracted from chunked mesh
   sArray<sActor*> AllActors;          // list of actors
 
   WpxRigidBodyDebrisParaRigidBodyDebris Para, ParaBase;
 
-  WpxRigidBodyDebris() { ChunkedMesh = 0; }
+  WpxRigidBodyDebris();// { ChunkedMesh = 0; }
   ~WpxRigidBodyDebris();
   void Transform(const sMatrix34 & mat, PxScene * ptr);
   void PhysxBuildDebris(const sMatrix34 & mat, PxScene * ptr);
@@ -307,7 +310,7 @@ public:
 
   void PhysxReset();
 
-  sArray<sChunkObj> ChunksObj;
+  sArray<sChunkDebris *> ChunksObj;
 };
 
 
