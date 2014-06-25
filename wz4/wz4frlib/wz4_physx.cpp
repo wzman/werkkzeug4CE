@@ -14,6 +14,7 @@
 PxFoundation * gFoundation;   // global physx foundation pointer
 PxPhysics * gPhysicsSDK;      // global physx engine pointer
 PxCooking * gCooking;         // global physx cooking pointer
+sInt gCumulatedCount = 0;     // cumulated forces counter for animated rigid bodies
 
 static PxDefaultErrorCallback gDefaultErrorCallback;
 static PxDefaultAllocator gDefaultAllocatorCallback;
@@ -668,6 +669,37 @@ void WpxRigidBody::PhysxReset()
   AllActors.Clear();
 }
 
+void WpxRigidBody::PhysxWakeUp()
+{
+  // wake up dynamic actors
+
+  PxRigidDynamic * rigidDynamic = 0;
+  sActor * a;
+  sFORALL(AllActors, a)
+  {
+    if (Para.ActorType == 1)//a->actor->isRigidDynamic())
+    {
+      rigidDynamic = static_cast<PxRigidDynamic*>(a->actor);
+
+      // initial linear velocity
+      PxVec3 linearVelocity(Para.LinearVelocity.x, Para.LinearVelocity.y, Para.LinearVelocity.z);
+      rigidDynamic->setLinearVelocity(linearVelocity);
+
+      // initial angular velocity
+      PxReal maxAngVel = Para.MaxAngularVelocity;
+      rigidDynamic->setMaxAngularVelocity(maxAngVel);
+      PxVec3 angVel(Para.AngularVelocity.x, Para.AngularVelocity.y, Para.AngularVelocity.z);
+      rigidDynamic->setAngularVelocity(angVel);
+
+      // wake up
+      if (!Para.Sleep)
+        rigidDynamic->wakeUp();
+      else
+        rigidDynamic->putToSleep();
+    }
+  }
+}
+
 void WpxRigidBody::PhysxBuildActor(const sMatrix34 & mat, PxScene * scene, sArray<sActor*> &allActors)
 {
   // ptr for local use
@@ -712,13 +744,58 @@ void WpxRigidBody::PhysxBuildActor(const sMatrix34 & mat, PxScene * scene, sArra
   // set actor pose
   actor->actor->setGlobalPose(pose);
 
-  // compute mass and inertia
-  if (Para.ActorType == 1)
+  // set physx properties for dynamics
+  if (Para.ActorType == 1 && Para.DynamicType == 0)
   {
-    sArray<PxReal> Densities;
-    RootCollider->GetDensity(&Densities);
-    PxReal * sd = Densities.GetData();
-    PxRigidBodyExt::updateMassAndInertia(*rigidDynamic, sd, Densities.GetCount());
+    // auto MassAndInertia ?
+    if (Para.MassAndInertia == 0)
+    {
+      // auto compute mass and inertia according all shapes colliders densities
+      sArray<PxReal> Densities;
+      RootCollider->GetDensity(&Densities);
+      PxReal * sd = Densities.GetData();
+      PxRigidBodyExt::updateMassAndInertia(*rigidDynamic, sd, Densities.GetCount());
+    }
+    else
+    {
+      // manual set of mass and center of mass
+      PxReal mass = Para.Mass;
+      PxVec3 massLocalPose(Para.CenterOfMass.x, Para.CenterOfMass.y, Para.CenterOfMass.z);
+      PxRigidBodyExt::setMassAndUpdateInertia(*rigidDynamic, mass, &massLocalPose);
+    }
+
+    // sleep threshold
+    rigidDynamic->setSleepThreshold(Para.SleepThreshold);
+
+    // gravity flag
+    bool gravityFlag = !Para.Gravity;
+    rigidDynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, gravityFlag);
+
+    // damping
+    PxReal linDamp = Para.LinearDamping;
+    rigidDynamic->setLinearDamping(linDamp);
+    PxReal angDamp = Para.AngularDamping;
+    rigidDynamic->setAngularDamping(angDamp);
+
+    // force
+    if (Para.ForceMode != 4)
+    {
+      PxVec3 force(Para.Force.x, Para.Force.y, Para.Force.z);
+      PxForceMode::Enum forceMode = (PxForceMode::Enum)Para.ForceMode;
+      rigidDynamic->addForce(force, forceMode);
+    }
+
+    // torque
+    if (Para.TorqueMode != 4)
+    {
+      PxVec3 torque(Para.Torque.x, Para.Torque.y, Para.Torque.z);
+      PxForceMode::Enum torqueMode = (PxForceMode::Enum)Para.TorqueMode;
+      rigidDynamic->addTorque(torque, torqueMode);
+    }
+
+    // put to sleep at init
+    rigidDynamic->putToSleep();
+
   }
 
   // add actor to physx scene
@@ -1074,6 +1151,67 @@ void WpxRigidBodyNodeActor::Transform(Wz4RenderContext *ctx, const sMatrix34 & m
 
 /****************************************************************************/
 
+WpxRigidBodyNodeDynamic::WpxRigidBodyNodeDynamic()
+{
+  Anim.Init(Wz4RenderType->Script);
+}
+
+void WpxRigidBodyNodeDynamic::Simulate(Wz4RenderContext *ctx)
+{
+  Para = ParaBase;
+  Anim.Bind(ctx->Script, &Para);
+  SimulateCalc(ctx);
+
+  PxRigidDynamic *rigidDynamic = 0;
+  sActor * a;
+
+  sFORALL(*AllActorsPtr, a)
+  {
+    rigidDynamic = static_cast<PxRigidDynamic*>(a->actor);
+
+    if (Para.Sleep)
+    {
+      // go to bed !
+      if (!rigidDynamic->isSleeping())
+        rigidDynamic->putToSleep();
+    }
+    else
+    {
+      if (Para.TimeFlag == 1)
+      {
+        // gravity flag
+        bool gravityFlag = !Para.Gravity;
+        rigidDynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, gravityFlag);
+
+        // damping
+        PxReal linDamp = Para.LinearDamping;
+        rigidDynamic->setLinearDamping(linDamp);
+        PxReal angDamp = Para.AngularDamping;
+        rigidDynamic->setAngularDamping(angDamp);
+
+        // because theses forces are cumulated on each call of this function
+        // we need to compensate call count based on real time (see: Physx::simulate())
+        for (sInt j=0; j<gCumulatedCount; j++)
+        {
+          // force
+          PxVec3 force(Para.Force.x, Para.Force.y, Para.Force.z);
+          PxForceMode::Enum forceMode = (PxForceMode::Enum)Para.ForceMode;
+          rigidDynamic->addForce(force, forceMode);
+
+          // torque
+          PxVec3 torque(Para.Torque.x, Para.Torque.y, Para.Torque.z);
+          PxForceMode::Enum torqueMode = (PxForceMode::Enum)Para.TorqueMode;
+          rigidDynamic->addTorque(torque, torqueMode);
+        }
+      }
+    }
+  }
+
+  SimulateChilds(ctx);
+}
+
+/****************************************************************************/
+
 WpxRigidBodyNodeKinematic::WpxRigidBodyNodeKinematic()
 {
   Anim.Init(Wz4RenderType->Script);
@@ -1218,15 +1356,26 @@ sBool RNPhysx::Init(wCommand *cmd)
   if (!Scene)
     return sFALSE;
 
-  // create first matrix
+  // create all physx actors be recursing childs operators
+  CreateAllActors(cmd);
+
+  // pre-simulate and wake up physx scene
+  WakeUpScene(cmd);
+
+  return sTRUE;
+}
+
+void RNPhysx::CreateAllActors(wCommand *cmd)
+{
+  // create a first matrix
   sMatrix34 mat;
   mat.Init();
 
-  // for each childs
-  for (sInt i=0; i<cmd->InputCount; i++)
+  // for each childs operators
+  for (sInt i = 0; i<cmd->InputCount; i++)
   {
     WpxActorBase *in = cmd->GetInput<WpxActorBase *>(i);
-    if(in)
+    if (in)
     {
       // delete physx objects if it already exists
       in->PhysxReset();
@@ -1235,8 +1384,44 @@ sBool RNPhysx::Init(wCommand *cmd)
       in->Transform(mat, Scene);
     }
   }
+}
 
-  return sTRUE;
+void RNPhysx::WakeUpScene(wCommand *cmd)
+{
+  sF32 timeStep = 1.0f / 30.0f;
+
+  // presimulation before wakeup (time to init stuff like joints...)
+  if (Para.PreDelay)
+  {
+    for (sInt i = 0; i<Para.PreDelayCycles; i++)
+    {
+      Scene->simulate(timeStep);
+      Scene->fetchResults(true);
+    }
+    Prepare(0);
+  }
+
+  // wake up actors
+  for (sInt i = 0; i<cmd->InputCount; i++)
+  {
+    WpxActorBase *in = cmd->GetInput<WpxActorBase *>(i);
+    if (in)
+    {
+      in->PhysxWakeUp();
+    }
+  }
+
+  // presimulation after wakeup (advance all scene)
+  if (Para.PreSimulation)
+  {
+    for (sInt i = 0; i<Para.SimulationCycles; i++)
+    {
+      Scene->simulate(timeStep);
+      Scene->fetchResults(true);
+      gCumulatedCount++;
+    }
+    Prepare(0);
+  }
 }
 
 PxScene * RNPhysx::CreateScene()
@@ -1278,6 +1463,9 @@ void RNPhysx::Simulate(Wz4RenderContext *ctx)
   Anim.Bind(ctx->Script, &Para);
   SimulateCalc(ctx);
 
+  // reset gCumulatedCount forces counter
+  gCumulatedCount = 0;
+
   // pause/restart mechanism (F5/F6 key)
   if (!Doc->IsPlayer)
   {
@@ -1301,16 +1489,18 @@ void RNPhysx::Simulate(Wz4RenderContext *ctx)
     Executed = sTRUE;
   }
 
-  SimulateChilds(ctx);
-
-
   // compute physx
   sF32 stepSize = 1.0f / 60.0f;
   Scene->simulate(stepSize);
   while (!Scene->fetchResults())
   {
     // do something useful
+
+    // count nb time to cumulate forces for animated rigid dynamics
+    gCumulatedCount++;
   }
+
+  SimulateChilds(ctx);
 
   ViewPrintF(L"Scene actors : dynamic %d, static %d : %d\n",
       Scene->getNbActors(PxActorTypeSelectionFlag::eRIGID_DYNAMIC),

@@ -90,10 +90,12 @@ public:
   virtual void Transform(const sMatrix34 & mat, T3 * ptr);        // build list of model matrices with GRAPH!
   virtual void ClearMatricesR();                                  // clear matrices
   virtual void PhysxReset();                                      // clear physx
+  virtual void PhysxWakeUp();                                     // wakeup physx
 
   void RenderChilds(Wz4RenderContext &ctx, sMatrix34 &mat);       // recurse to childs
   void TransformChilds(const sMatrix34 & mat, T3 * ptr);          // recurse to childs
   void PhysxResetChilds();                                        // recurse to childs
+  void PhysxWakeUpChilds();                                       // recurse to childs
 };
 
 template <typename  T, class T2, typename T3>
@@ -156,6 +158,21 @@ void WpxGenericGraph<T, T2, T3>::PhysxResetChilds()
   sFORALL(Childs, c)
     c->PhysxReset();
 }
+
+template <typename  T, class T2, typename T3>
+void WpxGenericGraph<T, T2, T3>::PhysxWakeUp()
+{
+  PhysxWakeUpChilds();
+}
+
+template <typename  T, class T2, typename T3>
+void WpxGenericGraph<T, T2, T3>::PhysxWakeUpChilds()
+{
+  T * c;
+  sFORALL(Childs, c)
+    c->PhysxWakeUp();
+}
+
 
 /****************************************************************************/
 /****************************************************************************/
@@ -254,6 +271,7 @@ public:
   void PhysxReset();
   void AddRootCollider(WpxColliderBase * col);
   void PhysxBuildActor(const sMatrix34 & mat, PxScene * scene, sArray<sActor*> &allActors);   // build physx actor
+  void PhysxWakeUp();
 };
 
 /****************************************************************************/
@@ -347,6 +365,8 @@ public:
 class WpxRigidBodyNodeDynamic : public WpxRigidBodyNodeActor
 {
 public:
+  WpxRigidBodyNodeDynamic();
+  void Simulate(Wz4RenderContext *ctx);
 };
 
 /****************************************************************************/
@@ -393,6 +413,8 @@ private:
   sF32 PreviousTimeLine;                  // delta time line use to restart simulation
 
   PxScene * CreateScene();                // create new physx scene
+  void CreateAllActors(wCommand *cmd);    // create physx actors
+  void WakeUpScene(wCommand *cmd);        // wake up all actors
 
 public:
   Wz4RenderParaPhysx ParaBase, Para;
