@@ -444,11 +444,56 @@ operator WpxRigidBodyDebris RigidBodyDebris "Debris" (Wz4Render)
     anim float30 Rot (-16..16 step 0.01) = 0;
     anim float31 Trans (-0x10000..0x10000 step 0.01) = 0;
 
+    group "Collider Properties";
+    float Density (0.0001..0x10000 step 0.01) = 1.0;
+
+    group "PhysX Material";
+    float StaticFriction (0.001..0x10000 step 0.01) = 0.5;
+    float DynamicFriction (0.001..0x10000 step 0.01) = 0.5;
+    float Restitution (-0x10000..0x10000 step 0.01) = 0.5;
+
+    group "Actor type";
+    layout flags ActorType("static|dynamic") = 0;
+
+    if(ActorType == 1)
+    {
+      group "Mass And Inertia";
+      layout flags MassAndInertia("colliders densities|-") = 0;
+      if(MassAndInertia == 1)
+      {
+        float31 CenterOfMass (-0x10000..0x10000 step 0.01) = 0;
+        float Mass(0.001..0x10000 step 0.01) = 1.0;
+      }
+
+      group "Initial Velocity";
+      float31 LinearVelocity (-0x10000..0x10000 step 0.01) = 0;
+      float31 AngularVelocity (-0x10000..0x10000 step 0.01) = 0;
+      float MaxAngularVelocity (0..0x10000 step 0.01) = 7;
+
+      group "Forces";
+      float SleepThreshold (0..0x10000 step 0.01) = 0.05;
+      anim layout flags Sleep ("no|yes") = 0;
+      anim layout flags Gravity("off|on") = 1;
+      anim float LinearDamping (0..0x10000 step 0.001) = 0.0;
+      anim float AngularDamping (0..0x10000 step 0.001) = 0.05;
+
+      anim layout flags ForceMode "Force" ("simple|impulse|velocity|acceleration|-") = 4;
+      if(ForceMode != 4)
+        anim nolabel float31 Force (-0x10000..0x10000 step 0.001) = 0;
+
+      anim layout flags TorqueMode "Torque" ("simple|impulse|velocity|acceleration|-") = 4;
+      if(TorqueMode != 4)
+        anim nolabel float31 Torque (-0x10000..0x10000 step 0.001) = 0;
+
+      layout flags TimeFlag("once|loop") = 0;
+    }
+
+    group "Animation Script"; overbox overlabel linenumber lines 5 string Script;
   }
   code
   {
     WpxRigidBodyNodeDebris * node = new WpxRigidBodyNodeDebris();
-    out->ParaBase = out->Para = *para;
+    node->ParaBase = out->ParaBase = out->Para = *para;
 
     sInt errcode = out->GetChunkedMesh(in0);
     if(errcode == 1)

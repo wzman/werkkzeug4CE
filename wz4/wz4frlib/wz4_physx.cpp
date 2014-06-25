@@ -963,6 +963,37 @@ void WpxRigidBodyDebris::Render(Wz4RenderContext &ctx, sMatrix34 &mat)
   }
 }
 
+void WpxRigidBodyDebris::PhysxWakeUp()
+{
+  // wake up dynamic actors
+
+  PxRigidDynamic * rigidDynamic = 0;
+  sActor * a;
+  sFORALL(AllActors, a)
+  {
+    if (Para.ActorType == 1)
+    {
+      rigidDynamic = static_cast<PxRigidDynamic*>(a->actor);
+
+      // initial linear velocity
+      PxVec3 linearVelocity(Para.LinearVelocity.x, Para.LinearVelocity.y, Para.LinearVelocity.z);
+      rigidDynamic->setLinearVelocity(linearVelocity);
+
+      // initial angular velocity
+      PxReal maxAngVel = Para.MaxAngularVelocity;
+      rigidDynamic->setMaxAngularVelocity(maxAngVel);
+      PxVec3 angVel(Para.AngularVelocity.x, Para.AngularVelocity.y, Para.AngularVelocity.z);
+      rigidDynamic->setAngularVelocity(angVel);
+
+      // wake up
+      if (!Para.Sleep)
+        rigidDynamic->wakeUp();
+      else
+        rigidDynamic->putToSleep();
+    }
+  }
+}
+
 void WpxRigidBodyDebris::PhysxReset()
 {
   // delete all rigidbodies
@@ -1031,10 +1062,10 @@ int WpxRigidBodyDebris::GetChunkedMesh(Wz4Render * in)
     // create a collider from this new mesh (convex hull shape)
     WpxCollider * col = new WpxCollider();
     col->Para.GeometryType = EGT_HULL;
-    col->Para.StaticFriction = 0.5;
-    col->Para.DynamicFriction = 0.5;
-    col->Para.Restitution = 0.5;
-    col->Para.Density = 1.0f;
+    col->Para.StaticFriction = Para.StaticFriction;
+    col->Para.DynamicFriction = Para.DynamicFriction;
+    col->Para.Restitution = Para.Restitution;
+    col->Para.Density = Para.Density;
     col->Para.Rot = sVector30(0.0f);
     col->Para.Trans = sVector31(0.0f);
     col->CreateGeometry(m);
@@ -1060,8 +1091,24 @@ void WpxRigidBodyDebris::PhysxBuildDebris(const sMatrix34 & mat, PxScene * ptr)
   {
     WpxRigidBody * rb = new WpxRigidBody();
     rb->AddRootCollider(d->wCollider);
-    rb->Para.ActorType = 1;
+    rb->Para.ActorType = Para.ActorType;
     rb->Para.DynamicType = 0;
+    rb->Para.MassAndInertia = Para.MassAndInertia;
+    rb->Para.CenterOfMass = Para.CenterOfMass;
+    rb->Para.Mass = Para.Mass;
+    rb->Para.LinearVelocity = Para.LinearVelocity;
+    rb->Para.AngularVelocity = Para.AngularVelocity;
+    rb->Para.MaxAngularVelocity = Para.MaxAngularVelocity;
+    rb->Para.SleepThreshold = Para.SleepThreshold;
+    rb->Para.Sleep = Para.Sleep;
+    rb->Para.Gravity = Para.Gravity;
+    rb->Para.LinearDamping = Para.LinearDamping;
+    rb->Para.AngularDamping = Para.AngularDamping;
+    rb->Para.ForceMode = Para.ForceMode;
+    rb->Para.Force = Para.Force;
+    rb->Para.TorqueMode = Para.TorqueMode;
+    rb->Para.Torque = Para.Torque;
+    rb->Para.TimeFlag = Para.TimeFlag;
     rb->PhysxBuildActor(mat, ptr, AllActors);
 
     sVERIFY(RootNode!=0)
@@ -1251,11 +1298,71 @@ WpxRigidBodyNodeDebris::WpxRigidBodyNodeDebris()
 {
   ChunkedMeshPtr = 0;
   AllActorsPtr = 0;
+
+  Anim.Init(Wz4RenderType->Script);
 }
 
 WpxRigidBodyNodeDebris::~WpxRigidBodyNodeDebris()
 {
 }
+
+void WpxRigidBodyNodeDebris::Simulate(Wz4RenderContext *ctx)
+{
+  Para = ParaBase;
+  Anim.Bind(ctx->Script, &Para);
+  SimulateCalc(ctx);
+
+  PxRigidDynamic *rigidDynamic = 0;
+  sActor * a;
+
+  sFORALL(*AllActorsPtr, a)
+  {
+    if (Para.ActorType == 1)
+    {
+      rigidDynamic = static_cast<PxRigidDynamic*>(a->actor);
+
+      if (Para.Sleep)
+      {
+        // go to bed !
+        if (!rigidDynamic->isSleeping())
+          rigidDynamic->putToSleep();
+      }
+      else
+      {
+        if (Para.TimeFlag == 1)
+        {
+          // gravity flag
+          bool gravityFlag = !Para.Gravity;
+          rigidDynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, gravityFlag);
+
+          // damping
+          PxReal linDamp = Para.LinearDamping;
+          rigidDynamic->setLinearDamping(linDamp);
+          PxReal angDamp = Para.AngularDamping;
+          rigidDynamic->setAngularDamping(angDamp);
+
+          // because theses forces are cumulated on each call of this function
+          // we need to compensate call count based on real time (see: Physx::simulate())
+          for (sInt j = 0; j < gCumulatedCount; j++)
+          {
+            // force
+            PxVec3 force(Para.Force.x, Para.Force.y, Para.Force.z);
+            PxForceMode::Enum forceMode = (PxForceMode::Enum)Para.ForceMode;
+            rigidDynamic->addForce(force, forceMode);
+
+            // torque
+            PxVec3 torque(Para.Torque.x, Para.Torque.y, Para.Torque.z);
+            PxForceMode::Enum torqueMode = (PxForceMode::Enum)Para.TorqueMode;
+            rigidDynamic->addTorque(torque, torqueMode);
+          }
+        }
+      }
+    }
+  }
+
+  SimulateChilds(ctx);
+}
+
 
 void WpxRigidBodyNodeDebris::Transform(Wz4RenderContext *ctx, const sMatrix34 & mat)
 {
@@ -1465,6 +1572,9 @@ void RNPhysx::Simulate(Wz4RenderContext *ctx)
 
   // reset gCumulatedCount forces counter
   gCumulatedCount = 0;
+
+  if (!Para.Enable)
+    return;
 
   // pause/restart mechanism (F5/F6 key)
   if (!Doc->IsPlayer)

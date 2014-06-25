@@ -327,6 +327,7 @@ public:
   void Transform(const sMatrix34 & mat, PxScene * ptr);
   void PhysxBuildDebris(const sMatrix34 & mat, PxScene * ptr);
   int GetChunkedMesh(Wz4Render * in);
+  void PhysxWakeUp();
 };
 
 
@@ -400,6 +401,7 @@ public:
 
   void Transform(Wz4RenderContext *ctx, const sMatrix34 & mat);
   void Render(Wz4RenderContext *ctx);
+  void Simulate(Wz4RenderContext *ctx);
 };
 
 /****************************************************************************/
