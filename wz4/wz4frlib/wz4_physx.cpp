@@ -1127,26 +1127,48 @@ void WpxRigidBodyNodeDebris::Transform(Wz4RenderContext *ctx, const sMatrix34 & 
 
 void WpxRigidBodyNodeDebris::Render(Wz4RenderContext *ctx)
 {
+  // get nb chunks in mesh
   sInt max = ChunkedMeshPtr->Chunks.GetCount();
 
+  // get nb of WpxRigidBodyNodeDebris instances (multiplied WpxRigidBodyNodeDebris)
+  sInt nbMultiplied = AllActorsPtr->GetCount() / max;
+  sInt indexInstance = 0;
+
 #ifdef _DEBUG
-  // nb chunk should be the same as all actor
-  sVERIFY(max == AllActorsPtr->GetCount());
+  // nb actors should be a multiple of nb chunks
+  // nb AllActor is nb chunck * nb of multiplied transformation (WpxRigidBodyMul multiply operator)
+  sVERIFY(AllActorsPtr->GetCount() % max == 0);
 #endif
 
   sMatrix34CM *mats0 = new sMatrix34CM[max];
   sMatrix34CM *matp;
   sMatrix34CM actorMat;
 
+  // for all RenderNode transformations (yellow operators under physx)
   sFORALL(Matrices, matp)
   {
-    sActor ** a = AllActorsPtr->GetData();
-    for (sInt i = 0; i < max; i++)
+    // for every WpxRigidBodyNodeDebris instances
+    for (sInt j=0; j<nbMultiplied; j++)
     {
-      actorMat = *a++[0]->matrix;
-      mats0[i] = actorMat * (*matp);
+      sActor ** a = AllActorsPtr->GetData();
+
+      // for every actors per WpxRigidBodyNodeDebris instances
+      for (sInt i=0; i<max; i++)
+      {
+        // compute result matrix
+        actorMat = *a++[indexInstance]->matrix;
+        mats0[i] = actorMat * (*matp);
+      }
+
+      // render once the chunked mesh with its matrices
+      ChunkedMeshPtr->RenderBone(ctx->RenderMode, /*Para.EnvNum*/0, max, mats0, max);
+
+      // go to next WpxRigidBodyNodeDebris instance
+      indexInstance += max;
     }
-    ChunkedMeshPtr->RenderBone(ctx->RenderMode, /*Para.EnvNum*/0, max, mats0, max);
+
+    // reset index instance per Matrices tranformations
+    indexInstance = 0;
   }
 
   delete[] mats0;
