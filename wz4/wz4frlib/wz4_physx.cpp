@@ -575,7 +575,7 @@ void WpxColliderTransform::Transform(const sMatrix34 & mat, PxRigidActor * ptr)
   sSRT srt;
   sMatrix34 mul;
 
-  srt.Scale = Para.Scale;
+  srt.Scale = sVector31(1.0f);
   srt.Rotate = Para.Rot;
   srt.Translate = Para.Trans;
   srt.MakeMatrix(mul);
@@ -592,12 +592,12 @@ void WpxColliderMul::Transform(const sMatrix34 & mat, PxRigidActor * ptr)
   sMatrix34 mulMat;
   sMatrix34 accu;
 
-  srt.Scale = Para.PreScale;
+  srt.Scale = sVector31(1.0f);
   srt.Rotate = Para.PreRot;
   srt.Translate = Para.PreTrans;
   srt.MakeMatrix(preMat);
 
-  srt.Scale = Para.Scale;
+  srt.Scale = sVector31(1.0f);
   srt.Rotate = Para.Rot;
   srt.Translate = Para.Trans;
   srt.MakeMatrix(mulMat);
@@ -736,7 +736,7 @@ void WpxRigidBody::Transform(const sMatrix34 & mat, PxScene * ptr)
   sSRT srt;
   sMatrix34 mul, mulmat;
 
-  srt.Scale = Para.Scale;
+  srt.Scale = sVector31(1.0f);
   srt.Rotate = Para.Rot;
   srt.Translate = Para.Trans;
   srt.MakeMatrix(mul);
@@ -798,7 +798,7 @@ void WpxRigidBodyTransform::Transform(const sMatrix34 & mat, PxScene * ptr)
   sSRT srt;
   sMatrix34 mul;
 
-  srt.Scale = Para.Scale;
+  srt.Scale = sVector31(1.0f);
   srt.Rotate = Para.Rot;
   srt.Translate = Para.Trans;
   srt.MakeMatrix(mul);
@@ -815,12 +815,12 @@ void WpxRigidBodyMul::Transform(const sMatrix34 & mat, PxScene * ptr)
   sMatrix34 mulMat;
   sMatrix34 accu;
 
-  srt.Scale = Para.PreScale;
+  srt.Scale = sVector31(1.0f);
   srt.Rotate = Para.PreRot;
   srt.Translate = Para.PreTrans;
   srt.MakeMatrix(preMat);
 
-  srt.Scale = Para.Scale;
+  srt.Scale = sVector31(1.0f);
   srt.Rotate = Para.Rot;
   srt.Translate = Para.Trans;
   srt.MakeMatrix(mulMat);
@@ -1009,7 +1009,7 @@ void WpxRigidBodyDebris::Transform(const sMatrix34 & mat, PxScene * ptr)
   sSRT srt;
   sMatrix34 mul, mulmat;
 
-  srt.Scale = Para.Scale;
+  srt.Scale = sVector31(1.0f);
   srt.Rotate = Para.Rot;
   srt.Translate = Para.Trans;
   srt.MakeMatrix(mul);
