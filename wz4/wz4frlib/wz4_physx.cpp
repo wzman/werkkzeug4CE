@@ -844,14 +844,20 @@ WpxRigidBodyDebris::WpxRigidBodyDebris()
 
 WpxRigidBodyDebris::~WpxRigidBodyDebris()
 {
-  // delete all elements of sChunkDebris stuct
-  sChunkDebris * o;
-  sFORALL(ChunksObj, o)
+  // delete all elements of sChunkCollider stuct
+  sChunkCollider * o;
+  sFORALL(ChunksColliders, o)
   {
     o->wCollider->Release();
-    o->wRigidBody->Release();
     o->Mesh->Release();
     delete o;
+  }
+
+  WpxRigidBody * b;
+  sFORALL(ChunksRigidBodies, b)
+  {
+    if(b)
+      b->Release();
   }
 
   // delete chunked mesh
@@ -870,8 +876,8 @@ void WpxRigidBodyDebris::Render(Wz4RenderContext &ctx, sMatrix34 &mat)
 {
   // render every colliders/chunks
 
-  sChunkDebris * o;
-  sFORALL(ChunksObj, o)
+  sChunkCollider * o;
+  sFORALL(ChunksColliders, o)
   {
     sVERIFY(o->wCollider->Matrices.GetCount() > 0);
 
@@ -883,14 +889,15 @@ void WpxRigidBodyDebris::Render(Wz4RenderContext &ctx, sMatrix34 &mat)
 void WpxRigidBodyDebris::PhysxReset()
 {
   // delete all rigidbodies
-  sChunkDebris * d;
-  sFORALL(ChunksObj, d)
+  WpxRigidBody * b;
+  sFORALL(ChunksRigidBodies, b)
   {
-    if(d->wRigidBody)
-      d->wRigidBody->Release();
+    if(b)
+      b->Release();
   }
+  ChunksRigidBodies.Reset();
 
-  // delete all actors
+  // delete all physx actors
   sActor * a;
   sFORALL(AllActors, a)
   {
@@ -956,12 +963,12 @@ int WpxRigidBodyDebris::GetChunkedMesh(Wz4Render * in)
     col->CreateGeometry(m);
 
     // create new chunkdebris object and fill Mesh and wCollider data
-    sChunkDebris * d = new sChunkDebris;
+    sChunkCollider * d = new sChunkCollider;
     d->Mesh = m;
     d->wCollider = col;
 
     // add chunkdebris object to list
-    ChunksObj.AddTail(d);
+    ChunksColliders.AddTail(d);
   }
 
   return 0;
@@ -971,8 +978,8 @@ void WpxRigidBodyDebris::PhysxBuildDebris(const sMatrix34 & mat, PxScene * ptr)
 {
   // for all chunkdebris object, create an actor
 
-  sChunkDebris * d;
-  sFORALL(ChunksObj, d)
+  sChunkCollider * d;
+  sFORALL(ChunksColliders, d)
   {
     WpxRigidBody * rb = new WpxRigidBody();
     rb->AddRootCollider(d->wCollider);
@@ -992,8 +999,8 @@ void WpxRigidBodyDebris::PhysxBuildDebris(const sMatrix34 & mat, PxScene * ptr)
     sVERIFY(rigidNode!=0);
     sVERIFY(rigidNode->AllActorsPtr!=0);
 
-    // complete chunkdebris object with rigidbody value
-    d->wRigidBody = rb;
+    // store created rigidbody for clean delete
+    ChunksRigidBodies.AddTail(rb);
   }
 }
 
@@ -1014,8 +1021,8 @@ void WpxRigidBodyDebris::Transform(const sMatrix34 & mat, PxScene * ptr)
     // ptr is null : transform is calling for WpxRigidBody Rendering
 
     // transform each chunk object to set the matrix used for rendering
-    sChunkDebris * o;
-    sFORALL(ChunksObj, o)
+    sChunkCollider * o;
+    sFORALL(ChunksColliders, o)
       o->wCollider->Matrices.AddTail(sMatrix34CM(mulmat));
   }
   else
