@@ -241,9 +241,6 @@ public:
 class WpxRigidBody : public WpxActorBase
 {
 public:
-  void PhysxBuildActor(const sMatrix34 & mat, PxScene * scene, sArray<sActor*> &allActors);   // build physx actor
-
-public:
   WpxColliderBase * RootCollider;     // associated colliders geometries, root collider in collider graph
   sArray<sActor*> AllActors;          // list of actors
 
@@ -256,6 +253,7 @@ public:
   void ClearMatricesR();
   void PhysxReset();
   void AddRootCollider(WpxColliderBase * col);
+  void PhysxBuildActor(const sMatrix34 & mat, PxScene * scene, sArray<sActor*> &allActors);   // build physx actor
 };
 
 /****************************************************************************/
@@ -286,30 +284,41 @@ public:
 
 /****************************************************************************/
 
+struct sChunkObj
+{
+  WpxCollider * wCollider;
+  WpxRigidBody * wRigidBody;
+};
+
 class WpxRigidBodyDebris : public WpxActorBase
 {
 public:
-  Wz4Mesh * ChunkedMesh;              // chunked mesh on input
+  Wz4Mesh * ChunkedMesh;              // chunked mesh to render
   sArray<Wz4Mesh *> Chunks;           // list of all meshes extracted from chunked mesh
   sArray<sActor*> AllActors;          // list of actors
 
   WpxRigidBodyDebrisParaRigidBodyDebris Para, ParaBase;
 
   WpxRigidBodyDebris() { ChunkedMesh = 0; }
+  ~WpxRigidBodyDebris();
   void Transform(const sMatrix34 & mat, PxScene * ptr);
   void PhysxBuildDebris(const sMatrix34 & mat, PxScene * ptr);
   int GetChunkedMesh(Wz4Render * in);
+
+  void PhysxReset();
+
+  sArray<sChunkObj> ChunksObj;
 };
 
-/****************************************************************************/
-/****************************************************************************/
 
+/****************************************************************************/
 /****************************************************************************/
 // next Wz4RenderNodes, are nodes associated with actors operators,
 // they are computed in the Wz4Render graph process at each render loop,
 // they are used for :
 // - rendering RenderNode binded with physx
 // - simulate and process manually physx features like kinematics, add forces, etc...
+/****************************************************************************/
 /****************************************************************************/
 
 class WpxRigidBodyNodeBase : public  Wz4RenderNode
@@ -320,6 +329,8 @@ public:
   WpxRigidBodyAnimRigidBody Anim;
 };
 
+/****************************************************************************/
+
 class WpxRigidBodyNodeActor : public  WpxRigidBodyNodeBase
 {
 public:
@@ -329,15 +340,21 @@ public:
   void Transform(Wz4RenderContext *ctx, const sMatrix34 & mat);
 };
 
+/****************************************************************************/
+
 class WpxRigidBodyNodeDynamic : public WpxRigidBodyNodeActor
 {
 public:
 };
 
+/****************************************************************************/
+
 class WpxRigidBodyNodeStatic : public WpxRigidBodyNodeActor
 {
 public:
 };
+
+/****************************************************************************/
 
 class WpxRigidBodyNodeKinematic : public WpxRigidBodyNodeActor
 {
@@ -346,18 +363,19 @@ public:
   void Simulate(Wz4RenderContext *ctx);
 };
 
+/****************************************************************************/
+
 class WpxRigidBodyNodeDebris : public WpxRigidBodyNodeActor
 {
 public:
-  Wz4Mesh * ChunkedMeshPtr;
-  sArray<sActor*> * AllActorsPtr;          // list of actors
+  Wz4Mesh * ChunkedMeshPtr;             // ptr to single chunked mesh to render (init in WpxRigidBodyDebris)
+  sArray<sActor*> * AllActorsPtr;       // ptr to list of actors (one actor per chunk) (init in WpxRigidBodyDebris)
 
   WpxRigidBodyDebrisParaRigidBodyDebris Para, ParaBase;
   WpxRigidBodyDebrisAnimRigidBodyDebris Anim;
 
   WpxRigidBodyNodeDebris();
   ~WpxRigidBodyNodeDebris();
-  //int GetChunkedMesh(Wz4Render * in);
 
   void Transform(Wz4RenderContext *ctx, const sMatrix34 & mat);
   void Render(Wz4RenderContext *ctx);

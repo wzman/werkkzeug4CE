@@ -837,6 +837,45 @@ void WpxRigidBodyMul::Transform(const sMatrix34 & mat, PxScene * ptr)
 
 /****************************************************************************/
 
+WpxRigidBodyDebris::~WpxRigidBodyDebris()
+{
+  sChunkObj * o;
+  sFORALL(ChunksObj, o)
+  {
+    o->wCollider->Release();
+    o->wRigidBody->Release();
+  }
+
+  // delete all debris meshes
+  sDeleteAll(Chunks);
+
+  // delete physx actors
+  PhysxReset();
+
+}
+
+void WpxRigidBodyDebris::PhysxReset()
+{
+  sChunkObj * o;
+  sFORALL(ChunksObj, o)
+  {
+    o->wCollider->Release();
+    o->wRigidBody->Release();
+  }
+  ChunksObj.Clear();
+
+
+  // delete all actors
+  sActor * a;
+  sFORALL(AllActors, a)
+  {
+    delete a->matrix;
+    delete a;
+  }
+
+  AllActors.Clear();
+}
+
 int WpxRigidBodyDebris::GetChunkedMesh(Wz4Render * in)
 {
   RNRenderMesh * rm = static_cast<RNRenderMesh*>(in->RootNode);
@@ -854,7 +893,6 @@ int WpxRigidBodyDebris::GetChunkedMesh(Wz4Render * in)
   // extract all chunks from mesh, to get colliders shapes
 
   Wz4ChunkPhysics *ch;
-  //sArray<Wz4Mesh *> Chunks;
   sArray<Wz4MeshVertex> vertices;
   sFORALL(ChunkedMesh->Chunks, ch)
   {
@@ -890,7 +928,7 @@ void WpxRigidBodyDebris::PhysxBuildDebris(const sMatrix34 & mat, PxScene * ptr)
   sFORALL(Chunks, m)
   {
     WpxCollider * col = new WpxCollider();
-    col->Para.GeometryType = EGT_HULL; col->Para.Dimension = sVector31(2);
+    col->Para.GeometryType = EGT_HULL;
     col->Para.StaticFriction = 0.5;
     col->Para.DynamicFriction = 0.5;
     col->Para.Restitution = 0.5;
@@ -909,13 +947,16 @@ void WpxRigidBodyDebris::PhysxBuildDebris(const sMatrix34 & mat, PxScene * ptr)
     WpxRigidBodyNodeDebris * rigidNode = static_cast<WpxRigidBodyNodeDebris *>(RootNode);
     if (rigidNode)
     {
-      // set actor list ptr
+      // copy actor list ptr
       rigidNode->AllActorsPtr = &AllActors;
     }
 
-
+    // store created objects
+    sChunkObj o;
+    o.wCollider = col;
+    o.wRigidBody = rb;
+    ChunksObj.AddTail(o);
   }
- 
 }
 
 void WpxRigidBodyDebris::Transform(const sMatrix34 & mat, PxScene * ptr)
@@ -946,7 +987,6 @@ void WpxRigidBodyDebris::Transform(const sMatrix34 & mat, PxScene * ptr)
   else
   {
     // ptr not null : transform is calling from Physx init to build physx objects
-    //PhysxBuildActor(mulmat, ptr);
     PhysxBuildDebris(mulmat, ptr);
   }
 }
@@ -1032,60 +1072,13 @@ WpxRigidBodyNodeDebris::WpxRigidBodyNodeDebris()
 WpxRigidBodyNodeDebris::~WpxRigidBodyNodeDebris()
 {
 }
-/*
-int WpxRigidBodyNodeDebris::GetChunkedMesh(Wz4Render * in)
-{
-  RNRenderMesh * rm = static_cast<RNRenderMesh*>(in->RootNode);
-  if (rm && rm->Mesh)
-  {
-    if (rm->Mesh->Chunks.GetCount() > 0)
-      ChunkedMesh = rm->Mesh;
-    else
-      return 2;  // error, need a chunked mesh
-  }
-  else
-    return 1;   // error, need a mesh input
-
-  return 0;
-}*/
 
 void WpxRigidBodyNodeDebris::Transform(Wz4RenderContext *ctx, const sMatrix34 & mat)
 {
-  /*if (ctx)
-  {
-    // transformed by Wz4RenderNode process at each loop
-    // transform associated scene node with physx
-
-    sActor * a;
-    PxTransform pT;
-    sMatrix34 mmat;
-    sMatrix34CM matRes;
-    sFORALL(*AllActorsPtr, a)
-    {
-      pT = a->actor->getGlobalPose();
-      PxMat44TosMatrix34(pT, mmat);
-      matRes = mmat*mat;
-      Childs[0]->Matrices.AddTail(matRes);
-      //Childs[0]->Matrices.AddTail(sMatrix34CM(mmat*mat));
-      //TransformChilds(ctx, mmat);
-    }
-
-    TransformChilds(ctx, mmat);
-  }
-  else
-  {
-    // transformed by WpxRigidBody (preview actors positions without physx)
-    // transform associated scene node without physx
-
-    TransformChilds(ctx, mat);
-  }*/
-
-
-
   if (ctx)
   {
     // transformed by Wz4RenderNode process at each loop
-    // transform associated scene node with physx
+    // get global pose of each debris and store their matrix
 
     sActor * a;
     PxTransform pT;
@@ -1096,14 +1089,9 @@ void WpxRigidBodyNodeDebris::Transform(Wz4RenderContext *ctx, const sMatrix34 & 
       pT = a->actor->getGlobalPose();
       PxMat44TosMatrix34(pT, mmat);
       matRes = mmat*mat;
-      //Childs[0]->Matrices.AddTail(matRes);    
       *a->matrix = matRes;
     }
-
-    TransformChilds(ctx, mmat);
   }
-  
-  
   
   TransformChilds(ctx, mat);
 }
@@ -1139,8 +1127,8 @@ void WpxRigidBodyNodeDebris::Render(Wz4RenderContext *ctx)
 
   /*********************/
 
-  sMatrix34 tmp;
-  tmp.Init();
+  //sMatrix34 tmp;
+  //tmp.Init();
 
   sInt max = ChunkedMeshPtr->Chunks.GetCount();
   sMatrix34CM *mats = new sMatrix34CM[max];
@@ -1154,8 +1142,8 @@ void WpxRigidBodyNodeDebris::Render(Wz4RenderContext *ctx)
 
   sFORALL(Matrices, matp)
   {
-    for (sInt i = 0; i<max; i++)
-      mats0[i] = mats[i] * (*matp);
+    for (sInt i = 0; i < max; i++)
+      mats0[i] = mats[i] *(*matp);
 
     ChunkedMeshPtr->RenderBone(ctx->RenderMode, /*Para.EnvNum*/0, max, mats0, max);
     
