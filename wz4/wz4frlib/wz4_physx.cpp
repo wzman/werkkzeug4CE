@@ -1208,39 +1208,36 @@ sINLINE void SimulateRigidDynamics(sArray<sActor *> * actors, T &para)
   {
     rigidDynamic = static_cast<PxRigidDynamic*>(a->actor);
 
-    if (para.TimeFlag == 1)
+    if (para.Sleep)
     {
-      if (para.Sleep)
+      //if (!rigidDynamic->isSleeping())
+      rigidDynamic->putToSleep();
+    }
+    else
+    {
+      // gravity flag
+      bool gravityFlag = !para.Gravity;
+      rigidDynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, gravityFlag);
+
+      // damping
+      PxReal linDamp = para.LinearDamping;
+      rigidDynamic->setLinearDamping(linDamp);
+      PxReal angDamp = para.AngularDamping;
+      rigidDynamic->setAngularDamping(angDamp);
+
+      // because theses forces are cumulated on each call of this function
+      // we need to compensate call count based on real time (see: Physx::simulate())
+      for (sInt j = 0; j < gCumulatedCount; j++)
       {
-        //if (!rigidDynamic->isSleeping())
-        rigidDynamic->putToSleep();
-      }
-      else
-      {
-        // gravity flag
-        bool gravityFlag = !para.Gravity;
-        rigidDynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, gravityFlag);
+        // force
+        PxVec3 force(para.Force.x, para.Force.y, para.Force.z);
+        PxForceMode::Enum forceMode = (PxForceMode::Enum)para.ForceMode;
+        rigidDynamic->addForce(force, forceMode);
 
-        // damping
-        PxReal linDamp = para.LinearDamping;
-        rigidDynamic->setLinearDamping(linDamp);
-        PxReal angDamp = para.AngularDamping;
-        rigidDynamic->setAngularDamping(angDamp);
-
-        // because theses forces are cumulated on each call of this function
-        // we need to compensate call count based on real time (see: Physx::simulate())
-        for (sInt j = 0; j < gCumulatedCount; j++)
-        {
-          // force
-          PxVec3 force(para.Force.x, para.Force.y, para.Force.z);
-          PxForceMode::Enum forceMode = (PxForceMode::Enum)para.ForceMode;
-          rigidDynamic->addForce(force, forceMode);
-
-          // torque
-          PxVec3 torque(para.Torque.x, para.Torque.y, para.Torque.z);
-          PxForceMode::Enum torqueMode = (PxForceMode::Enum)para.TorqueMode;
-          rigidDynamic->addTorque(torque, torqueMode);
-        }
+        // torque
+        PxVec3 torque(para.Torque.x, para.Torque.y, para.Torque.z);
+        PxForceMode::Enum torqueMode = (PxForceMode::Enum)para.TorqueMode;
+        rigidDynamic->addTorque(torque, torqueMode);
       }
     }
   }
@@ -1256,7 +1253,10 @@ void WpxRigidBodyNodeDynamic::Simulate(Wz4RenderContext *ctx)
   Para = ParaBase;
   Anim.Bind(ctx->Script, &Para);
   SimulateCalc(ctx);
-  SimulateRigidDynamics(AllActorsPtr, Para);
+
+  if (Para.TimeFlag == 1)
+    SimulateRigidDynamics(AllActorsPtr, Para);
+
   SimulateChilds(ctx);
 }
 
@@ -1314,7 +1314,9 @@ void WpxRigidBodyNodeDebris::Simulate(Wz4RenderContext *ctx)
   Para = ParaBase;
   Anim.Bind(ctx->Script, &Para);
   SimulateCalc(ctx);
-  SimulateRigidDynamics(AllActorsPtr, Para);
+
+  if (Para.TimeFlag == 1)
+    SimulateRigidDynamics(AllActorsPtr, Para);
 }
 
 
