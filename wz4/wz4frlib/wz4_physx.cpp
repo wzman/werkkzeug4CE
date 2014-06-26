@@ -1198,6 +1198,54 @@ void WpxRigidBodyNodeActor::Transform(Wz4RenderContext *ctx, const sMatrix34 & m
 
 /****************************************************************************/
 
+template <typename T>
+sINLINE void SimulateRigidDynamics(sArray<sActor *> * actors, T &para)
+{
+  PxRigidDynamic *rigidDynamic = 0;
+  sActor * a;
+
+  sFORALL(*actors, a)
+  {
+    rigidDynamic = static_cast<PxRigidDynamic*>(a->actor);
+
+    if (para.TimeFlag == 1)
+    {
+      if (para.Sleep)
+      {
+        //if (!rigidDynamic->isSleeping())
+        rigidDynamic->putToSleep();
+      }
+      else
+      {
+        // gravity flag
+        bool gravityFlag = !para.Gravity;
+        rigidDynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, gravityFlag);
+
+        // damping
+        PxReal linDamp = para.LinearDamping;
+        rigidDynamic->setLinearDamping(linDamp);
+        PxReal angDamp = para.AngularDamping;
+        rigidDynamic->setAngularDamping(angDamp);
+
+        // because theses forces are cumulated on each call of this function
+        // we need to compensate call count based on real time (see: Physx::simulate())
+        for (sInt j = 0; j < gCumulatedCount; j++)
+        {
+          // force
+          PxVec3 force(para.Force.x, para.Force.y, para.Force.z);
+          PxForceMode::Enum forceMode = (PxForceMode::Enum)para.ForceMode;
+          rigidDynamic->addForce(force, forceMode);
+
+          // torque
+          PxVec3 torque(para.Torque.x, para.Torque.y, para.Torque.z);
+          PxForceMode::Enum torqueMode = (PxForceMode::Enum)para.TorqueMode;
+          rigidDynamic->addTorque(torque, torqueMode);
+        }
+      }
+    }
+  }
+}
+
 WpxRigidBodyNodeDynamic::WpxRigidBodyNodeDynamic()
 {
   Anim.Init(Wz4RenderType->Script);
@@ -1208,52 +1256,7 @@ void WpxRigidBodyNodeDynamic::Simulate(Wz4RenderContext *ctx)
   Para = ParaBase;
   Anim.Bind(ctx->Script, &Para);
   SimulateCalc(ctx);
-
-  PxRigidDynamic *rigidDynamic = 0;
-  sActor * a;
-
-  sFORALL(*AllActorsPtr, a)
-  {
-    rigidDynamic = static_cast<PxRigidDynamic*>(a->actor);
-
-    if (Para.Sleep)
-    {
-      // go to bed !
-      if (!rigidDynamic->isSleeping())
-        rigidDynamic->putToSleep();
-    }
-    else
-    {
-      if (Para.TimeFlag == 1)
-      {
-        // gravity flag
-        bool gravityFlag = !Para.Gravity;
-        rigidDynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, gravityFlag);
-
-        // damping
-        PxReal linDamp = Para.LinearDamping;
-        rigidDynamic->setLinearDamping(linDamp);
-        PxReal angDamp = Para.AngularDamping;
-        rigidDynamic->setAngularDamping(angDamp);
-
-        // because theses forces are cumulated on each call of this function
-        // we need to compensate call count based on real time (see: Physx::simulate())
-        for (sInt j=0; j<gCumulatedCount; j++)
-        {
-          // force
-          PxVec3 force(Para.Force.x, Para.Force.y, Para.Force.z);
-          PxForceMode::Enum forceMode = (PxForceMode::Enum)Para.ForceMode;
-          rigidDynamic->addForce(force, forceMode);
-
-          // torque
-          PxVec3 torque(Para.Torque.x, Para.Torque.y, Para.Torque.z);
-          PxForceMode::Enum torqueMode = (PxForceMode::Enum)Para.TorqueMode;
-          rigidDynamic->addTorque(torque, torqueMode);
-        }
-      }
-    }
-  }
-
+  SimulateRigidDynamics(AllActorsPtr, Para);
   SimulateChilds(ctx);
 }
 
@@ -1311,56 +1314,7 @@ void WpxRigidBodyNodeDebris::Simulate(Wz4RenderContext *ctx)
   Para = ParaBase;
   Anim.Bind(ctx->Script, &Para);
   SimulateCalc(ctx);
-
-  PxRigidDynamic *rigidDynamic = 0;
-  sActor * a;
-
-  sFORALL(*AllActorsPtr, a)
-  {
-    if (Para.ActorType == 1)
-    {
-      rigidDynamic = static_cast<PxRigidDynamic*>(a->actor);
-
-      if (Para.Sleep)
-      {
-        // go to bed !
-        if (!rigidDynamic->isSleeping())
-          rigidDynamic->putToSleep();
-      }
-      else
-      {
-        if (Para.TimeFlag == 1)
-        {
-          // gravity flag
-          bool gravityFlag = !Para.Gravity;
-          rigidDynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, gravityFlag);
-
-          // damping
-          PxReal linDamp = Para.LinearDamping;
-          rigidDynamic->setLinearDamping(linDamp);
-          PxReal angDamp = Para.AngularDamping;
-          rigidDynamic->setAngularDamping(angDamp);
-
-          // because theses forces are cumulated on each call of this function
-          // we need to compensate call count based on real time (see: Physx::simulate())
-          for (sInt j = 0; j < gCumulatedCount; j++)
-          {
-            // force
-            PxVec3 force(Para.Force.x, Para.Force.y, Para.Force.z);
-            PxForceMode::Enum forceMode = (PxForceMode::Enum)Para.ForceMode;
-            rigidDynamic->addForce(force, forceMode);
-
-            // torque
-            PxVec3 torque(Para.Torque.x, Para.Torque.y, Para.Torque.z);
-            PxForceMode::Enum torqueMode = (PxForceMode::Enum)Para.TorqueMode;
-            rigidDynamic->addTorque(torque, torqueMode);
-          }
-        }
-      }
-    }
-  }
-
-  SimulateChilds(ctx);
+  SimulateRigidDynamics(AllActorsPtr, Para);
 }
 
 
@@ -1612,7 +1566,7 @@ void RNPhysx::Simulate(Wz4RenderContext *ctx)
 
   SimulateChilds(ctx);
 
-  ViewPrintF(L"Scene actors : dynamic %d, static %d : %d\n",
-      Scene->getNbActors(PxActorTypeSelectionFlag::eRIGID_DYNAMIC),
-      Scene->getNbActors(PxActorTypeSelectionFlag::eRIGID_STATIC));
+ //ViewPrintF(L"Scene actors : dynamic %d, static %d : %d\n",
+ //    Scene->getNbActors(PxActorTypeSelectionFlag::eRIGID_DYNAMIC),
+ //    Scene->getNbActors(PxActorTypeSelectionFlag::eRIGID_STATIC));
 }
