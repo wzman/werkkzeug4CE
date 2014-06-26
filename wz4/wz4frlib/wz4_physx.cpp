@@ -11,6 +11,8 @@
 /****************************************************************************/
 /****************************************************************************/
 
+// Globals variables and functions
+
 PxFoundation * gFoundation;   // global physx foundation pointer
 PxPhysics * gPhysicsSDK;      // global physx engine pointer
 PxCooking * gCooking;         // global physx cooking pointer
@@ -19,6 +21,9 @@ sInt gCumulatedCount = 0;     // cumulated forces counter for animated rigid bod
 static PxDefaultErrorCallback gDefaultErrorCallback;
 static PxDefaultAllocator gDefaultAllocatorCallback;
 static PxSimulationFilterShader gDefaultFilterShader=PxDefaultSimulationFilterShader;
+
+template <typename T>sINLINE void PhysxWakeUpRigidDynamics(sArray<sActor *> * actors, T &para);
+template <typename T>sINLINE void SimulateRigidDynamics(sArray<sActor *> * actors, T &para);
 
 /****************************************************************************/
 /****************************************************************************/
@@ -665,33 +670,7 @@ void WpxRigidBody::PhysxReset()
 
 void WpxRigidBody::PhysxWakeUp()
 {
-  // wake up dynamic actors
-
-  PxRigidDynamic * rigidDynamic = 0;
-  sActor * a;
-  sFORALL(AllActors, a)
-  {
-    if (Para.ActorType == 1)//a->actor->isRigidDynamic())
-    {
-      rigidDynamic = static_cast<PxRigidDynamic*>(a->actor);
-
-      // initial linear velocity
-      PxVec3 linearVelocity(Para.LinearVelocity.x, Para.LinearVelocity.y, Para.LinearVelocity.z);
-      rigidDynamic->setLinearVelocity(linearVelocity);
-
-      // initial angular velocity
-      PxReal maxAngVel = Para.MaxAngularVelocity;
-      rigidDynamic->setMaxAngularVelocity(maxAngVel);
-      PxVec3 angVel(Para.AngularVelocity.x, Para.AngularVelocity.y, Para.AngularVelocity.z);
-      rigidDynamic->setAngularVelocity(angVel);
-
-      // wake up
-      if (!Para.Sleep)
-        rigidDynamic->wakeUp();
-      else
-        rigidDynamic->putToSleep();
-    }
-  }
+  PhysxWakeUpRigidDynamics(&AllActors, Para);
 }
 
 void WpxRigidBody::PhysxBuildActor(const sMatrix34 & mat, PxScene * scene, sArray<sActor*> &allActors)
@@ -959,33 +938,7 @@ void WpxRigidBodyDebris::Render(Wz4RenderContext &ctx, sMatrix34 &mat)
 
 void WpxRigidBodyDebris::PhysxWakeUp()
 {
-  // wake up dynamic actors
-
-  PxRigidDynamic * rigidDynamic = 0;
-  sActor * a;
-  sFORALL(AllActors, a)
-  {
-    if (Para.ActorType == 1)
-    {
-      rigidDynamic = static_cast<PxRigidDynamic*>(a->actor);
-
-      // initial linear velocity
-      PxVec3 linearVelocity(Para.LinearVelocity.x, Para.LinearVelocity.y, Para.LinearVelocity.z);
-      rigidDynamic->setLinearVelocity(linearVelocity);
-
-      // initial angular velocity
-      PxReal maxAngVel = Para.MaxAngularVelocity;
-      rigidDynamic->setMaxAngularVelocity(maxAngVel);
-      PxVec3 angVel(Para.AngularVelocity.x, Para.AngularVelocity.y, Para.AngularVelocity.z);
-      rigidDynamic->setAngularVelocity(angVel);
-
-      // wake up
-      if (!Para.Sleep)
-        rigidDynamic->wakeUp();
-      else
-        rigidDynamic->putToSleep();
-    }
-  }
+  PhysxWakeUpRigidDynamics(&AllActors, Para);
 }
 
 void WpxRigidBodyDebris::PhysxReset()
@@ -1152,7 +1105,98 @@ void WpxRigidBodyDebris::Transform(const sMatrix34 & mat, PxScene * ptr)
 
 /****************************************************************************/
 /****************************************************************************/
-/****************************************************************************/
+
+template <typename T>
+sINLINE void PhysxWakeUpRigidDynamics(sArray<sActor *> * actors, T &para)
+{
+  // called once at init
+  // set initial forces and wake up actors
+
+  PxRigidDynamic * rigidDynamic = 0;
+  sActor * a;
+  sFORALL(*actors, a)
+  {
+    if (para.ActorType == 1)//a->actor->isRigidDynamic())
+    {
+      rigidDynamic = static_cast<PxRigidDynamic*>(a->actor);
+
+      // initial linear velocity
+      PxVec3 linearVelocity(para.LinearVelocity.x, para.LinearVelocity.y, para.LinearVelocity.z);
+      rigidDynamic->setLinearVelocity(linearVelocity);
+
+      // initial angular velocity
+      PxReal maxAngVel = para.MaxAngularVelocity;
+      rigidDynamic->setMaxAngularVelocity(maxAngVel);
+      PxVec3 angVel(para.AngularVelocity.x, para.AngularVelocity.y, para.AngularVelocity.z);
+      rigidDynamic->setAngularVelocity(angVel);
+
+      // force
+      PxVec3 force(para.Force.x, para.Force.y, para.Force.z);
+      PxForceMode::Enum forceMode = (PxForceMode::Enum)para.ForceMode;
+      rigidDynamic->addForce(force, forceMode);
+
+      // torque
+      PxVec3 torque(para.Torque.x, para.Torque.y, para.Torque.z);
+      PxForceMode::Enum torqueMode = (PxForceMode::Enum)para.TorqueMode;
+      rigidDynamic->addTorque(torque, torqueMode);
+
+      // wake up
+      if (!para.Sleep)
+        rigidDynamic->wakeUp();
+      else
+        rigidDynamic->putToSleep();
+    }
+  }
+}
+
+template <typename T>
+sINLINE void SimulateRigidDynamics(sArray<sActor *> * actors, T &para)
+{
+  // called at each loop by simulate()
+  // set rigidynamics properties and forces
+
+  PxRigidDynamic *rigidDynamic = 0;
+  sActor * a;
+
+  sFORALL(*actors, a)
+  {
+    rigidDynamic = static_cast<PxRigidDynamic*>(a->actor);
+
+    if (para.Sleep)
+    {
+      //if (!rigidDynamic->isSleeping())
+      rigidDynamic->putToSleep();
+    }
+    else
+    {
+      // gravity flag
+      bool gravityFlag = !para.Gravity;
+      rigidDynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, gravityFlag);
+
+      // damping
+      PxReal linDamp = para.LinearDamping;
+      rigidDynamic->setLinearDamping(linDamp);
+      PxReal angDamp = para.AngularDamping;
+      rigidDynamic->setAngularDamping(angDamp);
+
+      // because theses forces are cumulated on each call of this function
+      // we need to compensate call count based on real time (see: Physx::simulate())
+      for (sInt j=0; j<gCumulatedCount; j++)
+      {
+        // force
+        PxVec3 force(para.Force.x, para.Force.y, para.Force.z);
+        PxForceMode::Enum forceMode = (PxForceMode::Enum)para.ForceMode;
+        rigidDynamic->addForce(force, forceMode);
+
+        // torque
+        PxVec3 torque(para.Torque.x, para.Torque.y, para.Torque.z);
+        PxForceMode::Enum torqueMode = (PxForceMode::Enum)para.TorqueMode;
+        rigidDynamic->addTorque(torque, torqueMode);
+      }
+    }
+  }
+}
+
 /****************************************************************************/
 /****************************************************************************/
 
@@ -1191,51 +1235,6 @@ void WpxRigidBodyNodeActor::Transform(Wz4RenderContext *ctx, const sMatrix34 & m
 }
 
 /****************************************************************************/
-
-template <typename T>
-sINLINE void SimulateRigidDynamics(sArray<sActor *> * actors, T &para)
-{
-  PxRigidDynamic *rigidDynamic = 0;
-  sActor * a;
-
-  sFORALL(*actors, a)
-  {
-    rigidDynamic = static_cast<PxRigidDynamic*>(a->actor);
-
-    if (para.Sleep)
-    {
-      //if (!rigidDynamic->isSleeping())
-      rigidDynamic->putToSleep();
-    }
-    else
-    {
-      // gravity flag
-      bool gravityFlag = !para.Gravity;
-      rigidDynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, gravityFlag);
-
-      // damping
-      PxReal linDamp = para.LinearDamping;
-      rigidDynamic->setLinearDamping(linDamp);
-      PxReal angDamp = para.AngularDamping;
-      rigidDynamic->setAngularDamping(angDamp);
-
-      // because theses forces are cumulated on each call of this function
-      // we need to compensate call count based on real time (see: Physx::simulate())
-      for (sInt j = 0; j < gCumulatedCount; j++)
-      {
-        // force
-        PxVec3 force(para.Force.x, para.Force.y, para.Force.z);
-        PxForceMode::Enum forceMode = (PxForceMode::Enum)para.ForceMode;
-        rigidDynamic->addForce(force, forceMode);
-
-        // torque
-        PxVec3 torque(para.Torque.x, para.Torque.y, para.Torque.z);
-        PxForceMode::Enum torqueMode = (PxForceMode::Enum)para.TorqueMode;
-        rigidDynamic->addTorque(torque, torqueMode);
-      }
-    }
-  }
-}
 
 WpxRigidBodyNodeDynamic::WpxRigidBodyNodeDynamic()
 {
