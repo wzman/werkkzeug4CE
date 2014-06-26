@@ -387,14 +387,8 @@ void WpxCollider::Render(Wz4RenderContext &ctx, sMatrix34 &mat)
 
 void WpxCollider::Transform(const sMatrix34 & mat, PxRigidActor * ptr)
 {
-  sMatrix34 mul;
-  sSRT srt;
-  srt.Rotate = Para.Rot;
-  srt.Translate = Para.Trans;
-  srt.MakeMatrix(mul);
-
   if (!ptr)
-    TransformChilds(mul*mat, 0);
+    TransformChilds(mat, 0);
   else
   {
     // ptr is not null : create physx collider for this actor
