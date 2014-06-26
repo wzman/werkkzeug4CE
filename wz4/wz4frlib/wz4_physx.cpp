@@ -312,6 +312,14 @@ enum E_GEOMETRY_TYPE
   EGT_NONE
 };
 
+enum E_ACTOR_TYPE
+{
+  EAT_STATIC = 0,
+  EAT_DYNAMIC,
+  EAT_KINEMATIC,
+  EAT_NONE
+};
+
 /****************************************************************************/
 /****************************************************************************/
 
@@ -683,7 +691,7 @@ void WpxRigidBody::PhysxBuildActor(const sMatrix34 & mat, PxScene * scene, sArra
   sActor * actor = new sActor;
 
   // create physx rigid body
-  if (Para.ActorType == 0)
+  if (Para.ActorType == EAT_STATIC)
   {
     // create static actor
     actor->actor = gPhysicsSDK->createRigidStatic(PxTransform::createIdentity());
@@ -700,7 +708,7 @@ void WpxRigidBody::PhysxBuildActor(const sMatrix34 & mat, PxScene * scene, sArra
     rigidDynamic = static_cast<PxRigidDynamic*>(actor->actor);
 
     // kinematic ?
-    if (Para.ActorType == 1 && Para.DynamicType == 1)
+    if (Para.ActorType == EAT_KINEMATIC)
       rigidDynamic->setRigidDynamicFlag(PxRigidDynamicFlag::eKINEMATIC, true);
   }
 
@@ -718,7 +726,7 @@ void WpxRigidBody::PhysxBuildActor(const sMatrix34 & mat, PxScene * scene, sArra
   actor->actor->setGlobalPose(pose);
 
   // set physx properties for dynamics
-  if (Para.ActorType == 1 && Para.DynamicType == 0)
+  if (Para.ActorType == EAT_DYNAMIC)
   {
     // auto MassAndInertia ?
     if (Para.MassAndInertia == 0)
@@ -811,7 +819,7 @@ void WpxRigidBody::Transform(const sMatrix34 & mat, PxScene * ptr)
     // ptr not null : transform is calling from Physx init to build physx objects
 
     // kinematics doesn't need the mul matrix
-    if (Para.DynamicType == 1)
+    if (Para.ActorType == EAT_KINEMATIC)
       mulmat = mat;
 
     // build physx actors
@@ -1045,7 +1053,6 @@ void WpxRigidBodyDebris::PhysxBuildDebris(const sMatrix34 & mat, PxScene * ptr)
     WpxRigidBody * rb = new WpxRigidBody();
     rb->AddRootCollider(d->wCollider);
     rb->Para.ActorType = Para.ActorType;
-    rb->Para.DynamicType = 0;
     rb->Para.MassAndInertia = Para.MassAndInertia;
     rb->Para.CenterOfMass = Para.CenterOfMass;
     rb->Para.Mass = Para.Mass;
@@ -1122,7 +1129,7 @@ sINLINE void PhysxWakeUpRigidDynamics(sArray<sActor *> * actors, T &para)
   sActor * a;
   sFORALL(*actors, a)
   {
-    if (para.ActorType == 1)//a->actor->isRigidDynamic())
+    if (para.ActorType == EAT_DYNAMIC)
     {
       rigidDynamic = static_cast<PxRigidDynamic*>(a->actor);
 

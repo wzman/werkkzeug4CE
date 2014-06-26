@@ -355,11 +355,9 @@ operator WpxRigidBody RigidBody (Wz4Render, WpxColliderBase)
     anim float31 Trans (-0x10000..0x10000 step 0.01) = 0;
 
     group "Actor type";
-    layout flags ActorType("static|dynamic") = 0;
-    if(ActorType == 1)
-      layout flags DynamicType("-|kinematic") = 0;
+    layout flags ActorType("static|dynamic|kinematic") = 0;
 
-    if(ActorType == 1 && DynamicType == 0)
+    if(ActorType == 1)
     {
       group "Mass And Inertia";
       layout flags MassAndInertia("colliders densities|-") = 0;
@@ -398,17 +396,11 @@ operator WpxRigidBody RigidBody (Wz4Render, WpxColliderBase)
   {
     WpxRigidBodyNodeBase * node = 0;
     if(para->ActorType == 0)
-    {
       node = new WpxRigidBodyNodeStatic();
-    }
     if(para->ActorType == 1)
-    {
-      if(para->DynamicType == 0)
-        node = new WpxRigidBodyNodeDynamic();
-
-      if(para->DynamicType == 1)
-        node = new WpxRigidBodyNodeKinematic();
-    }
+      node = new WpxRigidBodyNodeDynamic();
+    if(para->ActorType == 2)
+      node = new WpxRigidBodyNodeKinematic();
 
     if(node==0)
     {
