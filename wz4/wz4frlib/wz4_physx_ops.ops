@@ -438,6 +438,7 @@ operator WpxRigidBodyDebris RigidBodyDebris "Debris" (Wz4Render)
   parameter
   {
     int Renderpass(-127..127);
+    anim int EnvNum(0..15) = 0;
 
     group "Transform";
     //anim float31 Scale (-0x10000..0x10000 step 0.01) = 1;

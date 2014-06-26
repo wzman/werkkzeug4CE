@@ -1379,7 +1379,7 @@ void WpxRigidBodyNodeDebris::Render(Wz4RenderContext *ctx)
       }
 
       // render once the chunked mesh with its matrices
-      ChunkedMeshPtr->RenderBone(ctx->RenderMode, /*Para.EnvNum*/0, max, mats0, max);
+      ChunkedMeshPtr->RenderBone(ctx->RenderMode, Para.EnvNum, max, mats0, max);
 
       // go to next WpxRigidBodyNodeDebris instance
       indexInstance += max;
