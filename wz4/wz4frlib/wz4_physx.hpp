@@ -64,16 +64,6 @@ void PhysXInitEngine();
 /****************************************************************************/
 /****************************************************************************/
 
-
-struct sActor
-{
-  PxRigidActor * actor;   // physx actor ptr
-  sMatrix34 * matrix;     // store matrix at actor creation (used by kinematics)
-};
-
-/****************************************************************************/
-/****************************************************************************/
-
 // A template tree scene for physx object
 // Transform and Render objects in a graph
 
@@ -89,13 +79,9 @@ public:
   virtual void Render(Wz4RenderContext &ctx, sMatrix34 &mat);     // render
   virtual void Transform(const sMatrix34 & mat, T3 * ptr);        // build list of model matrices with GRAPH!
   virtual void ClearMatricesR();                                  // clear matrices
-  virtual void PhysxReset();                                      // clear physx
-  virtual void PhysxWakeUp();                                     // wakeup physx
 
   void RenderChilds(Wz4RenderContext &ctx, sMatrix34 &mat);       // recurse to childs
   void TransformChilds(const sMatrix34 & mat, T3 * ptr);          // recurse to childs
-  void PhysxResetChilds();                                        // recurse to childs
-  void PhysxWakeUpChilds();                                       // recurse to childs
 };
 
 template <typename  T, class T2, typename T3>
@@ -144,35 +130,6 @@ void WpxGenericGraph<T, T2, T3>::RenderChilds(Wz4RenderContext &ctx, sMatrix34 &
   sFORALL(Childs, c)
     c->Render(ctx,mat);
 }
-
-template <typename  T, class T2, typename T3>
-void WpxGenericGraph<T, T2, T3>::PhysxReset()
-{
-  PhysxResetChilds();
-}
-
-template <typename  T, class T2, typename T3>
-void WpxGenericGraph<T, T2, T3>::PhysxResetChilds()
-{
-  T * c;
-  sFORALL(Childs, c)
-    c->PhysxReset();
-}
-
-template <typename  T, class T2, typename T3>
-void WpxGenericGraph<T, T2, T3>::PhysxWakeUp()
-{
-  PhysxWakeUpChilds();
-}
-
-template <typename  T, class T2, typename T3>
-void WpxGenericGraph<T, T2, T3>::PhysxWakeUpChilds()
-{
-  T * c;
-  sFORALL(Childs, c)
-    c->PhysxWakeUp();
-}
-
 
 /****************************************************************************/
 /****************************************************************************/
@@ -249,11 +206,21 @@ class WpxActorBase : public WpxGenericGraph<WpxActorBase, Wz4Render, PxScene>
 {
 public:
   WpxActorBase();
-  void AddActorsChilds(wCommand *cmd);    // add childs
+  virtual void PhysxReset();               // clear physx
+  virtual void PhysxWakeUp();              // wakeup physx
+  void AddActorsChilds(wCommand *cmd);     // add childs
+  void PhysxResetChilds();                 // recurse to childs
+  void PhysxWakeUpChilds();                // recurse to childs
 };
 
 /****************************************************************************/
 /****************************************************************************/
+
+struct sActor
+{
+  PxRigidActor * actor;   // physx actor ptr
+  sMatrix34 * matrix;     // store matrix at actor creation (used by kinematics)
+};
 
 class WpxRigidBody : public WpxActorBase
 {
@@ -355,7 +322,6 @@ class WpxRigidBodyNodeActor : public  WpxRigidBodyNodeBase
 {
 public:
   sArray<sActor*> * AllActorsPtr;     // ptr to an actors list (in WpxRigidBody)
-  virtual void Init() {}
 
   WpxRigidBodyNodeActor();
   void Transform(Wz4RenderContext *ctx, const sMatrix34 & mat);

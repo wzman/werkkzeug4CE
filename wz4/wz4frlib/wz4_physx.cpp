@@ -644,6 +644,30 @@ void WpxActorBase::AddActorsChilds(wCommand *cmd)
   }
 }
 
+void WpxActorBase::PhysxReset()
+{
+  PhysxResetChilds();
+}
+
+void WpxActorBase::PhysxResetChilds()
+{
+  WpxActorBase * c;
+  sFORALL(Childs, c)
+    c->PhysxReset();
+}
+
+void WpxActorBase::PhysxWakeUp()
+{
+  PhysxWakeUpChilds();
+}
+
+void WpxActorBase::PhysxWakeUpChilds()
+{
+  WpxActorBase * c;
+  sFORALL(Childs, c)
+    c->PhysxWakeUp();
+}
+
 /****************************************************************************/
 
 WpxRigidBody::WpxRigidBody()
@@ -1177,7 +1201,6 @@ sINLINE void SimulateRigidDynamics(sArray<sActor *> * actors, T &para)
 
     if (para.Sleep)
     {
-      //if (!rigidDynamic->isSleeping())
       rigidDynamic->putToSleep();
     }
     else
