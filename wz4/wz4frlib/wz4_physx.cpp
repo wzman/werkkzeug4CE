@@ -1555,15 +1555,31 @@ void RNPhysx::Simulate(Wz4RenderContext *ctx)
     Executed = sTRUE;
   }
 
-  // compute physx
-  sF32 stepSize = 1.0f / 60.0f;
-  Scene->simulate(stepSize);
-  while (!Scene->fetchResults())
+  // simulation loop
+
+  sF32 timeStep = 1.0f / sMax(10,Para.TimeStep);
+
+  // avoid negative value if GetBaseTime goes back
+  if(Accumulator < 0)
+    Accumulator = 0;
+
+  // compute real elapsed time to synchronize simulation with real time
+  sF32 newTime = sGetTimeUS() * 0.001;
+  sF32 deltaTime = newTime - LastTime;
+  LastTime = newTime;
+
+  Accumulator += deltaTime;
+  if (Accumulator > 10*timeStep) Accumulator = timeStep;
+
+  while (Accumulator >= timeStep)
   {
-    // do something useful
+    Accumulator -= deltaTime;
 
     // count nb time to cumulate forces for animated rigid dynamics
     gCumulatedCount++;
+
+    Scene->simulate(timeStep);
+    Scene->fetchResults(Para.WaitFetchResults);
   }
 
   SimulateChilds(ctx);

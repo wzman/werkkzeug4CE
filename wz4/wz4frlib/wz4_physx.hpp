@@ -413,6 +413,8 @@ private:
   PxScene * Scene;                        // Physx scene
   sBool Executed;                         // flag for restart and pause simulation mechanism with F6/F5
   sF32 PreviousTimeLine;                  // delta time line use to restart simulation
+  sF32 LastTime;                          // last frame time
+  sF32 Accumulator;                       // time accumulator
 
   PxScene * CreateScene();                // create new physx scene
   void CreateAllActors(wCommand *cmd);    // create physx actors
