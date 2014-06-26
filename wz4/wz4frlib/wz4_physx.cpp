@@ -809,6 +809,12 @@ void WpxRigidBody::Transform(const sMatrix34 & mat, PxScene * ptr)
   else
   {
     // ptr not null : transform is calling from Physx init to build physx objects
+
+    // kinematics doesn't need the mul matrix
+    if (Para.DynamicType == 1)
+      mulmat = mat;
+
+    // build physx actors
     PhysxBuildActor(mulmat, ptr, AllActors);
 
     // copy AllActor adress in RootNode
