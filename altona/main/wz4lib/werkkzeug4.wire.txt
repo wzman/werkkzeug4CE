@@ -306,6 +306,7 @@ window Page
   key ShowRoot 'S'|SHIFT;
   
   key Exchange 'e';
+  key Exchange2 'E'|SHIFT;
   key Hide 'h';
   key Bypass 'b';
   key UnCache 'u';

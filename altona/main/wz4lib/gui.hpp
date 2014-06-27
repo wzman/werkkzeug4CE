@@ -547,6 +547,7 @@ public:
   void CmdBrowser();
   void CmdBrowser2(sDInt);
   void CmdExchange();
+  void CmdExchange2();
   void CmdBypass();
   void CmdHide();
   void CmdUnCache();

@@ -4283,6 +4283,7 @@ void WinStack::InitWire(const sChar *name)
   sWire->AddKey(name,L"ShowRoot"  ,sMessage(this,&WinStack::CmdShowRoot,0));
   sWire->AddKey(name,L"Goto"      ,sMessage(this,&WinStack::CmdGoto));
   sWire->AddKey(name,L"Exchange"  ,sMessage(this,&WinStack::CmdExchange));
+  sWire->AddKey(name,L"Exchange2" ,sMessage(this,&WinStack::CmdExchange2));
   sWire->AddKey(name,L"Bypass"    ,sMessage(this,&WinStack::CmdBypass));
   sWire->AddKey(name,L"Hide"      ,sMessage(this,&WinStack::CmdHide));
   sWire->AddKey(name,L"UnCache"   ,sMessage(this,&WinStack::CmdUnCache));
@@ -5401,6 +5402,81 @@ static sBool ReInit(wOp *op,wClass *cl)
   delete[] datas;
 
   return 1;
+}
+
+void WinStack::CmdExchange2()
+{
+  if (Page->IsProtected()) return;
+  wStackOp *op;
+  wDocName name;
+  wClass *loadclass = Doc->FindClass(L"Load", L"AnyType");
+  wClass *storeclass = Doc->FindClass(L"Store", L"AnyType");
+
+  wClass *ex[3][2];
+  sInt max = 0;
+
+  sClear(ex);
+
+  ex[max][0] = Doc->FindClass(L"Transform", L"Wz4Render");
+  ex[max][1] = Doc->FindClass(L"ColliderTransform", L"WpxColliderTransform");
+  max++;
+  ex[max][0] = Doc->FindClass(L"Multiply", L"Wz4Render");
+  ex[max][1] = Doc->FindClass(L"ColliderMul", L"WpxColliderMul");
+  max++;
+  ex[max][0] = Doc->FindClass(L"Render", L"Wz4Render");
+  ex[max][1] = Doc->FindClass(L"ColliderAdd", L"WpxColliderAdd");
+  max++;
+
+  sBool changed = 0;
+  if (Page && loadclass && storeclass)
+  {
+    sFORALL(Page->Ops, op)
+    {
+      if (op->Select)
+      {
+        if (op->Class == loadclass)
+        {
+          name = op->Links[0].LinkName;
+          op->Init(storeclass);
+          op->Name = name;
+          Doc->Change(op);
+          changed = 1;
+        }
+        else if (op->Class == storeclass)
+        {
+          name = op->Name;
+          op->Init(loadclass);
+          op->Links[0].LinkName = name;
+          op->Name = L"";
+          Doc->Change(op);
+          changed = 1;
+        }
+        for (sInt i = 0; i<max; i++)
+        {
+          if (ex[i][0] && ex[i][1])
+          {
+            if (op->Class == ex[i][0])
+            {
+              changed |= ReInit(op, ex[i][1]);
+              break;
+            }
+            else if (op->Class == ex[i][1])
+            {
+              changed |= ReInit(op, ex[i][0]);
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (changed)
+  {
+    App->EditOpReloadAll();
+    App->ChangeDoc();
+    Doc->Connect();
+  }
 }
 
 void WinStack::CmdExchange()
