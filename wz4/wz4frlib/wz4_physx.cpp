@@ -714,6 +714,9 @@ void WpxRigidBody::PhysxBuildActor(const sMatrix34 & mat, PxScene * scene, sArra
   // create new actor
   sActor * actor = new sActor;
 
+  // actor matrix is not initialized here, so just set ptr adress to 0 for now
+  actor->matrix = 0;
+
   // create physx rigid body
   if (Para.ActorType == EAT_STATIC)
   {
@@ -806,9 +809,6 @@ void WpxRigidBody::PhysxBuildActor(const sMatrix34 & mat, PxScene * scene, sArra
   // add actor to physx scene
   scene->addActor(*actor->actor);
 
-  // copy matrix (used by kinematics)
-  actor->matrix = new sMatrix34(mat);
-
   // add actor to list
   allActors.AddTail(actor);
 }
@@ -842,12 +842,15 @@ void WpxRigidBody::Transform(const sMatrix34 & mat, PxScene * ptr)
   {
     // ptr not null : transform is calling from Physx init to build physx objects
 
-    // kinematics doesn't need the mul matrix
-    if (Para.ActorType == EAT_KINEMATIC)
-      mulmat = mat;
-
     // build physx actors
     PhysxBuildActor(mulmat, ptr, AllActors);
+
+    // kinematics need this matrix as initial pose
+    if (Para.ActorType == EAT_KINEMATIC)
+    {
+      sActor  * a = AllActors.GetTail();
+      a->matrix = new sMatrix34(mat);
+    }
 
     // copy AllActor adress in RootNode
     WpxRigidBodyNodeActor * rigidNode = static_cast<WpxRigidBodyNodeActor *>(RootNode);
