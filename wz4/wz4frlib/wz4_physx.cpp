@@ -1540,6 +1540,12 @@ PxScene * RNPhysx::CreateScene()
   if (!sceneDesc.filterShader)
     sceneDesc.filterShader = gDefaultFilterShader;
 
+  if(Para.Desc&0x01)
+    sceneDesc.flags |= PxSceneFlag::eENABLE_PCM;
+  if(Para.Desc&0x04)
+    sceneDesc.flags |= PxSceneFlag::eENABLE_ONE_DIRECTIONAL_FRICTION;
+  if(Para.Desc&0x10)
+    sceneDesc.flags |= PxSceneFlag::eENABLE_TWO_DIRECTIONAL_FRICTION;
 
   PxScene * scene = gPhysicsSDK->createScene(sceneDesc);
 
