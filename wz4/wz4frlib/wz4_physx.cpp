@@ -714,8 +714,8 @@ void WpxRigidBody::PhysxBuildActor(const sMatrix34 & mat, PxScene * scene, sArra
   // create new actor
   sActor * actor = new sActor;
 
-  // actor matrix is not initialized here, so just set ptr adress to 0 for now
-  actor->matrix = 0;
+  // create new actor matrix
+  actor->matrix = new sMatrix34(mat);
 
   // create physx rigid body
   if (Para.ActorType == EAT_STATIC)
@@ -847,10 +847,7 @@ void WpxRigidBody::Transform(const sMatrix34 & mat, PxScene * ptr)
 
     // kinematics need this matrix as initial pose
     if (Para.ActorType == EAT_KINEMATIC)
-    {
-      sActor  * a = AllActors.GetTail();
-      a->matrix = new sMatrix34(mat);
-    }
+      *AllActors.GetTail()->matrix = mat;
 
     // copy AllActor adress in RootNode
     WpxRigidBodyNodeActor * rigidNode = static_cast<WpxRigidBodyNodeActor *>(RootNode);
@@ -1563,6 +1560,7 @@ void RNPhysx::Simulate(Wz4RenderContext *ctx)
   Para = ParaBase;
   Anim.Bind(ctx->Script, &Para);
   SimulateCalc(ctx);
+  SimulateChilds(ctx);
 
   // reset gCumulatedCount forces counter
   gCumulatedCount = 0;
@@ -1619,8 +1617,6 @@ void RNPhysx::Simulate(Wz4RenderContext *ctx)
     Scene->simulate(timeStep);
     Scene->fetchResults(Para.WaitFetchResults);
   }
-
-  SimulateChilds(ctx);
 
  //ViewPrintF(L"Scene actors : dynamic %d, static %d : %d\n",
  //    Scene->getNbActors(PxActorTypeSelectionFlag::eRIGID_DYNAMIC),

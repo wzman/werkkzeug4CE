@@ -219,7 +219,7 @@ public:
 struct sActor
 {
   PxRigidActor * actor;   // physx actor ptr
-  sMatrix34 * matrix;     // store matrix at actor creation (used by kinematics)
+  sMatrix34 * matrix;     // store matrix at actor creation (used by kinematics and debris)
 };
 
 class WpxRigidBody : public WpxActorBase
