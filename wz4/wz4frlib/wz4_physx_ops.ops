@@ -418,6 +418,34 @@ operator WpxRigidBody RigidBody (Wz4Render, WpxColliderBase)
     out->RootNode = node;
     out->AddChilds(cmd, para->Renderpass, 0, 1);
   }
+  handles
+  {
+    // paint cross Center of mass
+    if(para->MassAndInertia == 1)
+    {
+      sMatrix34 mat;
+      sSRT srt;
+      srt.Translate = para->Trans;
+      srt.Rotate = para->Rot;
+      srt.MakeMatrix(mat);
+
+      sVector31 v[6],p;
+      bool zoff = true;
+      sF32 s = 0.2f;
+      sVector31 o = para->CenterOfMass;
+
+      // cross
+      p.Init(o.x-s, o.y,   o.z);    v[0] = p*mat;
+      p.Init(o.x+s, o.y,   o.z);    v[1] = p*mat;
+      p.Init(o.x,   o.y-s, o.z);    v[2] = p*mat;
+      p.Init(o.x,   o.y+s, o.z);    v[3] = p*mat;
+      p.Init(o.x,   o.y,   o.z-s);  v[4] = p*mat;
+      p.Init(o.x,   o.y,   o.z+s);  v[5] = p*mat;
+      pi.Line3D(v[0],v[1],0,zoff);
+      pi.Line3D(v[2],v[3],0,zoff);
+      pi.Line3D(v[4],v[5],0,zoff);
+    }
+  }
 }
 
 /****************************************************************************/
