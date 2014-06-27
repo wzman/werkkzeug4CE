@@ -1467,7 +1467,7 @@ void RNPhysx::CreateAllActors(wCommand *cmd)
   mat.Init();
 
   // for each childs operators
-  for (sInt i = 0; i<cmd->InputCount; i++)
+  for (sInt i = 1; i<cmd->InputCount; i++)
   {
     WpxActorBase *in = cmd->GetInput<WpxActorBase *>(i);
     if (in)
@@ -1497,7 +1497,7 @@ void RNPhysx::WakeUpScene(wCommand *cmd)
   }
 
   // wake up actors
-  for (sInt i = 0; i<cmd->InputCount; i++)
+  for (sInt i = 1; i<cmd->InputCount; i++)
   {
     WpxActorBase *in = cmd->GetInput<WpxActorBase *>(i);
     if (in)
@@ -1625,4 +1625,88 @@ void RNPhysx::Simulate(Wz4RenderContext *ctx)
  //ViewPrintF(L"Scene actors : dynamic %d, static %d : %d\n",
  //    Scene->getNbActors(PxActorTypeSelectionFlag::eRIGID_DYNAMIC),
  //    Scene->getNbActors(PxActorTypeSelectionFlag::eRIGID_STATIC));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+RPPhysxParticleTest::RPPhysxParticleTest()
+{
+  Anim.Init(Wz4RenderType->Script);
+}
+
+RPPhysxParticleTest::~RPPhysxParticleTest()
+{
+}
+
+void RPPhysxParticleTest::Init(PhysxObject * pxtarget)
+{
+  if (pxtarget && pxtarget->PhysxSceneRef)
+  {
+    PhysxSceneRef = pxtarget->PhysxSceneRef;
+    int a = PhysxSceneRef->getNbActors(PxActorTypeSelectionFlag::eRIGID_DYNAMIC);
+  }    
+
+  Para = ParaBase;
+
+  Particles.AddMany(Para.Count);
+  Particle *p;
+  sRandomMT rnd;
+  sFORALL(Particles, p)
+  {
+    p->Pos0.InitRandom(rnd);
+    p->Pos1.InitRandom(rnd);
+  }
+}
+
+
+void RPPhysxParticleTest::Simulate(Wz4RenderContext *ctx)
+{
+  Para = ParaBase;
+  Anim.Bind(ctx->Script, &Para);
+  SimulateCalc(ctx);
+  //  Anim.UnBind(ctx->Script,&Para);
+}
+
+sInt RPPhysxParticleTest::GetPartCount()
+{
+  return Particles.GetCount();
+}
+sInt RPPhysxParticleTest::GetPartFlags()
+{
+  return 0;
+}
+
+void RPPhysxParticleTest::Func(Wz4PartInfo &pinfo, sF32 time, sF32 dt)
+{
+  sVector30 dx, dy;
+  sMatrix34 mat;
+  sVector31 p, p0, p1;
+  Particle *part;
+  sMatrix34 mat0, mat1;
+
+  sFORALL(Particles, part)
+  {
+    p = part->Pos1*mat1;
+    p = (sVector30(p) + part->Pos0)*mat0 + Para.CloudPos;
+    pinfo.Parts[_i].Init(p, time);
+  }
+
+  pinfo.Used = pinfo.Alloc;
 }

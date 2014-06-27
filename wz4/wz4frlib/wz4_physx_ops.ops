@@ -621,7 +621,7 @@ operator WpxRigidBodyMul RigidBodyMul "Multiply" (WpxActorBase)
 /****************************************************************************/
 /****************************************************************************/
 
-operator Wz4Render Physx (*WpxActorBase)
+operator Wz4Render Physx (?PhysxObject,*WpxActorBase)
 {
   tab = PhysXTab;
   column = 0;
@@ -650,6 +650,9 @@ operator Wz4Render Physx (*WpxActorBase)
     if(PreSimulation == 1)
       int SimulationCycles (0..0x100000 step 10) = 20;
 
+    group "Physx target";
+    link PhysxTarget:0;
+
     group "Animation Script"; overbox overlabel linenumber lines 5 string Script;
   }
   actions
@@ -670,7 +673,62 @@ operator Wz4Render Physx (*WpxActorBase)
       return 0;
     }
 
+    if(in0)
+    {
+      PhysxTarget * target = static_cast<PhysxTarget*>(in0);
+      target->PhysxSceneRef = node->Scene;
+    }
+
     out->RootNode = node;
-    out->AddChilds(cmd, para->Renderpass);
+    out->AddChilds(cmd, para->Renderpass, 1);
+  }
+}
+
+/****************************************************************************/
+/****************************************************************************/
+
+type PhysxObject
+{
+  name = "PhysxObject";
+  flags = notab;
+  color = 0xFF778822;
+  gui = base2d;
+}
+
+operator PhysxObject PhysxTarget ()
+{
+  tab = PhysXTab;
+  column = 0;
+  shortcut = 't';
+  code
+  {
+  }
+}
+
+/****************************************************************************/
+
+operator Wz4Particles CloudOo(PhysxObject)
+{
+  tab = PhysXTab;
+  column = 0;
+  parameter
+  {
+    link PhysxTarget:0;
+
+    int Count(1..65536) = 256;
+    anim float CloudSize[2] (-1024..1024 step 0.01) = 1;
+    anim float CloudFreq[2] (-1024..1024 step 0.01) = { 1,4 };
+    anim float30 CloudPos(-1000000..1000000 step 0.0001) = { 0,0,0 };
+
+    group "Animation Script"; overbox overlabel linenumber lines 5 string Script;
+  }
+
+  code
+  {
+    RPPhysxParticleTest *node = new RPPhysxParticleTest();
+    node->ParaBase = node->Para = *para;
+    node->Init(in0);
+    out->RootNode = node;
+    out->AddCode(cmd);
   }
 }

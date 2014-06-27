@@ -376,7 +376,6 @@ public:
 class RNPhysx : public Wz4RenderNode
 {
 private:
-  PxScene * Scene;                        // Physx scene
   sBool Executed;                         // flag for restart and pause simulation mechanism with F6/F5
   sF32 PreviousTimeLine;                  // delta time line use to restart simulation
   sF32 LastTime;                          // last frame time
@@ -387,6 +386,8 @@ private:
   void WakeUpScene(wCommand *cmd);        // wake up all actors
 
 public:
+  PxScene * Scene;                        // Physx scene
+
   Wz4RenderParaPhysx ParaBase, Para;
   Wz4RenderAnimPhysx Anim;
 
@@ -395,6 +396,57 @@ public:
   void Simulate(Wz4RenderContext *ctx);
 
   sBool Init(wCommand *cmd);
+};
+
+/****************************************************************************/
+/****************************************************************************/
+
+class PhysxObject : public wObject
+{
+public:
+  PxScene * PhysxSceneRef;
+
+  PhysxObject() { Type = PhysxObjectType; PhysxSceneRef = 0; }
+};
+
+class PhysxTarget : public PhysxObject
+{
+public:
+  PhysxTarget() {}
+};
+
+/****************************************************************************/
+/****************************************************************************/
+
+class WpxParticleNode : public Wz4ParticleNode
+{
+public:
+  PxScene * PhysxSceneRef;
+};
+
+/****************************************************************************/
+
+class RPPhysxParticleTest : public WpxParticleNode
+{
+  struct Particle
+  {
+    sVector31 Pos0;
+    sVector31 Pos1;
+  };
+  sArray<Particle> Particles;
+
+public:
+  RPPhysxParticleTest();
+  ~RPPhysxParticleTest();
+  void Init(PhysxObject * pxtarget);
+
+  Wz4ParticlesParaCloudOo Para, ParaBase;
+  Wz4ParticlesAnimCloudOo Anim;
+
+  void Simulate(Wz4RenderContext *ctx);
+  sInt GetPartCount();
+  sInt GetPartFlags();
+  void Func(Wz4PartInfo &pinfo, sF32 time, sF32 dt);
 };
 
 #endif FILE_WZ4FRLIB_PHYSX_HPP
