@@ -1565,20 +1565,20 @@ void RNPhysx::Simulate(Wz4RenderContext *ctx)
   // reset gCumulatedCount forces counter
   gCumulatedCount = 0;
 
+  // if not enabled, return;
   if (!Para.Enable)
     return;
 
-  // pause/restart mechanism (F5/F6 key)
   if (!Doc->IsPlayer)
   {
+    // timeline paused ?
+    if (App->TimelineWin->Pause)
+      return;
+
     // compute elpased wz time for the restart mechanism
     sF32 timeLine = ctx->GetBaseTime();
     sF32 deltaTimeLine = timeLine - PreviousTimeLine;
     PreviousTimeLine = timeLine;
-
-    // timeline is paused, no simulation to run
-    if (deltaTimeLine == 0)
-      return;
 
     // Restart mechanism (for F6, loop demo, or clip restart)
     if (Executed && deltaTimeLine < -0.1f)
