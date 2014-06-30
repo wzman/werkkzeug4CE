@@ -686,6 +686,7 @@ operator Wz4Render Physx (?PhysxObject,*WpxActorBase)
     {
       PhysxTarget * target = static_cast<PhysxTarget*>(in0);
       target->PhysxSceneRef = node->Scene;
+      target->PartSystemsRef = &node->PartSystems;
     }
 
     out->RootNode = node;
@@ -716,7 +717,7 @@ operator PhysxObject PhysxTarget ()
 
 /****************************************************************************/
 
-operator Wz4Particles CloudOo(PhysxObject)
+operator Wz4Particles PxCloud(PhysxObject)
 {
   tab = PhysXTab;
   column = 0;
@@ -736,7 +737,10 @@ operator Wz4Particles CloudOo(PhysxObject)
   {
     RPPhysxParticleTest *node = new RPPhysxParticleTest();
     node->ParaBase = node->Para = *para;
+
+    in0->RegisterParticleNode(node);
     node->Init(in0);
+
     out->RootNode = node;
     out->AddCode(cmd);
   }

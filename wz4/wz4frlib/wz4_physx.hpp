@@ -373,6 +373,8 @@ public:
 /****************************************************************************/
 /****************************************************************************/
 
+class WpxParticleNode;
+
 class RNPhysx : public Wz4RenderNode
 {
 private:
@@ -388,6 +390,7 @@ private:
 
 public:
   PxScene * Scene;                        // Physx scene
+  sArray<Wz4ParticleNode *> PartSystems;  // all Wz4ParticlesNode binded to this physx (rebuild op mechanism)
 
   Wz4RenderParaPhysx ParaBase, Para;
   Wz4RenderAnimPhysx Anim;
@@ -405,9 +408,16 @@ public:
 class PhysxObject : public wObject
 {
 public:
-  PxScene * PhysxSceneRef;
+  PxScene * PhysxSceneRef;                        // physx scene ptr
+  sArray<Wz4ParticleNode *> * PartSystemsRef;     // ptr to the particles node list binded to a physx operator
 
-  PhysxObject() { Type = PhysxObjectType; PhysxSceneRef = 0; }
+  PhysxObject() { Type = PhysxObjectType; PhysxSceneRef = 0; PartSystemsRef = 0; }
+
+  // call this to register a particle node for a physx operator
+  void RegisterParticleNode(Wz4ParticleNode  * op)
+  {
+    PartSystemsRef->AddTail(op);
+  }
 };
 
 class PhysxTarget : public PhysxObject
@@ -435,14 +445,15 @@ class RPPhysxParticleTest : public WpxParticleNode
     sVector31 Pos1;
   };
   sArray<Particle> Particles;
+  PxParticleSystem * PhysxPartSystem;
 
 public:
   RPPhysxParticleTest();
   ~RPPhysxParticleTest();
   void Init(PhysxObject * pxtarget);
 
-  Wz4ParticlesParaCloudOo Para, ParaBase;
-  Wz4ParticlesAnimCloudOo Anim;
+  Wz4ParticlesParaPxCloud Para, ParaBase;
+  Wz4ParticlesAnimPxCloud Anim;
 
   void Simulate(Wz4RenderContext *ctx);
   sInt GetPartCount();

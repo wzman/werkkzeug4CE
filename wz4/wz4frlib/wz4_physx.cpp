@@ -1600,6 +1600,14 @@ void RNPhysx::Simulate(Wz4RenderContext *ctx)
       // rebuild operator (to restore default values)
       Doc->Change(Op, 1, 1);
       Executed = sFALSE;
+
+      // rebuild all physx particles operators
+      sArray<Wz4ParticleNode *> backupPartSystems(PartSystems);
+      PartSystems.Reset();
+      Wz4ParticleNode * p;
+      sFORALL(backupPartSystems, p)
+        Doc->Change(p->Op, 1, 1);
+
       return;
     }
     Executed = sTRUE;
@@ -1664,24 +1672,13 @@ void RNPhysx::Simulate(Wz4RenderContext *ctx)
  //    Scene->getNbActors(PxActorTypeSelectionFlag::eRIGID_STATIC));
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/****************************************************************************/
+/****************************************************************************/
+//
+// PHYSX PARTICLES NODES
+//
+/****************************************************************************/
+/****************************************************************************/
 
 RPPhysxParticleTest::RPPhysxParticleTest()
 {
@@ -1690,18 +1687,15 @@ RPPhysxParticleTest::RPPhysxParticleTest()
 
 RPPhysxParticleTest::~RPPhysxParticleTest()
 {
+  PhysxPartSystem->releaseParticles();
+  PhysxPartSystem->release();
 }
 
 void RPPhysxParticleTest::Init(PhysxObject * pxtarget)
 {
-  if (pxtarget && pxtarget->PhysxSceneRef)
-  {
-    PhysxSceneRef = pxtarget->PhysxSceneRef;
-    int a = PhysxSceneRef->getNbActors(PxActorTypeSelectionFlag::eRIGID_DYNAMIC);
-  }    
-
   Para = ParaBase;
 
+  // init particles pos
   Particles.AddMany(Para.Count);
   Particle *p;
   sRandomMT rnd;
@@ -1710,15 +1704,62 @@ void RPPhysxParticleTest::Init(PhysxObject * pxtarget)
     p->Pos0.InitRandom(rnd);
     p->Pos1.InitRandom(rnd);
   }
-}
 
+  sVERIFY(pxtarget);
+  sVERIFY(pxtarget->PhysxSceneRef);
+
+  // particles buffers
+  PxU32* pIndex = new PxU32[Para.Count];
+  PxVec3* pPosition = new PxVec3[Para.Count];
+  PxVec3* pVelocity = new PxVec3[Para.Count];
+
+  // fill buffers
+  sFORALL(Particles, p)
+  {
+    p->Pos0 += Para.CloudPos;
+    PxVec3 pos;
+    pos.x = p->Pos0.x;
+    pos.y = p->Pos0.y;
+    pos.z = p->Pos0.z;
+
+    p->Pos1 += Para.CloudPos;
+    PxVec3 vel;
+    pos.x = p->Pos1.x;
+    pos.y = p->Pos1.y;
+    pos.z = p->Pos1.z;
+
+    pPosition[_i] = pos;
+    pVelocity[_i] = vel;
+    pIndex[_i] = _i; 
+  }
+
+  // declare particle descriptor for creating new particles
+  PxParticleCreationData particleCreationData;
+  particleCreationData.numParticles = Para.Count;
+  particleCreationData.indexBuffer = PxStrideIterator<const PxU32>(pIndex);
+  particleCreationData.positionBuffer = PxStrideIterator<const PxVec3>(pPosition);
+  particleCreationData.velocityBuffer = PxStrideIterator<const PxVec3>(pVelocity);
+
+  // get physx scene ptr
+  PhysxSceneRef = pxtarget->PhysxSceneRef;
+
+  // create particle system
+  PhysxPartSystem = gPhysicsSDK->createParticleSystem(Para.Count);
+  if(PhysxPartSystem)
+  {
+    // add particle system to physx scene
+    PhysxSceneRef->addActor(*PhysxPartSystem);
+
+    // create particles in particle system 
+    bool success = PhysxPartSystem->createParticles(particleCreationData);
+  }
+}
 
 void RPPhysxParticleTest::Simulate(Wz4RenderContext *ctx)
 {
   Para = ParaBase;
   Anim.Bind(ctx->Script, &Para);
   SimulateCalc(ctx);
-  //  Anim.UnBind(ctx->Script,&Para);
 }
 
 sInt RPPhysxParticleTest::GetPartCount()
@@ -1732,18 +1773,37 @@ sInt RPPhysxParticleTest::GetPartFlags()
 
 void RPPhysxParticleTest::Func(Wz4PartInfo &pinfo, sF32 time, sF32 dt)
 {
-  sVector30 dx, dy;
-  sMatrix34 mat;
-  sVector31 p, p0, p1;
-  Particle *part;
-  sMatrix34 mat0, mat1;
+  sVector31 p;
+  Particle *part; 
+
+  // lock SDK buffers of *PxParticleSystem* for reading
+  PxParticleReadData* rd = PhysxPartSystem->lockParticleReadData();
+
+  // access particle data from PxParticleReadData
+  PxStrideIterator<const PxParticleFlags> flagsIt(rd->flagsBuffer);
+  PxStrideIterator<const PxVec3> positionIt(rd->positionBuffer);
 
   sFORALL(Particles, part)
   {
-    p = part->Pos1*mat1;
-    p = (sVector30(p) + part->Pos0)*mat0 + Para.CloudPos;
-    pinfo.Parts[_i].Init(p, time);
+    if (*flagsIt & PxParticleFlag::eVALID)
+    {
+      const PxVec3& position = *positionIt;
+      
+      sVector31 p;
+      p.x = position.x;
+      p.y = position.y;
+      p.z = position.z;
+      //p += sVector30(part->Pos1) + Para.CloudPos;
+
+      pinfo.Parts[_i].Init(p, time);
+
+      // increment iterators
+      positionIt++;
+      flagsIt++;
+    }
   }
+
+  rd->unlock();
 
   pinfo.Used = pinfo.Alloc;
 }
