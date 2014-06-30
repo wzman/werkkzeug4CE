@@ -714,8 +714,8 @@ void WpxRigidBody::PhysxBuildActor(const sMatrix34 & mat, PxScene * scene, sArra
   // create new actor
   sActor * actor = new sActor;
 
-  // actor matrix is not initialized here, so just set ptr adress to 0 for now
-  actor->matrix = 0;
+  // create new actor matrix
+  actor->matrix = new sMatrix34(mat);
 
   // create physx rigid body
   if (Para.ActorType == EAT_STATIC)
@@ -847,10 +847,7 @@ void WpxRigidBody::Transform(const sMatrix34 & mat, PxScene * ptr)
 
     // kinematics need this matrix as initial pose
     if (Para.ActorType == EAT_KINEMATIC)
-    {
-      sActor  * a = AllActors.GetTail();
-      a->matrix = new sMatrix34(mat);
-    }
+      *AllActors.GetTail()->matrix = mat;
 
     // copy AllActor adress in RootNode
     WpxRigidBodyNodeActor * rigidNode = static_cast<WpxRigidBodyNodeActor *>(RootNode);
@@ -1430,6 +1427,8 @@ void WpxRigidBodyNodeDebris::Render(Wz4RenderContext *ctx)
 RNPhysx::RNPhysx()
 {
   Scene = 0;
+  Accumulator = 0.0f;
+  LastTime = 0;
 
   PreviousTimeLine = 0.0f;
   Executed = sFALSE;
@@ -1563,24 +1562,25 @@ void RNPhysx::Simulate(Wz4RenderContext *ctx)
   Para = ParaBase;
   Anim.Bind(ctx->Script, &Para);
   SimulateCalc(ctx);
+  SimulateChilds(ctx);
 
   // reset gCumulatedCount forces counter
   gCumulatedCount = 0;
 
+  // if not enabled, return;
   if (!Para.Enable)
     return;
 
-  // pause/restart mechanism (F5/F6 key)
   if (!Doc->IsPlayer)
   {
-    // compute elpased wz time for the restart mechanism
+    // timeline paused ?
+    if (App->TimelineWin->Pause)
+      return;
+
+    // compute elpased timeline to trigger the restart mechanism
     sF32 timeLine = ctx->GetBaseTime();
     sF32 deltaTimeLine = timeLine - PreviousTimeLine;
     PreviousTimeLine = timeLine;
-
-    // timeline is paused, no simulation to run
-    if (deltaTimeLine == 0)
-      return;
 
     // Restart mechanism (for F6, loop demo, or clip restart)
     if (Executed && deltaTimeLine < -0.1f)
@@ -1595,32 +1595,57 @@ void RNPhysx::Simulate(Wz4RenderContext *ctx)
 
   // simulation loop
 
-  sF32 timeStep = 1.0f / sMax(10,Para.TimeStep);
+  sF32 stepSize = 1.0f / sMax(10, Para.TimeStep);
 
-  // avoid negative value if GetBaseTime goes back
-  if(Accumulator < 0)
-    Accumulator = 0;
-
-  // compute real elapsed time to synchronize simulation with real time
-  sF32 newTime = sGetTimeUS() * 0.001;
-  sF32 deltaTime = newTime - LastTime;
-  LastTime = newTime;
-
-  Accumulator += deltaTime;
-  if (Accumulator > 10*timeStep) Accumulator = timeStep;
-
-  while (Accumulator >= timeStep)
+  if (!Para.TimeSync)
   {
-    Accumulator -= deltaTime;
-
-    // count nb time to cumulate forces for animated rigid dynamics
+    Scene->simulate(stepSize);
+    Scene->fetchResults(Para.WaitFetchResults);
     gCumulatedCount++;
 
-    Scene->simulate(timeStep);
-    Scene->fetchResults(Para.WaitFetchResults);
   }
+  else
+  {
+    // compute real elapsed time to synchronize simulation with real time
+    static sTiming time;
+    time.OnFrame(sGetTime());
+    sF32 deltaTime = time.GetDelta() * Para.DeltaScale;
+    // or
+    /*sF32 newTime = sGetTimeUS() * 0.001;
+    sF32 deltaTime = (newTime - LastTime) * Para.TimeScale;
+    LastTime = newTime;*/
 
-  SimulateChilds(ctx);
+    if (Para.SyncMethod==0)
+    {
+      // simulation loop method 2
+      Accumulator += deltaTime;
+
+      if (Accumulator < stepSize)
+        return;
+
+      Scene->simulate(stepSize);
+      Scene->fetchResults(Para.WaitFetchResults);
+
+      gCumulatedCount++;
+      Accumulator -= stepSize;
+    }
+    else
+    {
+      // simulation loop method 1
+      if (deltaTime > Para.DeltaLimit)
+        deltaTime = Para.DeltaLimit; // avoid spiral of death
+
+      Accumulator += deltaTime;
+      while (Accumulator >= stepSize)
+      {
+        Scene->simulate(stepSize);
+        Scene->fetchResults(Para.WaitFetchResults);
+
+        gCumulatedCount++;
+        Accumulator -= stepSize;
+      }
+    }
+  }
 
  //ViewPrintF(L"Scene actors : dynamic %d, static %d : %d\n",
  //    Scene->getNbActors(PxActorTypeSelectionFlag::eRIGID_DYNAMIC),
