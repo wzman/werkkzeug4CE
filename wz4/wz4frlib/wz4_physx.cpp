@@ -1558,6 +1558,28 @@ PxScene * RNPhysx::CreateScene()
   if(Para.Desc&0x10)
     sceneDesc.flags |= PxSceneFlag::eENABLE_TWO_DIRECTIONAL_FRICTION;
 
+#ifdef PX_WINDOWS
+  PxProfileZoneManager* mProfileZoneManager = &PxProfileZoneManager::createProfileZoneManager(gFoundation);
+  if (!mProfileZoneManager)
+    sLogF(L"PhysX", L"PxProfileZoneManager::createProfileZoneManager failed!\n");
+
+  pxtask::CudaContextManagerDesc cudaContextManagerDesc;
+  pxtask::CudaContextManager * cudaContextManager = pxtask::createCudaContextManager(*gFoundation, cudaContextManagerDesc, mProfileZoneManager);
+
+  if (cudaContextManager)
+  {
+    if (!cudaContextManager->contextIsValid())
+    {
+      cudaContextManager->release();
+      cudaContextManager = NULL;
+      sLogF(L"PhysX", L"Invalid CUDA context\n");
+    }
+  }
+
+  if (!sceneDesc.gpuDispatcher)
+    sceneDesc.gpuDispatcher = cudaContextManager->getGpuDispatcher();
+#endif
+
   PxScene * scene = gPhysicsSDK->createScene(sceneDesc);
 
   if (!scene)
@@ -1747,6 +1769,8 @@ void RPPhysxParticleTest::Init(PhysxObject * pxtarget)
   PhysxPartSystem = gPhysicsSDK->createParticleSystem(Para.Count);
   if(PhysxPartSystem)
   {
+    PhysxPartSystem->setParticleBaseFlag(PxParticleBaseFlag::eGPU, true);
+
     // add particle system to physx scene
     PhysxSceneRef->addActor(*PhysxPartSystem);
 
@@ -1788,8 +1812,7 @@ void RPPhysxParticleTest::Func(Wz4PartInfo &pinfo, sF32 time, sF32 dt)
     if (*flagsIt & PxParticleFlag::eVALID)
     {
       const PxVec3& position = *positionIt;
-      
-      sVector31 p;
+
       p.x = position.x;
       p.y = position.y;
       p.z = position.z;
