@@ -380,6 +380,7 @@ private:
   sF32 PreviousTimeLine;                  // delta time line use to restart simulation
   sF32 LastTime;                          // last frame time
   sF32 Accumulator;                       // time accumulator
+  sArray<WpxActorBase *> WpxChilds;       // wpx childs operators list for clean delete
 
   PxScene * CreateScene();                // create new physx scene
   void CreateAllActors(wCommand *cmd);    // create physx actors

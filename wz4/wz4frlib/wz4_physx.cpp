@@ -1441,6 +1441,13 @@ RNPhysx::~RNPhysx()
   // delete physx scene
   if (Scene)
     Scene->release();
+
+  // clean memory of all undeleted wpx operators
+  WpxActorBase *c;
+  sFORALL(WpxChilds,c)
+  {
+    c->Release();
+  }
 }
 
 sBool RNPhysx::Init(wCommand *cmd)
@@ -1472,10 +1479,15 @@ void RNPhysx::CreateAllActors(wCommand *cmd)
     if (in)
     {
       // delete physx objects if it already exists
-      in->PhysxReset();
+      if(!Doc->IsPlayer)
+        in->PhysxReset();
 
       // process graph transformation, create physx objects and add them to physx scene
       in->Transform(mat, Scene);
+      in->AddRef();
+
+      // add wpx operator reference for delete process
+      WpxChilds.AddTail(in);
     }
   }
 }
