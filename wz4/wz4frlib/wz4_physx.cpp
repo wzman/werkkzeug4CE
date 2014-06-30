@@ -1427,6 +1427,8 @@ void WpxRigidBodyNodeDebris::Render(Wz4RenderContext *ctx)
 RNPhysx::RNPhysx()
 {
   Scene = 0;
+  Accumulator = 0.0f;
+  LastTime = 0;
 
   PreviousTimeLine = 0.0f;
   Executed = sFALSE;
@@ -1575,7 +1577,7 @@ void RNPhysx::Simulate(Wz4RenderContext *ctx)
     if (App->TimelineWin->Pause)
       return;
 
-    // compute elpased wz time for the restart mechanism
+    // compute elpased timeline to trigger the restart mechanism
     sF32 timeLine = ctx->GetBaseTime();
     sF32 deltaTimeLine = timeLine - PreviousTimeLine;
     PreviousTimeLine = timeLine;
@@ -1593,29 +1595,56 @@ void RNPhysx::Simulate(Wz4RenderContext *ctx)
 
   // simulation loop
 
-  sF32 timeStep = 1.0f / sMax(10,Para.TimeStep);
+  sF32 stepSize = 1.0f / sMax(10, Para.TimeStep);
 
-  // avoid negative value if GetBaseTime goes back
-  if(Accumulator < 0)
-    Accumulator = 0;
-
-  // compute real elapsed time to synchronize simulation with real time
-  sF32 newTime = sGetTimeUS() * 0.001;
-  sF32 deltaTime = newTime - LastTime;
-  LastTime = newTime;
-
-  Accumulator += deltaTime;
-  if (Accumulator > 10*timeStep) Accumulator = timeStep;
-
-  while (Accumulator >= timeStep)
+  if (!Para.TimeSync)
   {
-    Accumulator -= deltaTime;
-
-    // count nb time to cumulate forces for animated rigid dynamics
+    Scene->simulate(stepSize);
+    Scene->fetchResults(Para.WaitFetchResults);
     gCumulatedCount++;
 
-    Scene->simulate(timeStep);
-    Scene->fetchResults(Para.WaitFetchResults);
+  }
+  else
+  {
+    // compute real elapsed time to synchronize simulation with real time
+    static sTiming time;
+    time.OnFrame(sGetTime());
+    sF32 deltaTime = time.GetDelta() * Para.DeltaScale;
+    // or
+    /*sF32 newTime = sGetTimeUS() * 0.001;
+    sF32 deltaTime = (newTime - LastTime) * Para.TimeScale;
+    LastTime = newTime;*/
+
+    if (Para.SyncMethod==0)
+    {
+      // simulation loop method 2
+      Accumulator += deltaTime;
+
+      if (Accumulator < stepSize)
+        return;
+
+      Scene->simulate(stepSize);
+      Scene->fetchResults(Para.WaitFetchResults);
+
+      gCumulatedCount++;
+      Accumulator -= stepSize;
+    }
+    else
+    {
+      // simulation loop method 1
+      if (deltaTime > Para.DeltaLimit)
+        deltaTime = Para.DeltaLimit; // avoid spiral of death
+
+      Accumulator += deltaTime;
+      while (Accumulator >= stepSize)
+      {
+        Scene->simulate(stepSize);
+        Scene->fetchResults(Para.WaitFetchResults);
+
+        gCumulatedCount++;
+        Accumulator -= stepSize;
+      }
+    }
   }
 
  //ViewPrintF(L"Scene actors : dynamic %d, static %d : %d\n",

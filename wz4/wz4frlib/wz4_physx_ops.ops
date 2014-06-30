@@ -638,9 +638,18 @@ operator Wz4Render Physx (*WpxActorBase)
     group "Scene flags";
     layout flags Desc ("-|pcm:*2-|one dir friction:*4-|two dir friction");
 
-    group "Time Control";
+    group "Simulation loop";
     anim int TimeStep (10..10000) = 60;
     layout flags WaitFetchResults ("no|yes") = 1;
+    layout flags TimeSync ("-|yes") = 1;
+    if(TimeSync==1)
+    {
+      layout flags SyncMethod ("method1|method2") = 0;
+      if(SyncMethod==1)
+        anim float DeltaLimit (-1000..1000 step 0.001) = 0.03;
+      anim float DeltaScale (-1000..1000 step 0.001) = 0.001;
+    }
+
 
     group "Pre-Simulation";
     layout flags PreDelay ("-|enabled") = 0;
