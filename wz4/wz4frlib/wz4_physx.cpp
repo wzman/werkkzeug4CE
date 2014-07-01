@@ -1424,16 +1424,13 @@ void WpxRigidBodyNodeDebris::Render(Wz4RenderContext *ctx)
 /****************************************************************************/
 /****************************************************************************/
 
-
+// simple cache to save/restore list of physx particle nodes binded to a physx op
 sArray<Wz4ParticleNode *> gPhysxParticleOperatorsCache;
-
-
-
-
 
 RNPhysx::RNPhysx()
 {
   Scene = 0;
+  SceneTarget = 0;
   Accumulator = 0.0f;
   LastTime = 0;
 
@@ -1445,7 +1442,7 @@ RNPhysx::RNPhysx()
 
 RNPhysx::~RNPhysx()
 {
-  // cache all registered physx parts nodes
+  // before destroy, cache all registered physx parts nodes
   gPhysxParticleOperatorsCache.Reset();
   gPhysxParticleOperatorsCache.Add(PartSystems);
 
@@ -1453,12 +1450,25 @@ RNPhysx::~RNPhysx()
   if (Scene)
     Scene->release();
 
+  // release target
+  if (SceneTarget)
+    SceneTarget->Release();
+
   // clean memory of all undeleted wpx operators
   WpxActorBase *c;
   sFORALL(WpxChilds,c)
   {
     c->Release();
   }
+}
+
+void RNPhysx::InitSceneTarget(PhysxTarget * target)
+{
+  // add and init target ptr
+  SceneTarget = target;
+  SceneTarget->AddRef();
+  SceneTarget->PhysxSceneRef = Scene;
+  SceneTarget->PartSystemsRef = &PartSystems;
 }
 
 sBool RNPhysx::Init(wCommand *cmd)
@@ -1502,16 +1512,9 @@ void RNPhysx::CreateAllActors(wCommand *cmd)
     }
   }
 
-  // restore cache if existing
-  Wz4ParticleNode *n;
-  sFORALL(gPhysxParticleOperatorsCache, n)
-  { 
-    RPPhysxParticleTest * pn = static_cast<RPPhysxParticleTest*>(n);
-    pn->PhysxSceneRef = Scene;
-
-    PartSystems.Add(gPhysxParticleOperatorsCache);
-    
-  }
+  // restore cache if existing, to get list of all lost phsyx particles operators
+  // it give the ability to reinit simulation of these operators when restarting animation (f6)
+  PartSystems.Add(gPhysxParticleOperatorsCache);
 }
 
 void RNPhysx::WakeUpScene(wCommand *cmd)
@@ -1648,10 +1651,11 @@ void RNPhysx::Simulate(Wz4RenderContext *ctx)
       Executed = sFALSE;
 
       // rebuild all physx particles operators
-      sArray<Wz4ParticleNode *> backupPartSystems(PartSystems);
+      // reset list, because all rebuilded operator will go to register again
+      sArray<Wz4ParticleNode *> listPartSystems(PartSystems);
       PartSystems.Reset();
       Wz4ParticleNode * p;
-      sFORALL(backupPartSystems, p)
+      sFORALL(listPartSystems, p)
         Doc->Change(p->Op, 1, 1);
 
       return;
@@ -1731,23 +1735,27 @@ RPPhysxParticleTest::RPPhysxParticleTest()
   pIndex = 0;
   pPosition = 0;
   pVelocity = 0;
+  PhysxPartSystem = 0;
 
   Anim.Init(Wz4RenderType->Script);
 }
 
 RPPhysxParticleTest::~RPPhysxParticleTest()
 {
+  // release physx particles and particle system
   PhysxPartSystem->releaseParticles();
   PhysxPartSystem->release();
 
+  // delete buffers
   delete[] pIndex;
   delete[] pPosition;
   delete[] pVelocity;
 
-  phy->RemoveParticleNode(this);
+  // remove this node from registered nodes for physx operator
+  Target->RemoveParticleNode(this);
 }
 
-void RPPhysxParticleTest::Init(PhysxObject * pxtarget)
+void RPPhysxParticleTest::Init()
 {
   Para = ParaBase;
 
@@ -1761,8 +1769,8 @@ void RPPhysxParticleTest::Init(PhysxObject * pxtarget)
     p->Pos1.InitRandom(rnd);
   }
 
-  sVERIFY(pxtarget);
-  sVERIFY(pxtarget->PhysxSceneRef);
+  sVERIFY(Target);
+  sVERIFY(Target->PhysxSceneRef);
 
   // particles buffers
   pIndex = new PxU32[Para.Count];
@@ -1796,9 +1804,6 @@ void RPPhysxParticleTest::Init(PhysxObject * pxtarget)
   particleCreationData.positionBuffer = PxStrideIterator<const PxVec3>(pPosition);
   particleCreationData.velocityBuffer = PxStrideIterator<const PxVec3>(pVelocity);
 
-  // get physx scene ptr
-  PhysxSceneRef = pxtarget->PhysxSceneRef;
-
   // create particle system
   PhysxPartSystem = gPhysicsSDK->createParticleSystem(Para.Count);
   if(PhysxPartSystem)
@@ -1806,7 +1811,7 @@ void RPPhysxParticleTest::Init(PhysxObject * pxtarget)
     PhysxPartSystem->setParticleBaseFlag(PxParticleBaseFlag::eGPU, true);
 
     // add particle system to physx scene
-    PhysxSceneRef->addActor(*PhysxPartSystem);
+    Target->PhysxSceneRef->addActor(*PhysxPartSystem);
 
     // create particles in particle system 
     bool success = PhysxPartSystem->createParticles(particleCreationData);

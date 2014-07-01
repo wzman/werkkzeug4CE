@@ -682,11 +682,17 @@ operator Wz4Render Physx (?PhysxObject,*WpxActorBase)
       return 0;
     }
 
+    // init scene target if exists
     if(in0)
     {
       PhysxTarget * target = static_cast<PhysxTarget*>(in0);
-      target->PhysxSceneRef = node->Scene;
-      target->PartSystemsRef = &node->PartSystems;
+      if(target)
+        node->InitSceneTarget(target);
+      else
+      {
+        cmd->SetError(L"Failed to init scene target");
+        return 0;
+      }
     }
 
     out->RootNode = node;
@@ -739,9 +745,9 @@ operator Wz4Particles PxCloud(PhysxObject)
     node->ParaBase = node->Para = *para;
 
     in0->RegisterParticleNode(node);
-    node->Init(in0);
+    node->Target = in0;
 
-    node->phy = in0;
+    node->Init();
 
     out->RootNode = node;
     out->AddCode(cmd);

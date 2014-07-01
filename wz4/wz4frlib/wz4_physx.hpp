@@ -376,6 +376,9 @@ public:
 /****************************************************************************/
 
 class WpxParticleNode;
+class PhysxTarget;
+
+/****************************************************************************/
 
 class RNPhysx : public Wz4RenderNode
 {
@@ -385,6 +388,7 @@ private:
   sF32 LastTime;                          // last frame time
   sF32 Accumulator;                       // time accumulator
   sArray<WpxActorBase *> WpxChilds;       // wpx childs operators list for clean delete
+  PhysxTarget * SceneTarget;              // target for particles
 
   PxScene * CreateScene();                // create new physx scene
   void CreateAllActors(wCommand *cmd);    // create physx actors
@@ -401,7 +405,8 @@ public:
   RNPhysx::~RNPhysx();
   void Simulate(Wz4RenderContext *ctx);
 
-  sBool Init(wCommand *cmd);
+  sBool Init(wCommand *cmd);                      // init physx
+  void InitSceneTarget(PhysxTarget * target);     // init scene target ptr
 };
 
 /****************************************************************************/
@@ -418,9 +423,11 @@ public:
   // call this to register a particle node for a physx operator
   void RegisterParticleNode(Wz4ParticleNode  * op)
   {    
-    PartSystemsRef->AddTail(op);
+    if (PartSystemsRef)
+      PartSystemsRef->AddTail(op);
   }
 
+  // call this to remove a particle node for a physx operator
   void RemoveParticleNode(Wz4ParticleNode  * op)
   {
     if(PartSystemsRef)
@@ -428,10 +435,13 @@ public:
   }
 };
 
+/****************************************************************************/
+
 class PhysxTarget : public PhysxObject
 {
 public:
-  PhysxTarget() {}
+  PhysxTarget() { AddRef(); }
+  ~PhysxTarget() { Release(); }
 };
 
 /****************************************************************************/
@@ -440,8 +450,8 @@ public:
 class WpxParticleNode : public Wz4ParticleNode
 {
 public:
-  PxScene * PhysxSceneRef;
-  PhysxObject * phy;
+  PhysxObject * Target;
+  WpxParticleNode() { Target = 0; }
 };
 
 /****************************************************************************/
@@ -451,9 +461,7 @@ class RPPhysxParticleTest : public WpxParticleNode
   PxU32* pIndex;
   PxVec3* pPosition;
   PxVec3* pVelocity;
-
-  
-
+  PxParticleSystem * PhysxPartSystem;
 
   struct Particle
   {
@@ -461,12 +469,11 @@ class RPPhysxParticleTest : public WpxParticleNode
     sVector31 Pos1;
   };
   sArray<Particle> Particles;
-  PxParticleSystem * PhysxPartSystem;
 
 public:
   RPPhysxParticleTest();
   ~RPPhysxParticleTest();
-  void Init(PhysxObject * pxtarget);
+  void Init();
 
   Wz4ParticlesParaPxCloud Para, ParaBase;
   Wz4ParticlesAnimPxCloud Anim;
@@ -475,9 +482,6 @@ public:
   sInt GetPartCount();
   sInt GetPartFlags();
   void Func(Wz4PartInfo &pinfo, sF32 time, sF32 dt);
-
-
-  
 };
 
 #endif FILE_WZ4FRLIB_PHYSX_HPP
