@@ -690,7 +690,7 @@ operator Wz4Render Physx (?PhysxObject,*WpxActorBase)
     }
 
     out->RootNode = node;
-    out->AddChilds(cmd, para->Renderpass, 1);
+    out->AddChilds(cmd, para->Renderpass,1);
   }
 }
 
@@ -740,6 +740,8 @@ operator Wz4Particles PxCloud(PhysxObject)
 
     in0->RegisterParticleNode(node);
     node->Init(in0);
+
+    node->phy = in0;
 
     out->RootNode = node;
     out->AddCode(cmd);

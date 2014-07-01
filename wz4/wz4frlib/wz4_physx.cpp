@@ -1424,6 +1424,13 @@ void WpxRigidBodyNodeDebris::Render(Wz4RenderContext *ctx)
 /****************************************************************************/
 /****************************************************************************/
 
+
+sArray<Wz4ParticleNode *> gPhysxParticleOperatorsCache;
+
+
+
+
+
 RNPhysx::RNPhysx()
 {
   Scene = 0;
@@ -1438,6 +1445,10 @@ RNPhysx::RNPhysx()
 
 RNPhysx::~RNPhysx()
 {
+  // cache all registered physx parts nodes
+  gPhysxParticleOperatorsCache.Reset();
+  gPhysxParticleOperatorsCache.Add(PartSystems);
+
   // delete physx scene
   if (Scene)
     Scene->release();
@@ -1489,6 +1500,17 @@ void RNPhysx::CreateAllActors(wCommand *cmd)
       // add wpx operator reference for delete process
       WpxChilds.AddTail(in);
     }
+  }
+
+  // restore cache if existing
+  Wz4ParticleNode *n;
+  sFORALL(gPhysxParticleOperatorsCache, n)
+  { 
+    RPPhysxParticleTest * pn = static_cast<RPPhysxParticleTest*>(n);
+    pn->PhysxSceneRef = Scene;
+
+    PartSystems.Add(gPhysxParticleOperatorsCache);
+    
   }
 }
 
@@ -1574,10 +1596,12 @@ PxScene * RNPhysx::CreateScene()
       cudaContextManager = NULL;
       sLogF(L"PhysX", L"Invalid CUDA context\n");
     }
-  }
-
-  if (!sceneDesc.gpuDispatcher)
-    sceneDesc.gpuDispatcher = cudaContextManager->getGpuDispatcher();
+    else
+    {
+      if (!sceneDesc.gpuDispatcher)
+        sceneDesc.gpuDispatcher = cudaContextManager->getGpuDispatcher();
+    }
+  }  
 #endif
 
   PxScene * scene = gPhysicsSDK->createScene(sceneDesc);
@@ -1704,6 +1728,10 @@ void RNPhysx::Simulate(Wz4RenderContext *ctx)
 
 RPPhysxParticleTest::RPPhysxParticleTest()
 {
+  pIndex = 0;
+  pPosition = 0;
+  pVelocity = 0;
+
   Anim.Init(Wz4RenderType->Script);
 }
 
@@ -1711,6 +1739,12 @@ RPPhysxParticleTest::~RPPhysxParticleTest()
 {
   PhysxPartSystem->releaseParticles();
   PhysxPartSystem->release();
+
+  delete[] pIndex;
+  delete[] pPosition;
+  delete[] pVelocity;
+
+  phy->RemoveParticleNode(this);
 }
 
 void RPPhysxParticleTest::Init(PhysxObject * pxtarget)
@@ -1731,9 +1765,9 @@ void RPPhysxParticleTest::Init(PhysxObject * pxtarget)
   sVERIFY(pxtarget->PhysxSceneRef);
 
   // particles buffers
-  PxU32* pIndex = new PxU32[Para.Count];
-  PxVec3* pPosition = new PxVec3[Para.Count];
-  PxVec3* pVelocity = new PxVec3[Para.Count];
+  pIndex = new PxU32[Para.Count];
+  pPosition = new PxVec3[Para.Count];
+  pVelocity = new PxVec3[Para.Count];
 
   // fill buffers
   sFORALL(Particles, p)

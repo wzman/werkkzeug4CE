@@ -417,8 +417,14 @@ public:
 
   // call this to register a particle node for a physx operator
   void RegisterParticleNode(Wz4ParticleNode  * op)
-  {
+  {    
     PartSystemsRef->AddTail(op);
+  }
+
+  void RemoveParticleNode(Wz4ParticleNode  * op)
+  {
+    if(PartSystemsRef)
+      PartSystemsRef->Rem(op);
   }
 };
 
@@ -435,12 +441,20 @@ class WpxParticleNode : public Wz4ParticleNode
 {
 public:
   PxScene * PhysxSceneRef;
+  PhysxObject * phy;
 };
 
 /****************************************************************************/
 
 class RPPhysxParticleTest : public WpxParticleNode
 {
+  PxU32* pIndex;
+  PxVec3* pPosition;
+  PxVec3* pVelocity;
+
+  
+
+
   struct Particle
   {
     sVector31 Pos0;
@@ -461,6 +475,9 @@ public:
   sInt GetPartCount();
   sInt GetPartFlags();
   void Func(Wz4PartInfo &pinfo, sF32 time, sF32 dt);
+
+
+  
 };
 
 #endif FILE_WZ4FRLIB_PHYSX_HPP
