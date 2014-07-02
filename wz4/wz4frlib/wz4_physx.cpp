@@ -1583,29 +1583,32 @@ PxScene * RNPhysx::CreateScene()
   if(Para.Desc&0x10)
     sceneDesc.flags |= PxSceneFlag::eENABLE_TWO_DIRECTIONAL_FRICTION;
 
-#ifdef PX_WINDOWS
-  PxProfileZoneManager* mProfileZoneManager = &PxProfileZoneManager::createProfileZoneManager(gFoundation);
-  if (!mProfileZoneManager)
-    sLogF(L"PhysX", L"PxProfileZoneManager::createProfileZoneManager failed!\n");
-
-  pxtask::CudaContextManagerDesc cudaContextManagerDesc;
-  pxtask::CudaContextManager * cudaContextManager = pxtask::createCudaContextManager(*gFoundation, cudaContextManagerDesc, mProfileZoneManager);
-
-  if (cudaContextManager)
+  if (Para.ParticlesSimMode == 1)
   {
-    if (!cudaContextManager->contextIsValid())
+#ifdef PX_WINDOWS
+    PxProfileZoneManager* mProfileZoneManager = &PxProfileZoneManager::createProfileZoneManager(gFoundation);
+    if (!mProfileZoneManager)
+      sLogF(L"PhysX", L"PxProfileZoneManager::createProfileZoneManager failed!\n");
+
+    pxtask::CudaContextManagerDesc cudaContextManagerDesc;
+    pxtask::CudaContextManager * cudaContextManager = pxtask::createCudaContextManager(*gFoundation, cudaContextManagerDesc, mProfileZoneManager);
+
+    if (cudaContextManager)
     {
-      cudaContextManager->release();
-      cudaContextManager = NULL;
-      sLogF(L"PhysX", L"Invalid CUDA context\n");
+      if (!cudaContextManager->contextIsValid())
+      {
+        cudaContextManager->release();
+        cudaContextManager = NULL;
+        sLogF(L"PhysX", L"Invalid CUDA context\n");
+      }
+      else
+      {
+        if (!sceneDesc.gpuDispatcher)
+          sceneDesc.gpuDispatcher = cudaContextManager->getGpuDispatcher();
+      }
     }
-    else
-    {
-      if (!sceneDesc.gpuDispatcher)
-        sceneDesc.gpuDispatcher = cudaContextManager->getGpuDispatcher();
-    }
-  }  
 #endif
+  }
 
   PxScene * scene = gPhysicsSDK->createScene(sceneDesc);
 

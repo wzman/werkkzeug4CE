@@ -637,6 +637,7 @@ operator Wz4Render Physx (?PhysxObject,*WpxActorBase)
 
     group "Scene flags";
     layout flags Desc ("-|pcm:*2-|one dir friction:*4-|two dir friction");
+    layout flags ParticlesSimMode ("cpu|gpu") = 0;
 
     group "Simulation loop";
     anim int TimeStep (10..10000) = 60;
@@ -746,6 +747,11 @@ operator Wz4Particles PxCloud(PhysxObject)
 
     in0->RegisterParticleNode(node);
     node->Target = in0;
+    if(!in0->PhysxSceneRef)
+    {
+      cmd->SetError(L"Physx scene reference is empty, check Physx target output...");
+      return 0;
+    }
 
     node->Init();
 
