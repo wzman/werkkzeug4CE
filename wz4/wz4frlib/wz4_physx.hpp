@@ -484,4 +484,38 @@ public:
   void Func(Wz4PartInfo &pinfo, sF32 time, sF32 dt);
 };
 
+/****************************************************************************/
+
+class RPPxPart : public WpxParticleNode
+{
+  PxU32* pIndex;
+  PxVec3* pPosition;
+  PxVec3* pVelocity;
+  PxParticleSystem * PhysxPartSystem;
+
+  struct Particle
+  {
+    sVector31 Pos0;
+    sVector31 Pos1;
+  };
+  sArray<Particle> Particles;
+
+public:
+  RPPxPart();
+  ~RPPxPart();
+  void Init();
+  
+  Wz4ParticlesParaPxPart Para, ParaBase;
+  Wz4ParticlesAnimPxPart Anim;
+
+  void Simulate(Wz4RenderContext *ctx);
+  sInt GetPartCount();
+  sInt GetPartFlags();
+  void Func(Wz4PartInfo &pinfo, sF32 time, sF32 dt);
+
+
+
+
+  Wz4ParticleNode *Source;
+};
 #endif FILE_WZ4FRLIB_PHYSX_HPP
