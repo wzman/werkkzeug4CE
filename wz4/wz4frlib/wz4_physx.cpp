@@ -1875,6 +1875,9 @@ void RPPhysxParticleTest::Func(Wz4PartInfo &pinfo, sF32 time, sF32 dt)
 
 /****************************************************************************/
 
+
+
+
 RPPxPart::RPPxPart()
 {
   pIndex = 0;
@@ -1885,6 +1888,8 @@ RPPxPart::RPPxPart()
 
   Anim.Init(Wz4RenderType->Script);
 
+
+  NeedInit = sTRUE;
   
 }
 
@@ -1912,7 +1917,7 @@ void RPPxPart::Init()
   if (Source)
     Particles.AddMany(Source->GetPartCount());
 
-
+  return;
 
 
   // init particles pos
@@ -1944,12 +1949,12 @@ void RPPxPart::Init()
 
     //p->Pos1 += Para.CloudFreq;
     PxVec3 vel;
-    pos.x = p->Pos1.x + Para.CloudFreq[0];
-    pos.y = p->Pos1.y + Para.CloudFreq[1];
-    pos.z = p->Pos1.z + 0;
+    vel.x = p->Pos1.x + Para.CloudFreq[0];
+    vel.y = p->Pos1.y + Para.CloudFreq[1];
+    vel.z = p->Pos1.z + 0;
 
     pPosition[_i] = pos;
-    pVelocity[_i] = vel;
+    pVelocity[_i] = pos;
     pIndex[_i] = _i;
   }
 
@@ -1965,16 +1970,17 @@ void RPPxPart::Init()
   if (PhysxPartSystem)
   {
     PhysxPartSystem->setParticleBaseFlag(PxParticleBaseFlag::eGPU, true);
-   /* PhysxPartSystem->setGridSize(3.0f);
+    PhysxPartSystem->setGridSize(3.0f);
     PhysxPartSystem->setMaxMotionDistance(0.43f);
     PhysxPartSystem->setRestOffset(0.0143f);
     PhysxPartSystem->setContactOffset(0.0143f * 2);
     PhysxPartSystem->setDamping(0.0f);
     PhysxPartSystem->setRestitution(0.2f);
-    PhysxPartSystem->setDynamicFriction(0.05f);*/
+    PhysxPartSystem->setDynamicFriction(0.05f);
     PhysxPartSystem->setParticleReadDataFlag(PxParticleReadDataFlag::eVELOCITY_BUFFER, true);
 
 
+    
 
     // add particle system to physx scene
     Target->PhysxSceneRef->addActor(*PhysxPartSystem);
@@ -1990,8 +1996,152 @@ void RPPxPart::Simulate(Wz4RenderContext *ctx)
   Anim.Bind(ctx->Script, &Para);
   SimulateCalc(ctx);
 
-  if (Source)
-    Source->Simulate(ctx);
+ // if (Source)
+  //  Source->Simulate(ctx);
+
+  if (NeedInit)
+    DelayedInit();
+}
+
+sINLINE void sVector31ToPxVec3(PxVec3& v, sVector31Arg& w)
+{ 
+  v.x = w.x;
+  v.y = w.y;
+  v.z = w.z;
+}
+
+sINLINE void sVector30ToPxVec3(PxVec3& v, sVector30Arg& w)
+{
+  v.x = w.x;
+  v.y = w.y;
+  v.z = w.z;
+}
+
+sINLINE void PxVec3TosVector31(sVector31& w, PxVec3& v)
+{
+  w.x = v.x;
+  w.y = v.y;
+  w.z = v.z;
+}
+
+
+
+
+void RPPxPart::DelayedInit()
+{
+  sInt maxsrc = Source->GetPartCount();
+
+  // run source one time
+  Wz4PartInfo part;
+  part.Init(Source->GetPartFlags(), maxsrc);
+  part.Reset();
+  Source->Func(part, 0, 0.0f);
+
+  // create particles buffers
+  bStartPosition = new PxVec3[maxsrc]; 
+  pIndex = new PxU32[maxsrc];
+  pPosition = new PxVec3[maxsrc];
+  pVelocity = new PxVec3[maxsrc];
+
+  // fill buffers
+  Particle *p;
+  sFORALL(Particles, p)
+  {
+    sVector31ToPxVec3(bStartPosition[_i], part.Parts[_i].Pos);
+    sVector31ToPxVec3(pPosition[_i], part.Parts[_i].Pos);    
+    sVector31ToPxVec3(pVelocity[_i], part.Parts[_i].Pos);
+    pIndex[_i] = _i;
+  }
+
+
+
+
+
+
+
+  // declare particle descriptor for creating new particles
+  PxParticleCreationData particleCreationData;
+  particleCreationData.numParticles = Para.Count;
+  particleCreationData.indexBuffer = PxStrideIterator<const PxU32>(pIndex);
+  particleCreationData.positionBuffer = PxStrideIterator<const PxVec3>(pPosition);
+  particleCreationData.velocityBuffer = PxStrideIterator<const PxVec3>(pVelocity);
+
+  // create particle system
+  PhysxPartSystem = gPhysicsSDK->createParticleSystem(Para.Count);
+  if (PhysxPartSystem)
+  {
+    PhysxPartSystem->setParticleBaseFlag(PxParticleBaseFlag::eGPU, true);
+    PhysxPartSystem->setGridSize(3.0f);
+    PhysxPartSystem->setMaxMotionDistance(0.43f);
+    PhysxPartSystem->setRestOffset(0.0143f);
+    PhysxPartSystem->setContactOffset(0.0143f * 2);
+    PhysxPartSystem->setDamping(0.0f);
+    PhysxPartSystem->setRestitution(0.2f);
+    PhysxPartSystem->setDynamicFriction(0.05f);
+    PhysxPartSystem->setParticleReadDataFlag(PxParticleReadDataFlag::eVELOCITY_BUFFER, true);
+
+    // add particle system to physx scene
+    Target->PhysxSceneRef->addActor(*PhysxPartSystem);
+
+    // create particles in particle system 
+    bool success = PhysxPartSystem->createParticles(particleCreationData);
+  }
+
+
+  NeedInit = sFALSE;
+
+
+
+
+
+  /*sRandom rnd;
+  rnd.Seed(Para.RandomSeed);
+  sInt maxsrc = Source->GetPartCount();
+
+  Wz4PartInfo part[2];
+  sInt db = 0;
+
+  part[0].Init(Source->GetPartFlags(), maxsrc);
+  part[1].Init(Source->GetPartFlags(), maxsrc);
+
+  part[db].Reset();
+  Source->Func(part[db], -1.0f, 0);
+
+  Sparcs.Clear();
+  for (sInt i = 0; i<Para.SamplePoints; i++)
+  {
+    db = !db;
+    sF32 time = sF32(i) / Para.SamplePoints;
+
+    if (Para.Distribution & 1)
+      time /= Para.Percentage;
+
+    part[db].Reset();
+    Source->Func(part[db], time + Para.Delay, 0);
+
+    for (sInt j = 0; j<maxsrc; j++)
+    {
+      sBool create = rnd.Float(1)<Para.Percentage;
+      if (Para.Distribution & 1)
+        create = sTRUE;
+
+      if (part[db].Parts[j].Time >= 0 && create && Sparcs.GetCount()<MaxSparks)
+      {
+        sVector30 speed;
+        Sparc *s = Sparcs.AddMany(1);
+
+        s->Time0 = time;
+        s->Pos = part[db].Parts[j].Pos;
+        speed.InitRandom(rnd);
+        s->Speed = speed*Para.RandomSpeed;
+        speed = part[db].Parts[j].Pos - part[!db].Parts[j].Pos;
+        speed.Unit();
+        s->Speed += speed*Para.DirectionSpeed;
+      }
+    }
+  }
+
+  NeedInit = sFALSE;*/
 }
 
 sInt RPPxPart::GetPartCount()
@@ -2012,22 +2162,71 @@ void RPPxPart::Func(Wz4PartInfo &pinfo, sF32 time, sF32 dt)
   if (Source)
     Source->Func(pinfo, time, dt);
 
+
+
+
+
+  sInt maxSource = Source->GetPartCount();
+  PxU32 * bIndices = new PxU32[maxSource];
+  PxVec3 * bPositions = new PxVec3[maxSource];
+  sInt nbCount = 0;
+  sFORALL(Particles, part)
+  {
+    if (pinfo.Parts[_i].Time >= 0.95)
+    {
+      //indices.AddTail(_i);
+      //positions.AddTail(bStartPosition[_i]);
+
+      pinfo.Parts[_i].Time = -1;
+      PxVec3TosVector31(pinfo.Parts[_i].Pos, bStartPosition[_i]);
+
+      bIndices[nbCount] = nbCount;
+      bPositions[nbCount] = bStartPosition[_i];
+      nbCount++;
+    }
+  }
+
+  PxStrideIterator<const PxU32> bIndicesIt(bIndices);
+  PxStrideIterator<const PxVec3> bPositionsIt(bPositions);
+  PhysxPartSystem->setPositions(nbCount, bIndicesIt, bPositionsIt);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   // lock SDK buffers of *PxParticleSystem* for reading
   PxParticleReadData* rd = PhysxPartSystem->lockParticleReadData();
 
   // access particle data from PxParticleReadData
   PxStrideIterator<const PxParticleFlags> flagsIt(rd->flagsBuffer);
-  PxStrideIterator<const PxVec3> positionIt(rd->positionBuffer);
+  PxStrideIterator<const PxVec3> positionIt(rd->positionBuffer);  
+  PxStrideIterator<const PxVec3> velIt(rd->velocityBuffer);
   
-  PxStrideIterator<const PxU32> dd (pIndex);
-  PxStrideIterator<const PxVec3> gg (pVelocity);
+  PxStrideIterator<const PxVec3> gg(bStartPosition);
+  
   //PhysxPartSystem->addForces(Source->GetPartCount(), dd, gg, PxForceMode::eVELOCITY_CHANGE);
 
-  PxStrideIterator<const PxVec3> velIt(rd->velocityBuffer);
+
+
+  
   
 
   sFORALL(Particles, part)
   {
+    if (_i >= Source->GetPartCount() - 1)
+      break;
+
     if (*flagsIt & PxParticleFlag::eVALID)
     {
       const PxVec3& position = *positionIt;
@@ -2047,6 +2246,16 @@ void RPPxPart::Func(Wz4PartInfo &pinfo, sF32 time, sF32 dt)
 
       velIt++;*/
 
+     
+      /*if (t > 0.9)
+      {
+        PxVec3TosVector31(p, *bStartPosition);
+      }
+      bStartPosition++;*/
+
+      
+
+
       pinfo.Parts[_i].Init(p, t);
 
       // increment iterators
@@ -2056,6 +2265,165 @@ void RPPxPart::Func(Wz4PartInfo &pinfo, sF32 time, sF32 dt)
   }
 
   rd->unlock();
+
+
+
+  
+
+
+  pinfo.Used = pinfo.Alloc;
+}
+
+/****************************************************************************/
+
+RPEmiter::RPEmiter()
+{
+  Anim.Init(Wz4RenderType->Script);
+  AccumultedTime = 0;
+}
+
+RPEmiter::~RPEmiter()
+{
+}
+
+void RPEmiter::Init()
+{
+  Para = ParaBase;
+  Particles.AddMany(Para.MaxParticles);
+}
+
+int RandU(int nMin, int nMax)
+{
+  return nMin + (int)((double)rand() / (RAND_MAX + 1) * (nMax - nMin + 1));
+}
+
+sF32 RandF(sF32 nMin, sF32 nMax)
+{
+  return (nMax - nMin) * ((((float)rand()) / (float)RAND_MAX)) + nMin;
+}
+
+sVector30 Randv30(sVector30 nMin, sVector30 nMax)
+{
+  sVector30 v;
+  v.x = (nMax.x - nMin.x) * ((((float)rand()) / (float)RAND_MAX)) + nMin.x;
+  v.y = (nMax.y - nMin.y) * ((((float)rand()) / (float)RAND_MAX)) + nMin.y;
+  v.z = (nMax.z - nMin.z) * ((((float)rand()) / (float)RAND_MAX)) + nMin.z;
+  return v;
+}
+
+sVector31 Randv31(sVector31 nMin, sVector31 nMax)
+{
+  sVector31 v;
+  v.x = (nMax.x - nMin.x) * ((((float)rand()) / (float)RAND_MAX)) + nMin.x;
+  v.y = (nMax.y - nMin.y) * ((((float)rand()) / (float)RAND_MAX)) + nMin.y;
+  v.z = (nMax.z - nMin.z) * ((((float)rand()) / (float)RAND_MAX)) + nMin.z;
+  return v;
+}
+
+void RPEmiter::Simulate(Wz4RenderContext *ctx)
+{
+  Para = ParaBase;
+  Anim.Bind(ctx->Script, &Para);
+  SimulateCalc(ctx);
+
+  // get delta time
+  static sTiming timer;
+  timer.OnFrame(sGetTime());
+  sF32 deltaTime = timer.GetDelta() * 0.001;
+
+  // Release old particles
+
+  Particle * p;
+  sFORALL(Particles, p)
+  {
+    if (!p->isDead && p->Life >= sMin(p->MaxLife, 0.99f))
+    {
+      p->isDead = sTRUE;
+      p->Life = -1;
+    }
+  }
+
+  // Emit new particles
+
+  sInt rateValue = Para.Rate;
+  if (Para.RateDistribution)
+    rateValue = RandU(Para.RateRangeMin, Para.RateRangeMax);
+  sF32 rate = 1.0f / rateValue;
+  
+
+  ViewPrintF(L"rate =%d", rateValue);
+
+  sBool emitParticle;
+  AccumultedTime += deltaTime;
+
+  
+
+  // if it's time to emit particle
+  while (AccumultedTime > rate)
+  {
+    emitParticle = sTRUE;
+
+    // search for a dead particle
+    sFORALL(Particles, p)
+    {
+      // if dead one, rebirth
+      if (p->isDead && emitParticle)
+      {
+        p->isDead = sFALSE;
+        p->Life = 0;
+
+        // max life
+        p->MaxLife = Para.MaxLife;
+        if (Para.MaxLifeDistribution)
+          p->MaxLife = RandF(Para.MaxLifeRangeMin, Para.MaxLifeRangeMax);
+
+        // location
+        p->Position = Para.Location;
+        if (Para.LocationDistribution)
+          p->Position = Randv31(Para.LocationRangeMin, Para.LocationRangeMax);
+
+        // velocity
+        p->Velocity = Para.Velocity;
+        if (Para.VelocityDistribution)
+          p->Velocity = Randv30(Para.VelocityRangeMin, Para.VelocityRangeMax);        
+
+        emitParticle = sFALSE;
+        break;
+      }
+    }
+    AccumultedTime -= rate;
+
+    if (AccumultedTime > 0.5) break;
+  }
+}
+
+sInt RPEmiter::GetPartCount()
+{
+  return  Particles.GetCount();
+}
+sInt RPEmiter::GetPartFlags()
+{
+  return 0;
+}
+
+void RPEmiter::Func(Wz4PartInfo &pinfo, sF32 time, sF32 dt)
+{
+  static sTiming timer;
+  timer.OnFrame(sGetTime());
+  sF32 deltaTime = timer.GetDelta() * 0.001;
+
+  Particle * p;
+  sFORALL(Particles, p)
+  {
+    if (!p->isDead)
+    {
+      p->Position = p->Position + (p->Velocity * deltaTime);
+      p->Life = p->Life + deltaTime;
+      pinfo.Parts[_i].Init(p->Position, p->Life);
+    }
+    //else
+    //  pinfo.Parts[_i].Init(sVector31(0), -1);
+  }
 
   pinfo.Used = pinfo.Alloc;
 }

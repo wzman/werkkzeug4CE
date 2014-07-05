@@ -514,8 +514,52 @@ public:
   void Func(Wz4PartInfo &pinfo, sF32 time, sF32 dt);
 
 
-
+  sBool NeedInit;
+  void DelayedInit();
+  PxVec3* bStartPosition;
 
   Wz4ParticleNode *Source;
 };
+
+/****************************************************************************/
+
+class RPEmiter : public WpxParticleNode
+{
+  struct Particle
+  {
+    sVector31 Position;
+    sVector30 Velocity;
+    sF32 Life;
+    sF32 MaxLife;
+    sBool isDead;
+
+    Particle()
+    {
+      Position = sVector31(0,0,0);
+      Velocity = sVector30(0,0,0);
+      Life = -1;
+      MaxLife = 1;
+      isDead = sTRUE;
+    }
+  };
+
+  sArray<Particle> Particles;
+  sF32 AccumultedTime;
+
+public:
+  RPEmiter();
+  ~RPEmiter();
+  void Init();
+
+  Wz4ParticlesParaEmiter Para, ParaBase;
+  Wz4ParticlesAnimEmiter Anim;
+
+  void Simulate(Wz4RenderContext *ctx);
+  sInt GetPartCount();
+  sInt GetPartFlags();
+  void Func(Wz4PartInfo &pinfo, sF32 time, sF32 dt);
+};
+
+
+
 #endif FILE_WZ4FRLIB_PHYSX_HPP
