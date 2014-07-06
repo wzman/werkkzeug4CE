@@ -2276,22 +2276,6 @@ void RPPxPart::Func(Wz4PartInfo &pinfo, sF32 time, sF32 dt)
 
 /****************************************************************************/
 
-RPEmiter::RPEmiter()
-{
-  Anim.Init(Wz4RenderType->Script);
-  AccumultedTime = 0;
-}
-
-RPEmiter::~RPEmiter()
-{
-}
-
-void RPEmiter::Init()
-{
-  Para = ParaBase;
-  Particles.AddMany(Para.MaxParticles);
-}
-
 int RandU(int nMin, int nMax)
 {
   return nMin + (int)((double)rand() / (RAND_MAX + 1) * (nMax - nMin + 1));
@@ -2320,26 +2304,51 @@ sVector31 Randv31(sVector31 nMin, sVector31 nMax)
   return v;
 }
 
+RPEmiter::RPEmiter()
+{
+  Anim.Init(Wz4RenderType->Script);
+  AccumultedTime = 0;
+}
+
+RPEmiter::~RPEmiter()
+{
+}
+
+void RPEmiter::Init()
+{
+  Para = ParaBase;
+  Particles.AddMany(Para.MaxParticles);
+}
+
 void RPEmiter::Simulate(Wz4RenderContext *ctx)
 {
   Para = ParaBase;
   Anim.Bind(ctx->Script, &Para);
   SimulateCalc(ctx);
 
+  if (ctx->GetTime() <= 0 || App->TimelineWin->Pause)
+    return;
+
   // get delta time
   static sTiming timer;
   timer.OnFrame(sGetTime());
   sF32 deltaTime = timer.GetDelta() * 0.001;
 
-  // Release old particles
-
   Particle * p;
   sFORALL(Particles, p)
   {
-    if (!p->isDead && p->Life >= sMin(p->MaxLife, 0.99f))
+    if (p->Life >= sMin(p->MaxLife, 0.99f))
     {
+      // Release old particles
       p->isDead = sTRUE;
       p->Life = -1;
+      p->Position = sVector31(0);
+    }
+    else if (!p->isDead)
+    {
+      // update living particles
+      p->Position = p->Position + (p->Velocity * deltaTime);
+      p->Life = p->Life + deltaTime;
     }
   }
 
@@ -2349,57 +2358,48 @@ void RPEmiter::Simulate(Wz4RenderContext *ctx)
   if (Para.RateDistribution)
     rateValue = RandU(Para.RateRangeMin, Para.RateRangeMax);
   sF32 rate = 1.0f / rateValue;
-  
-
-  ViewPrintF(L"rate =%d", rateValue);
 
   sBool emitParticle;
   AccumultedTime += deltaTime;
 
-  
+  if (AccumultedTime < rate)
+    return;
 
   // if it's time to emit particle
-  while (AccumultedTime > rate)
+
+  // search for a dead particle
+  sFORALL(Particles, p)
   {
-    emitParticle = sTRUE;
-
-    // search for a dead particle
-    sFORALL(Particles, p)
+    // if dead one, rebirth it
+    if (p->isDead)
     {
-      // if dead one, rebirth
-      if (p->isDead && emitParticle)
-      {
-        p->isDead = sFALSE;
-        p->Life = 0;
+      p->isDead = sFALSE;
+      p->Life = 0;
 
-        // max life
-        p->MaxLife = Para.MaxLife;
-        if (Para.MaxLifeDistribution)
-          p->MaxLife = RandF(Para.MaxLifeRangeMin, Para.MaxLifeRangeMax);
+      // max life
+      p->MaxLife = Para.MaxLife;
+      if (Para.MaxLifeDistribution)
+        p->MaxLife = RandF(Para.MaxLifeRangeMin, Para.MaxLifeRangeMax);
 
-        // location
-        p->Position = Para.Location;
-        if (Para.LocationDistribution)
-          p->Position = Randv31(Para.LocationRangeMin, Para.LocationRangeMax);
+      // location
+      p->Position = Para.Location;
+      if (Para.LocationDistribution)
+        p->Position = Randv31(Para.LocationRangeMin, Para.LocationRangeMax);
 
-        // velocity
-        p->Velocity = Para.Velocity;
-        if (Para.VelocityDistribution)
-          p->Velocity = Randv30(Para.VelocityRangeMin, Para.VelocityRangeMax);        
+      // velocity
+      p->Velocity = Para.Velocity;
+      if (Para.VelocityDistribution)
+        p->Velocity = Randv30(Para.VelocityRangeMin, Para.VelocityRangeMax);
 
-        emitParticle = sFALSE;
-        break;
-      }
+      break;
     }
-    AccumultedTime -= rate;
-
-    if (AccumultedTime > 0.5) break;
   }
+  AccumultedTime -= rate;
 }
 
 sInt RPEmiter::GetPartCount()
 {
-  return  Particles.GetCount();
+  return Particles.GetCount();
 }
 sInt RPEmiter::GetPartFlags()
 {
@@ -2408,21 +2408,10 @@ sInt RPEmiter::GetPartFlags()
 
 void RPEmiter::Func(Wz4PartInfo &pinfo, sF32 time, sF32 dt)
 {
-  static sTiming timer;
-  timer.OnFrame(sGetTime());
-  sF32 deltaTime = timer.GetDelta() * 0.001;
-
   Particle * p;
   sFORALL(Particles, p)
   {
-    if (!p->isDead)
-    {
-      p->Position = p->Position + (p->Velocity * deltaTime);
-      p->Life = p->Life + deltaTime;
-      pinfo.Parts[_i].Init(p->Position, p->Life);
-    }
-    //else
-    //  pinfo.Parts[_i].Init(sVector31(0), -1);
+    pinfo.Parts[_i].Init(p->Position, p->Life);
   }
 
   pinfo.Used = pinfo.Alloc;
