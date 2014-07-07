@@ -1996,8 +1996,8 @@ void RPPxPart::Simulate(Wz4RenderContext *ctx)
   Anim.Bind(ctx->Script, &Para);
   SimulateCalc(ctx);
 
- // if (Source)
-  //  Source->Simulate(ctx);
+  if (Source)
+    Source->Simulate(ctx);
 
   if (NeedInit)
     DelayedInit();
@@ -2047,9 +2047,13 @@ void RPPxPart::DelayedInit()
   Particle *p;
   sFORALL(Particles, p)
   {
-    sVector31ToPxVec3(bStartPosition[_i], part.Parts[_i].Pos);
+    /*sVector31ToPxVec3(bStartPosition[_i], part.Parts[_i].Pos);
     sVector31ToPxVec3(pPosition[_i], part.Parts[_i].Pos);    
-    sVector31ToPxVec3(pVelocity[_i], part.Parts[_i].Pos);
+    sVector31ToPxVec3(pVelocity[_i], part.Parts[_i].Pos);*/
+
+
+    sVector31ToPxVec3(pPosition[_i], sVector31(0.0f));
+    sVector30ToPxVec3(pVelocity[_i], sVector30(0.0f));
     pIndex[_i] = _i;
   }
 
@@ -2162,44 +2166,36 @@ void RPPxPart::Func(Wz4PartInfo &pinfo, sF32 time, sF32 dt)
   if (Source)
     Source->Func(pinfo, time, dt);
 
-
-
-
-
   sInt maxSource = Source->GetPartCount();
   PxU32 * bIndices = new PxU32[maxSource];
   PxVec3 * bPositions = new PxVec3[maxSource];
   sInt nbCount = 0;
   sFORALL(Particles, part)
   {
-    if (pinfo.Parts[_i].Time >= 0.95)
+    if (pinfo.Parts[_i].Time < 0.1 /*&& pinfo.Parts[_i].Time > 0.0f*/)
     {
       //indices.AddTail(_i);
       //positions.AddTail(bStartPosition[_i]);
 
-      pinfo.Parts[_i].Time = -1;
-      PxVec3TosVector31(pinfo.Parts[_i].Pos, bStartPosition[_i]);
+      //pinfo.Parts[_i].Time = -1;
+
+      PxVec3 kk;
+      //PxVec3TosVector31(pinfo.Parts[_i].Pos, kk);
+      sVector31ToPxVec3(kk, pinfo.Parts[_i].Pos);
 
       bIndices[nbCount] = nbCount;
-      bPositions[nbCount] = bStartPosition[_i];
+      bPositions[nbCount] = kk; // bStartPosition[_i];
       nbCount++;
     }
+    
   }
 
   PxStrideIterator<const PxU32> bIndicesIt(bIndices);
   PxStrideIterator<const PxVec3> bPositionsIt(bPositions);
   PhysxPartSystem->setPositions(nbCount, bIndicesIt, bPositionsIt);
 
-
-
-
-
-
-
-
-
-
-
+  delete[] bIndices;
+  delete[] bPositions;
 
 
 
@@ -2267,7 +2263,7 @@ void RPPxPart::Func(Wz4PartInfo &pinfo, sF32 time, sF32 dt)
   rd->unlock();
 
 
-
+ 
   
 
 
@@ -2391,10 +2387,16 @@ void RPEmiter::Simulate(Wz4RenderContext *ctx)
       if (Para.VelocityDistribution)
         p->Velocity = Randv30(Para.VelocityRangeMin, Para.VelocityRangeMax);
 
-      break;
+      AccumultedTime -= rate;
+
+      if (AccumultedTime <= 0)
+      {
+        AccumultedTime = 0;
+        break;
+      }
+
     }
   }
-  AccumultedTime -= rate;
 }
 
 sInt RPEmiter::GetPartCount()
