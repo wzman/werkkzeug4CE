@@ -529,6 +529,7 @@ class RPEmiter : public WpxParticleNode
   {
     sVector31 Position;
     sVector30 Velocity;
+    sF32 Speed;
     sF32 Life;
     sF32 MaxLife;
     sBool isDead;
@@ -537,6 +538,7 @@ class RPEmiter : public WpxParticleNode
     {
       Position = sVector31(0,0,0);
       Velocity = sVector30(0,0,0);
+      Speed = 1.0f;
       Life = -1;
       MaxLife = 1;
       isDead = sTRUE;

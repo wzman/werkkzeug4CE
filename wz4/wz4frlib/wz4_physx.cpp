@@ -2333,7 +2333,7 @@ void RPEmiter::Simulate(Wz4RenderContext *ctx)
   Particle * p;
   sFORALL(Particles, p)
   {
-    if (p->Life >= sMin(p->MaxLife, 0.99f))
+    if (p->Life >= p->MaxLife)// sMin(p->MaxLife, 0.99f))
     {
       // Release old particles
       p->isDead = sTRUE;
@@ -2343,7 +2343,7 @@ void RPEmiter::Simulate(Wz4RenderContext *ctx)
     else if (!p->isDead)
     {
       // update living particles
-      p->Position = p->Position + (p->Velocity * deltaTime);
+      p->Position = p->Position + (p->Velocity * deltaTime) * p->Speed;
       p->Life = p->Life + deltaTime;
     }
   }
@@ -2386,6 +2386,11 @@ void RPEmiter::Simulate(Wz4RenderContext *ctx)
       p->Velocity = Para.Velocity;
       if (Para.VelocityDistribution)
         p->Velocity = Randv30(Para.VelocityRangeMin, Para.VelocityRangeMax);
+
+      // speed
+      p->Speed = Para.Speed;
+      if (Para.SpeedDistribution)
+        p->Speed = RandF(Para.SpeedRangeMin, Para.SpeedRangeMax);
 
       AccumultedTime -= rate;
 
