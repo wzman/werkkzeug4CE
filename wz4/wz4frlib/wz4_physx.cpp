@@ -2300,23 +2300,23 @@ sVector31 Randv31(sVector31 nMin, sVector31 nMax)
   return v;
 }
 
-RPEmiter::RPEmiter()
+RPRangeEmiter::RPRangeEmiter()
 {
   Anim.Init(Wz4RenderType->Script);
   AccumultedTime = 0;
 }
 
-RPEmiter::~RPEmiter()
+RPRangeEmiter::~RPRangeEmiter()
 {
 }
 
-void RPEmiter::Init()
+void RPRangeEmiter::Init()
 {
   Para = ParaBase;
   Particles.AddMany(Para.MaxParticles);
 }
 
-void RPEmiter::Simulate(Wz4RenderContext *ctx)
+void RPRangeEmiter::Simulate(Wz4RenderContext *ctx)
 {
   Para = ParaBase;
   Anim.Bind(ctx->Script, &Para);
@@ -2333,7 +2333,7 @@ void RPEmiter::Simulate(Wz4RenderContext *ctx)
   Particle * p;
   sFORALL(Particles, p)
   {
-    if (p->Life >= p->MaxLife)// sMin(p->MaxLife, 0.99f))
+    if (p->Life >= p->MaxLife)
     {
       // Release old particles
       p->isDead = sTRUE;
@@ -2342,9 +2342,9 @@ void RPEmiter::Simulate(Wz4RenderContext *ctx)
     }
     else if (!p->isDead)
     {
-      // update living particles
-      p->Position = p->Position + (p->Velocity * deltaTime) * p->Speed;
-      p->Life = p->Life + deltaTime;
+      p->Position += p->Velocity * deltaTime;
+      p->Velocity += p->Acceleration * deltaTime;
+      p->Life += deltaTime;
     }
   }
 
@@ -2355,7 +2355,6 @@ void RPEmiter::Simulate(Wz4RenderContext *ctx)
     rateValue = RandU(Para.RateRangeMin, Para.RateRangeMax);
   sF32 rate = 1.0f / rateValue;
 
-  sBool emitParticle;
   AccumultedTime += deltaTime;
 
   if (AccumultedTime < rate)
@@ -2377,20 +2376,20 @@ void RPEmiter::Simulate(Wz4RenderContext *ctx)
       if (Para.MaxLifeDistribution)
         p->MaxLife = RandF(Para.MaxLifeRangeMin, Para.MaxLifeRangeMax);
 
-      // location
-      p->Position = Para.Location;
-      if (Para.LocationDistribution)
-        p->Position = Randv31(Para.LocationRangeMin, Para.LocationRangeMax);
+      // position
+      p->Position = Para.Position;
+      if (Para.PositionDistribution)
+        p->Position = Randv31(Para.PositionRangeMin, Para.PositionRangeMax);
+
+      // acceleration
+      p->Acceleration = Para.Acceleration;
+      if (Para.AccelerationDistribution)
+        p->Acceleration = Randv30(Para.AccelerationRangeMin, Para.AccelerationRangeMax);
 
       // velocity
       p->Velocity = Para.Velocity;
       if (Para.VelocityDistribution)
         p->Velocity = Randv30(Para.VelocityRangeMin, Para.VelocityRangeMax);
-
-      // speed
-      p->Speed = Para.Speed;
-      if (Para.SpeedDistribution)
-        p->Speed = RandF(Para.SpeedRangeMin, Para.SpeedRangeMax);
 
       AccumultedTime -= rate;
 
@@ -2404,21 +2403,23 @@ void RPEmiter::Simulate(Wz4RenderContext *ctx)
   }
 }
 
-sInt RPEmiter::GetPartCount()
+sInt RPRangeEmiter::GetPartCount()
 {
   return Particles.GetCount();
 }
-sInt RPEmiter::GetPartFlags()
+sInt RPRangeEmiter::GetPartFlags()
 {
   return 0;
 }
 
-void RPEmiter::Func(Wz4PartInfo &pinfo, sF32 time, sF32 dt)
+void RPRangeEmiter::Func(Wz4PartInfo &pinfo, sF32 time, sF32 dt)
 {
+  sF32 t;
   Particle * p;
   sFORALL(Particles, p)
   {
-    pinfo.Parts[_i].Init(p->Position, p->Life);
+    t = p->Life / p->MaxLife;
+    pinfo.Parts[_i].Init(p->Position, t);
   }
 
   pinfo.Used = pinfo.Alloc;

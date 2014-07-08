@@ -810,20 +810,13 @@ operator Wz4Particles PxPart(PhysxObject, Wz4Particles)
 
 /****************************************************************************/
 
-operator Wz4Particles Emiter()
+operator Wz4Particles RangeEmiter()
 {
   tab = PhysXTab;
   column = 0;
   parameter
   {
-
     int MaxParticles(1..200000) = 500;
-
-    group "Emiter origin";
-    anim float31 Scale(-1000000..1000000 step 0.0001) = { 0,0,0 };
-    anim float30 Rot(-1000000..1000000 step 0.0001) = { 0,0,0 };
-    anim float31 Trans(-1000000..1000000 step 0.0001) = { 0,0,0 };
-
     group "Particles per second";    
     layout flags RateDistribution ("constant|range");
     if(RateDistribution==0)
@@ -836,19 +829,19 @@ operator Wz4Particles Emiter()
       anim int RateRangeMax(0..200000) = 40;
     }    
 
-     group "Initial Location";
-    layout flags LocationDistribution ("constant|range");
-    if(LocationDistribution==0)
+     group "Position";
+    layout flags PositionDistribution ("constant|range");
+    if(PositionDistribution==0)
     {
-      anim float31 Location(-1000000..1000000 step 0.001) = { 0,0,0 };
+      anim float31 Position(-1000000..1000000 step 0.001) = { 0,0,0 };
     } 
-    if(LocationDistribution==1)
+    if(PositionDistribution==1)
     {
-      anim float31 LocationRangeMin(-1000000..1000000 step 0.001)  = { -0.25, 0.0, -0.25 };
-      anim float31 LocationRangeMax(-1000000..1000000 step 0.001) = { 0.25, 1.0, 0.25 };
-    }      
+      anim float31 PositionRangeMin(-1000000..1000000 step 0.001)  = { -0.25, 0.0, -0.25 };
+      anim float31 PositionRangeMax(-1000000..1000000 step 0.001) = { 0.25, 1.0, 0.25 };
+    }
 
-    group "Initial Velocity";
+	group "Velocity";
     layout flags VelocityDistribution ("constant|range");
     if(VelocityDistribution==0)
     {
@@ -860,28 +853,28 @@ operator Wz4Particles Emiter()
       anim float30 VelocityRangeMax(-1000000..1000000 step 0.001) = { 0.25, 2.0, 0.25 };
     }
 
-    group "Speed";
-    layout flags SpeedDistribution ("constant|range");
-    if(SpeedDistribution==0)
+	group "Acceleration";
+    layout flags AccelerationDistribution ("constant|range");
+    if(AccelerationDistribution==0)
     {
-      anim float Speed(-1000000..1000000 step 0.001) = 1;
+      anim float30 Acceleration(-1000000..1000000 step 0.001) = { 0,0,0 };
     }
-    if(SpeedDistribution==1)
+    if(AccelerationDistribution==1)
     {
-      anim float SpeedRangeMin(-1000000..1000000 step 0.001) = 0.25;
-      anim float SpeedRangeMax(-1000000..1000000 step 0.001) = 4;
-    }      
+      anim float30 AccelerationRangeMin(-1000000..1000000 step 0.001) = { -0.25, 0.5, -0.25 };
+      anim float30 AccelerationRangeMax(-1000000..1000000 step 0.001) = { 0.25, 2.0, 0.25 };
+    }
 
-    group "Max Life";    
+    group "Max Life (in seconds)";
     layout flags MaxLifeDistribution ("constant|range");
     if(MaxLifeDistribution==0)
     {
-      anim float MaxLife(0..1 step 0.001) = 0.75;
+      anim float MaxLife(-10000..10000 step 0.001) = 1;
     }    
     if(MaxLifeDistribution==1)
     {
-      anim float MaxLifeRangeMin(0..1 step 0.001) = 0.1;
-      anim float MaxLifeRangeMax(0..1 step 0.001) = 1;
+      anim float MaxLifeRangeMin(-10000..10000 step 0.001) = 1;
+      anim float MaxLifeRangeMax(-10000..10000 step 0.001) = 2;
     }
 
 
@@ -890,7 +883,7 @@ operator Wz4Particles Emiter()
 
   code
   {
-    RPEmiter *node = new RPEmiter();
+    RPRangeEmiter *node = new RPRangeEmiter();
     node->ParaBase = node->Para = *para;
     node->Init();
     out->RootNode = node;

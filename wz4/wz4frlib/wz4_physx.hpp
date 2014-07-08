@@ -36,6 +36,8 @@
 #pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win64/PhysX3CommonCHECKED_x64.lib")
 #pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win64/PhysX3ExtensionsCHECKED.lib")
 #pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win64/PhysX3CookingCHECKED_x64.lib")
+#pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win64/PxTaskCHECKED.lib")
+#pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win64/PhysXProfileSDKCHECKED.lib")
 #ifdef COMPIL_WITH_PVD
 #pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win64/PhysXVisualDebuggerSDKCHECKED.lib")
 #endif
@@ -523,12 +525,13 @@ public:
 
 /****************************************************************************/
 
-class RPEmiter : public WpxParticleNode
+class RPRangeEmiter : public WpxParticleNode
 {
   struct Particle
   {
     sVector31 Position;
     sVector30 Velocity;
+    sVector30 Acceleration;
     sF32 Speed;
     sF32 Life;
     sF32 MaxLife;
@@ -538,6 +541,7 @@ class RPEmiter : public WpxParticleNode
     {
       Position = sVector31(0,0,0);
       Velocity = sVector30(0,0,0);
+      Acceleration = sVector30(0, 0, 0);
       Speed = 1.0f;
       Life = -1;
       MaxLife = 1;
@@ -549,12 +553,12 @@ class RPEmiter : public WpxParticleNode
   sF32 AccumultedTime;
 
 public:
-  RPEmiter();
-  ~RPEmiter();
+  RPRangeEmiter();
+  ~RPRangeEmiter();
   void Init();
 
-  Wz4ParticlesParaEmiter Para, ParaBase;
-  Wz4ParticlesAnimEmiter Anim;
+  Wz4ParticlesParaRangeEmiter Para, ParaBase;
+  Wz4ParticlesAnimRangeEmiter Anim;
 
   void Simulate(Wz4RenderContext *ctx);
   sInt GetPartCount();
