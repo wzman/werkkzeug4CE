@@ -2272,38 +2272,13 @@ void RPPxPart::Func(Wz4PartInfo &pinfo, sF32 time, sF32 dt)
 
 /****************************************************************************/
 
-int RandU(int nMin, int nMax)
-{
-  return nMin + (int)((double)rand() / (RAND_MAX + 1) * (nMax - nMin + 1));
-}
-
-sF32 RandF(sF32 nMin, sF32 nMax)
-{
-  return (nMax - nMin) * ((((float)rand()) / (float)RAND_MAX)) + nMin;
-}
-
-sVector30 Randv30(sVector30 nMin, sVector30 nMax)
-{
-  sVector30 v;
-  v.x = (nMax.x - nMin.x) * ((((float)rand()) / (float)RAND_MAX)) + nMin.x;
-  v.y = (nMax.y - nMin.y) * ((((float)rand()) / (float)RAND_MAX)) + nMin.y;
-  v.z = (nMax.z - nMin.z) * ((((float)rand()) / (float)RAND_MAX)) + nMin.z;
-  return v;
-}
-
-sVector31 Randv31(sVector31 nMin, sVector31 nMax)
-{
-  sVector31 v;
-  v.x = (nMax.x - nMin.x) * ((((float)rand()) / (float)RAND_MAX)) + nMin.x;
-  v.y = (nMax.y - nMin.y) * ((((float)rand()) / (float)RAND_MAX)) + nMin.y;
-  v.z = (nMax.z - nMin.z) * ((((float)rand()) / (float)RAND_MAX)) + nMin.z;
-  return v;
-}
-
 RPRangeEmiter::RPRangeEmiter()
 {
   Anim.Init(Wz4RenderType->Script);
   AccumultedTime = 0;
+
+  EmitCount = 0;
+  Rate = 0;
 }
 
 RPRangeEmiter::~RPRangeEmiter()
@@ -2321,86 +2296,6 @@ void RPRangeEmiter::Simulate(Wz4RenderContext *ctx)
   Para = ParaBase;
   Anim.Bind(ctx->Script, &Para);
   SimulateCalc(ctx);
-
-  if (ctx->GetTime() <= 0 || App->TimelineWin->Pause)
-    return;
-
-  // get delta time
-  static sTiming timer;
-  timer.OnFrame(sGetTime());
-  sF32 deltaTime = timer.GetDelta() * 0.001;
-
-  Particle * p;
-  sFORALL(Particles, p)
-  {
-    if (p->Life >= p->MaxLife)
-    {
-      // Release old particles
-      p->isDead = sTRUE;
-      p->Life = -1;
-      p->Position = sVector31(0);
-    }
-    else if (!p->isDead)
-    {
-      p->Position += p->Velocity * deltaTime;
-      p->Velocity += p->Acceleration * deltaTime;
-      p->Life += deltaTime;
-    }
-  }
-
-  // Emit new particles
-
-  sInt rateValue = Para.Rate;
-  if (Para.RateDistribution)
-    rateValue = RandU(Para.RateRangeMin, Para.RateRangeMax);
-  sF32 rate = 1.0f / rateValue;
-
-  AccumultedTime += deltaTime;
-
-  if (AccumultedTime < rate)
-    return;
-
-  // if it's time to emit particle
-
-  // search for a dead particle
-  sFORALL(Particles, p)
-  {
-    // if dead one, rebirth it
-    if (p->isDead)
-    {
-      p->isDead = sFALSE;
-      p->Life = 0;
-
-      // max life
-      p->MaxLife = Para.MaxLife;
-      if (Para.MaxLifeDistribution)
-        p->MaxLife = RandF(Para.MaxLifeRangeMin, Para.MaxLifeRangeMax);
-
-      // position
-      p->Position = Para.Position;
-      if (Para.PositionDistribution)
-        p->Position = Randv31(Para.PositionRangeMin, Para.PositionRangeMax);
-
-      // acceleration
-      p->Acceleration = Para.Acceleration;
-      if (Para.AccelerationDistribution)
-        p->Acceleration = Randv30(Para.AccelerationRangeMin, Para.AccelerationRangeMax);
-
-      // velocity
-      p->Velocity = Para.Velocity;
-      if (Para.VelocityDistribution)
-        p->Velocity = Randv30(Para.VelocityRangeMin, Para.VelocityRangeMax);
-
-      AccumultedTime -= rate;
-
-      if (AccumultedTime <= 0)
-      {
-        AccumultedTime = 0;
-        break;
-      }
-
-    }
-  }
 }
 
 sInt RPRangeEmiter::GetPartCount()
@@ -2414,11 +2309,98 @@ sInt RPRangeEmiter::GetPartFlags()
 
 void RPRangeEmiter::Func(Wz4PartInfo &pinfo, sF32 time, sF32 dt)
 {
-  sF32 t;
   Particle * p;
+  sRandomMT rnd;
+  sF32 realTime = sGetTime();
+  rnd.Seed(realTime);
+
+  // get delta time
+  static sTiming timer;
+  timer.OnFrame(realTime);
+  sF32 deltaTime = timer.GetDelta() * 0.001;
+
+  // cumulate delta time
+  AccumultedTime += deltaTime;
+
+  // Emit new particles ?
+  if (EmitCount == 0)
+  {
+    EmitCount = Para.Rate ;
+    if (Para.RateDistribution)
+      EmitCount = (Para.RateRangeMax - Para.RateRangeMin) * rnd.Float(1.0f) + Para.RateRangeMin;
+    Rate = 1.0f / EmitCount;
+
+    AccumultedTime -= Para.PauseCycle;
+  }
+
   sFORALL(Particles, p)
   {
-    t = p->Life / p->MaxLife;
+    if (p->Life >= p->MaxLife)
+    {
+      // kill old particle
+
+      p->isDead = sTRUE;
+      p->Life = -1;
+      p->Position = sVector31(0);
+    }
+    else if (!p->isDead)
+    {
+      // update particle
+
+      p->Position += p->Velocity * deltaTime;
+      p->Velocity += p->Acceleration * deltaTime;
+      p->Life += deltaTime;
+    }
+    else if (p->isDead && EmitCount && AccumultedTime > Rate)
+    {
+      // spawn particle
+
+      p->isDead = sFALSE;
+      p->Life = 0;
+
+      // max life
+      p->MaxLife = Para.MaxLife;
+      if (Para.MaxLifeDistribution)
+      {
+        p->MaxLife = (Para.MaxLifeRangeMax - Para.MaxLifeRangeMin) * rnd.Float(1.0f) + Para.MaxLifeRangeMin;
+      }
+
+      // position
+      p->Position = Para.Position;
+      if (Para.PositionDistribution)
+      {
+        p->Position.x = (Para.PositionRangeMax.x - Para.PositionRangeMin.x) * rnd.Float(1.0f) + Para.PositionRangeMin.x;
+        p->Position.y = (Para.PositionRangeMax.y - Para.PositionRangeMin.y) * rnd.Float(1.0f) + Para.PositionRangeMin.y;
+        p->Position.z = (Para.PositionRangeMax.z - Para.PositionRangeMin.z) * rnd.Float(1.0f) + Para.PositionRangeMin.z;
+      }
+
+      // acceleration
+      p->Acceleration = Para.Acceleration;
+      if (Para.AccelerationDistribution)
+      {
+        p->Acceleration.x = (Para.AccelerationRangeMax.x - Para.AccelerationRangeMin.x) * rnd.Float(1.0f) + Para.AccelerationRangeMin.x;
+        p->Acceleration.y = (Para.AccelerationRangeMax.y - Para.AccelerationRangeMin.y) * rnd.Float(1.0f) + Para.AccelerationRangeMin.y;
+        p->Acceleration.z = (Para.AccelerationRangeMax.z - Para.AccelerationRangeMin.z) * rnd.Float(1.0f) + Para.AccelerationRangeMin.z;
+      }
+
+      // velocity
+      p->Velocity = Para.Velocity;
+      if (Para.VelocityDistribution)
+      {
+        p->Velocity.x = (Para.VelocityRangeMax.x - Para.VelocityRangeMin.x) * rnd.Float(1.0f) + Para.VelocityRangeMin.x;
+        p->Velocity.y = (Para.VelocityRangeMax.y - Para.VelocityRangeMin.y) * rnd.Float(1.0f) + Para.VelocityRangeMin.y;
+        p->Velocity.z = (Para.VelocityRangeMax.z - Para.VelocityRangeMin.z) * rnd.Float(1.0f) + Para.VelocityRangeMin.z;
+      }
+
+      EmitCount--;
+
+      AccumultedTime -= Rate;
+      if (AccumultedTime <= 0)
+        AccumultedTime = 0;
+    }
+
+    // init wz4 particles to draw
+    sF32 t = p->Life/p->MaxLife;
     pinfo.Parts[_i].Init(p->Position, t);
   }
 

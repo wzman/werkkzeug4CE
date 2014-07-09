@@ -551,6 +551,8 @@ class RPRangeEmiter : public WpxParticleNode
 
   sArray<Particle> Particles;
   sF32 AccumultedTime;
+  sF32 Rate;
+  sInt EmitCount;
 
 public:
   RPRangeEmiter();

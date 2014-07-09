@@ -827,7 +827,8 @@ operator Wz4Particles RangeEmiter()
     {
       anim int RateRangeMin(0..200000) = 5;
       anim int RateRangeMax(0..200000) = 40;
-    }    
+    }
+	anim float PauseCycle(-1000000..1000000 step 0.001) = 0;
 
      group "Position";
     layout flags PositionDistribution ("constant|range");
