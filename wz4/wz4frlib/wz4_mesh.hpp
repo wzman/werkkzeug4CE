@@ -17,35 +17,7 @@
 
 /****************************************************************************/
 
-#define __PLACEMENT_NEW_INLINE
-#define __PLACEMENT_VEC_NEW_INLINE
-
-//#pragma push_macro("new")
-
-#undef new
-#include "C:/library/assimp-3.1.1-win-binaries/include/assimp/Importer.hpp"
-#include "C:/library/assimp-3.1.1-win-binaries/include/assimp/scene.h"
-#include "C:/library/assimp-3.1.1-win-binaries/include/assimp/postprocess.h"
-#define new sDEFINE_NEW
-
-//#pragma pop_macro("new")
-
-#undef __PLACEMENT_NEW_INLINE
-#undef __PLACEMENT_VEC_NEW_INLINE
-
-#ifdef _M_X64
-// 64 bits
-#pragma comment(lib, "C:/library/assimp-3.1.1-win-binaries/lib64/assimp.lib")
-#else
-// 32 bits
-#pragma comment(lib, "C:/library/assimpBuild/code/Release/assimp.lib")
-#endif
-
-#ifdef _DEBUG
-#pragma comment(linker, "/NODEFAULTLIB:libcmt.lib")
-#endif
-
-struct Wz4MeshParaImportEx;
+struct Wz4MeshParaImportEx;   // required for ImportAssimp to bind parameters ops
 
 /****************************************************************************/
 
@@ -333,7 +305,10 @@ public:
   void  LoadWz3MinMesh(const sU8 *&blob);
   sBool LoadWz3MinMesh(const sChar *file);
   sBool SaveOBJ(const sChar *file);
+
+#ifdef sCOMPIL_ASSIMP
   sBool LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImportEx * para);
+#endif
 };
 
 /****************************************************************************/

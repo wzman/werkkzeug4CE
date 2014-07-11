@@ -7205,7 +7205,56 @@ sBool Wz4Mesh::LoadWz3MinMesh(const sChar *file)
   return sTRUE;
 }
 
+/****************************************************************************/
 
+#ifdef sCOMPIL_ASSIMP
+
+#ifndef __PLACEMENT_NEW_INLINE
+#define PNI_DEF
+#define __PLACEMENT_NEW_INLINE
+#endif
+
+#ifndef __PLACEMENT_VEC_NEW_INLINE
+#define PVNI_DEF
+#define __PLACEMENT_VEC_NEW_INLINE
+#endif
+
+#pragma push_macro("_HAS_EXCEPTIONS")
+#define _HAS_EXCEPTIONS 0
+
+#undef new
+#include "C:/library/assimp-3.1.1-win-binaries/include/assimp/Importer.hpp"
+#include "C:/library/assimp-3.1.1-win-binaries/include/assimp/scene.h"
+#include "C:/library/assimp-3.1.1-win-binaries/include/assimp/postprocess.h"
+#define new sDEFINE_NEW
+
+#ifdef PNI_DEF
+#undef __PLACEMENT_NEW_INLINE
+#endif
+
+#ifdef PVNI_DEF
+#undef __PLACEMENT_VEC_NEW_INLINE
+#endif
+
+#pragma pop_macro("_HAS_EXCEPTIONS")
+
+#ifdef _M_X64
+// 64 bits
+#pragma comment(lib, "C:/library/assimp-3.1.1-win-binaries/lib64/assimp.lib")
+#else
+// 32 bits
+#pragma comment(lib, "C:/library/assimp_3.1.1_build/code/Release/assimp.lib")
+#endif
+
+//#ifdef _DEBUG
+//#pragma comment(linker, "/NODEFAULTLIB:libcmt.lib")
+//#endif
+
+#endif // sCOMPIL_ASSIMP
+
+/****************************************************************************/
+
+#ifdef sCOMPIL_ASSIMP
 sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImportEx * para)
 {
   sChar8 filename[MAXLEN];
@@ -7335,6 +7384,7 @@ sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImpor
 
   return sTRUE;
 }
+#endif // sCOMPIL_ASSIMP
 
 /****************************************************************************/
 /***                                                                      ***/

@@ -621,8 +621,9 @@ void __debugbreak();
 #endif
 
 /****************************************************************************/
-// comment this line to compil without physx
-//#define sCOMPIL_PHYSX
+// THIRD-PARTY Libraries compilation flags
+#define sCOMPIL_PHYSX     // NVIDIA Physx library
+#define sCOMPIL_ASSIMP    // Open Asset import library
 /****************************************************************************/
 
 /****************************************************************************/
