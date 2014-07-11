@@ -7262,24 +7262,29 @@ sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImpor
 
   Assimp::Importer importer;
 
-  importer.SetPropertyBool(AI_CONFIG_PP_FD_REMOVE, true);
-  importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_POINT | aiPrimitiveType_LINE);
-  importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, para->NormalsMaxSmoothAngle);
-  importer.SetPropertyFloat(AI_CONFIG_PP_CT_MAX_SMOOTHING_ANGLE, para->TangentsMaxSmoothAngle);
-  importer.SetPropertyFloat(AI_CONFIG_PP_PTV_NORMALIZE, para->NormalizeSpatialDim);
-  importer.SetPropertyInteger(AI_CONFIG_PP_LBW_MAX_WEIGHTS, para->LimitBoneWeight);
+  if(para->AssimpOptions & 0x01)
+    importer.SetPropertyFloat(AI_CONFIG_PP_CT_MAX_SMOOTHING_ANGLE, para->TangentsMaxSmoothAngle);
+  if(para->AssimpOptions & 0x10)
+    importer.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS, para->RemoveComponents);
+  if(para->AssimpOptions & 0x40)
+    importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, para->NormalsMaxSmoothAngle);
+  if(para->AssimpOptions & 0x100)
+    importer.SetPropertyFloat(AI_CONFIG_PP_PTV_NORMALIZE, para->NormalizeSpatialDim);
+  if(para->AssimpOptions & 0x200)
+    importer.SetPropertyInteger(AI_CONFIG_PP_LBW_MAX_WEIGHTS, para->LimitBoneWeight);
+  if(para->AssimpOptions & 0x10000)
+    importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, para->RemovePrimitives);
 
   const aiScene* scene = importer.ReadFile(filename, para->AssimpOptions);
 
   if(!scene)
   {
-    const char * err = importer.GetErrorString();
-    sCopyString(errString, err ,MAXLEN);
+    sCopyString(errString, importer.GetErrorString(), MAXLEN);
     sLog(L"Assimp", L"Couldn't load model");
     return sFALSE;
   }
 
-  for(sInt j=0; j<scene->mNumMeshes; j++)
+  for(sU32 j=0; j<scene->mNumMeshes; j++)
   {
     const aiMesh* paiMesh = scene->mMeshes[j];
 
@@ -7288,7 +7293,7 @@ sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImpor
     Wz4MeshVertex *mv = wz4mesh->Vertices.AddMany(paiMesh->mNumVertices);
     Wz4MeshFace *mf = wz4mesh->Faces.AddMany(paiMesh->mNumFaces);
 
-    for(sInt i=0; i<paiMesh->mNumVertices; i++)
+    for(sU32 i=0; i<paiMesh->mNumVertices; i++)
     {
       mv->Init();
 
@@ -7322,21 +7327,19 @@ sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImpor
       mv++;
     }
 
-    for(sInt i=0; i<paiMesh->mNumFaces; i++)
+    for(sU32 i=0; i<paiMesh->mNumFaces; i++)
     {
       const aiFace& Face = paiMesh->mFaces[i];
 
-      sVERIFY(Face.mNumIndices >= 3);
-
       // support only 3 or 4 indices per face (else need to triangulate mesh)
-      if(Face.mNumIndices > 4)
+      if(Face.mNumIndices < 3 || Face.mNumIndices > 4)
       {
-        //sCopyString(errString, L"N-gones detected. Wz4 only support triangles or quad. Try triangulate option.", MAXLEN);
+        sCopyString(errString, L"N-gones detected. Wz4 only support triangles or quad. Try triangulate option.", MAXLEN);
         return sFALSE;
       }
 
       mf->Init(Face.mNumIndices);
-      for (sInt k=0; k<Face.mNumIndices; k++)
+      for (sU32 k=0; k<Face.mNumIndices; k++)
           mf->Vertex[k] = Face.mIndices[k];
 
       mf++;
@@ -7375,12 +7378,18 @@ sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImpor
 
   // optionnal wz4 post-processing
 
-  // CalcNormals();
-  // CalcTangents();
-  // CalcNormalAndTangents();
-  // RemoveDegenerateFaces();
-  // MergeVertices();
-  // MergeClusters();
+  if(para->Wz4MeshOptions & 0x2)
+    CalcNormals();
+  if(para->Wz4MeshOptions & 0x4)
+    CalcTangents();
+  if(para->Wz4MeshOptions & 0x8)
+   CalcNormalAndTangents();
+  if(para->Wz4MeshOptions & 0x10)
+    RemoveDegenerateFaces();
+  if(para->Wz4MeshOptions & 0x20)
+    MergeVertices();
+  if(para->Wz4MeshOptions & 0x40)
+    MergeClusters();
 
   return sTRUE;
 }

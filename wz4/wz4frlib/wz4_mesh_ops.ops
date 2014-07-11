@@ -189,22 +189,27 @@ operator Wz4Mesh ImportEx()
   parameter
   {
     group "Assimp loader";
-    layout flags AssimpOptions ("-|CalcTangentSpace:*1-|JoinIdenticalVertices:*2-|MakeLeftHanded:*3-|Triangulate:*4-|RemoveComponent:*5-|GenNormals:*6-|GenSmoothNormals:*7-|SplitLargeMeshes:*8-|PreTransformVertices:*9-|LimitBoneWeights") = 0x01800004;
+    layout flags AssimpOptions ("-|CalcTangentSpace:*1-|JoinIdenticalVertices:*2-|MakeLeftHanded:*3-|Triangulate:*4-|RemoveComponent:*5-|GenNormals:*6-|GenSmoothNormals:*7-|SplitLargeMeshes:*8-|PreTransformVertices:*9-|LimitBoneWeights") = 0x018C8016;
     continue flags AssimpOptions "" ("*10-|ValidateDataStructure:*11-|ImproveCacheLocality:*12-|RemoveRedundantMaterials:*13-|FixInfacingNormals:*15-|SortByPType:*16-|FindDegenerates:*17-|FindInvalidData:*18-|GenUVCoords:*19-|TransformUVCoords:*20-|FindInstances");
     continue flags AssimpOptions "" ("*21-|OptimizeMeshes:*22-|OptimizeGraph:*23-|FlipUVs:*24-|FlipWindingOrder:*25-|SplitByBoneCount:*26-|Debone");
 
     if(AssimpOptions&0x1)
       float TangentsMaxSmoothAngle (-0x10000..0x10000 step 0.01) = 45;
     if(AssimpOptions&0x10)
-      layout flags RemoveComponents ("-|NORMALS:*1-|TANGENTS_AND_BITANGENTS:*2-|COLORS:*3-|TEXCOORDS:*4-|BONEWEIGHTS:*5-|ANIMATIONS:*6-|TEXTURES:*7-|LIGHTS:*8-|CAMERAS:*9-|MESHES:*10-|MATERIALS");
+      layout flags RemoveComponents ("*1-|normals:*2-|tangents_and_bitangents:*3-|colors:*4-|texcoords:*5-|boneweight:*6-|animations:*7-|textures:*8-|lights:*9-|cameras:*10-|meshes:*11-|materials") = 0xb88;
     if(AssimpOptions&0x40)
       float NormalsMaxSmoothAngle (-0x10000..175 step 0.01) = 175;
     if(AssimpOptions&0x100)
       float NormalizeSpatialDim (-1..1 step 0.01) = 0;
     if(AssimpOptions&0x200)
       int LimitBoneWeight (0..100 step 1) = 4;
+    if(AssimpOptions&0x10000)
+      layout flags RemovePrimitives ("-|points:*1-|lines:*2-|triangles:*3-|polygons") = 0x3;
 
     filein Filename("3d|3ds|ac|ase|b3d|blend|bvh|cob|dae|dxf|csm|dxf|fbx|hmp|ifc|irr|irrmesh|lwo|lxo|lws|md2|md3|md5|mdl|ms3d|nff|obj|ply|q3o|raw|smd|max|stl|ter|wrl|x|zgl");
+
+    group "Wz4Mesh post-process";
+    layout flags Wz4MeshOptions ("*1-|CalcNormals:*2-|CalcTangents:*3-|CalcTangentsAndNormals:*4-|RemoveDegeneratedFaces:*5-|MergeVertices:*6-|MergeClusters");
   }
   code
   {
