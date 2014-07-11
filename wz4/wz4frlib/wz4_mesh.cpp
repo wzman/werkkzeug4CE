@@ -7205,6 +7205,137 @@ sBool Wz4Mesh::LoadWz3MinMesh(const sChar *file)
   return sTRUE;
 }
 
+
+sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImportEx * para)
+{
+  sChar8 filename[MAXLEN];
+  sCopyString(filename, file ,MAXLEN);
+
+  Assimp::Importer importer;
+
+  importer.SetPropertyBool(AI_CONFIG_PP_FD_REMOVE, true);
+  importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_POINT | aiPrimitiveType_LINE);
+  importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, para->NormalsMaxSmoothAngle);
+  importer.SetPropertyFloat(AI_CONFIG_PP_CT_MAX_SMOOTHING_ANGLE, para->TangentsMaxSmoothAngle);
+  importer.SetPropertyFloat(AI_CONFIG_PP_PTV_NORMALIZE, para->NormalizeSpatialDim);
+  importer.SetPropertyInteger(AI_CONFIG_PP_LBW_MAX_WEIGHTS, para->LimitBoneWeight);
+
+  const aiScene* scene = importer.ReadFile(filename, para->AssimpOptions);
+
+  if(!scene)
+  {
+    const char * err = importer.GetErrorString();
+    sCopyString(errString, err ,MAXLEN);
+    sLog(L"Assimp", L"Couldn't load model");
+    return sFALSE;
+  }
+
+  for(sInt j=0; j<scene->mNumMeshes; j++)
+  {
+    const aiMesh* paiMesh = scene->mMeshes[j];
+
+    Wz4Mesh * wz4mesh = new Wz4Mesh();
+    wz4mesh->AddDefaultCluster();
+    Wz4MeshVertex *mv = wz4mesh->Vertices.AddMany(paiMesh->mNumVertices);
+    Wz4MeshFace *mf = wz4mesh->Faces.AddMany(paiMesh->mNumFaces);
+
+    for(sInt i=0; i<paiMesh->mNumVertices; i++)
+    {
+      mv->Init();
+
+      if(paiMesh->HasPositions())
+      {
+        mv->Pos.x = paiMesh->mVertices[i].x;
+        mv->Pos.y = paiMesh->mVertices[i].y;
+        mv->Pos.z = paiMesh->mVertices[i].z;
+      }
+
+      if(paiMesh->HasNormals())
+      {
+        mv->Normal.x = paiMesh->mNormals[i].x;
+        mv->Normal.y = paiMesh->mNormals[i].y;
+        mv->Normal.z = paiMesh->mNormals[i].z;
+      }
+
+      if(paiMesh->HasTangentsAndBitangents())
+      {
+        mv->Tangent.x = paiMesh->mTangents[i].x;
+        mv->Tangent.y = paiMesh->mTangents[i].y;
+        mv->Tangent.z = paiMesh->mTangents[i].z;
+      }
+
+      if(paiMesh->HasTextureCoords(0))
+      {
+        mv->U0 = paiMesh->mTextureCoords[0][i].x;
+        mv->V0 = paiMesh->mTextureCoords[0][i].y;
+      }
+
+      mv++;
+    }
+
+    for(sInt i=0; i<paiMesh->mNumFaces; i++)
+    {
+      const aiFace& Face = paiMesh->mFaces[i];
+
+      sVERIFY(Face.mNumIndices >= 3);
+
+      // support only 3 or 4 indices per face (else need to triangulate mesh)
+      if(Face.mNumIndices > 4)
+      {
+        //sCopyString(errString, L"N-gones detected. Wz4 only support triangles or quad. Try triangulate option.", MAXLEN);
+        return sFALSE;
+      }
+
+      mf->Init(Face.mNumIndices);
+      for (sInt k=0; k<Face.mNumIndices; k++)
+          mf->Vertex[k] = Face.mIndices[k];
+
+      mf++;
+    }
+
+    // add mesh and create cluster
+
+    sInt v0 = Vertices.GetCount();
+    sInt f0 = Faces.GetCount();
+    sInt c0 = Clusters.GetCount();
+
+    Vertices.HintSize(Vertices.GetCount()+wz4mesh->Vertices.GetCount());
+    Vertices.Add(wz4mesh->Vertices);
+    Faces.HintSize(Faces.GetCount()+wz4mesh->Faces.GetCount());
+    Faces.Add(wz4mesh->Faces);
+
+    Wz4MeshCluster *cl;
+    Clusters.HintSize(wz4mesh->Clusters.GetCount());
+    sFORALL(wz4mesh->Clusters,cl)
+    {
+      Wz4MeshCluster *ncl = new Wz4MeshCluster;
+      ncl->Mtrl = cl->Mtrl; cl->Mtrl->AddRef();
+      Clusters.AddTail(ncl);
+    }
+
+    for(sInt i=f0; i<Faces.GetCount(); i++)
+    {
+      Wz4MeshFace *mf = &Faces[i];
+      mf->Cluster += c0;
+      for(sInt k=0; k<mf->Count; k++)
+        mf->Vertex[k] += v0;
+    }
+
+    delete wz4mesh;
+  }
+
+  // optionnal wz4 post-processing
+
+  // CalcNormals();
+  // CalcTangents();
+  // CalcNormalAndTangents();
+  // RemoveDegenerateFaces();
+  // MergeVertices();
+  // MergeClusters();
+
+  return sTRUE;
+}
+
 /****************************************************************************/
 /***                                                                      ***/
 /***   TomF's vertex cache optimizer                                      ***/
