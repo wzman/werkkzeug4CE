@@ -7272,7 +7272,7 @@ sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImpor
     importer.SetPropertyFloat(AI_CONFIG_PP_PTV_NORMALIZE, para->NormalizeSpatialDim);
   if(para->AssimpOptions & 0x200)
     importer.SetPropertyInteger(AI_CONFIG_PP_LBW_MAX_WEIGHTS, para->LimitBoneWeight);
-  if(para->AssimpOptions & 0x10000)
+  if(para->AssimpOptions & 0x8000)
     importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, para->RemovePrimitives);
 
   const aiScene* scene = importer.ReadFile(filename, para->AssimpOptions);

@@ -203,7 +203,7 @@ operator Wz4Mesh ImportEx()
       float NormalizeSpatialDim (-1..1 step 0.01) = 0;
     if(AssimpOptions&0x200)
       int LimitBoneWeight (0..100 step 1) = 4;
-    if(AssimpOptions&0x10000)
+    //if(AssimpOptions&0x8000)
       layout flags RemovePrimitives ("-|points:*1-|lines:*2-|triangles:*3-|polygons") = 0x3;
 
     filein Filename("3d|3ds|ac|ase|b3d|blend|bvh|cob|dae|dxf|csm|dxf|fbx|hmp|ifc|irr|irrmesh|lwo|lxo|lws|md2|md3|md5|mdl|ms3d|nff|obj|ply|q3o|raw|smd|max|stl|ter|wrl|x|zgl");
