@@ -22,7 +22,7 @@
 #endif
 
 #undef new
-#include "C:/library/PhysX-3.2.3_PC_SDK_Core/Include/PxPhysicsAPI.h"
+#include "C:/library/PhysX-3.3.1_PC_SDK_Core/Include/PxPhysicsAPI.h"
 #define new sDEFINE_NEW
 
 #ifdef _DEBUG_WAS_DEFINED
@@ -32,25 +32,25 @@
 
 #ifdef _M_X64
 // 64 bits
-#pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win64/PhysX3CHECKED_x64.lib")
-#pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win64/PhysX3CommonCHECKED_x64.lib")
-#pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win64/PhysX3ExtensionsCHECKED.lib")
-#pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win64/PhysX3CookingCHECKED_x64.lib")
-#pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win64/PxTaskCHECKED.lib")
-#pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win64/PhysXProfileSDKCHECKED.lib")
+#pragma comment(lib, "C:/library/PhysX-3.3.1_PC_SDK_Core/Lib/win64/PhysX3CHECKED_x64.lib")
+#pragma comment(lib, "C:/library/PhysX-3.3.1_PC_SDK_Core/Lib/win64/PhysX3CommonCHECKED_x64.lib")
+#pragma comment(lib, "C:/library/PhysX-3.3.1_PC_SDK_Core/Lib/win64/PhysX3ExtensionsCHECKED.lib")
+#pragma comment(lib, "C:/library/PhysX-3.3.1_PC_SDK_Core/Lib/win64/PhysX3CookingCHECKED_x64.lib")
+#pragma comment(lib, "C:/library/PhysX-3.3.1_PC_SDK_Core/Lib/win64/PxTaskCHECKED.lib")
+#pragma comment(lib, "C:/library/PhysX-3.3.1_PC_SDK_Core/Lib/win64/PhysXProfileSDKCHECKED.lib")
 #ifdef COMPIL_WITH_PVD
-#pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win64/PhysXVisualDebuggerSDKCHECKED.lib")
+#pragma comment(lib, "C:/library/PhysX-3.3.1_PC_SDK_Core/Lib/win64/PhysXVisualDebuggerSDKCHECKED.lib")
 #endif
 #else
 // 32 bits
-#pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win32/PhysX3CHECKED_x86.lib")
-#pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win32/PhysX3CommonCHECKED_x86.lib")
-#pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win32/PhysX3ExtensionsCHECKED.lib")
-#pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win32/PhysX3CookingCHECKED_x86.lib")
-#pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win32/PxTaskCHECKED.lib")
-#pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win32/PhysXProfileSDKCHECKED.lib")
+#pragma comment(lib, "C:/library/PhysX-3.3.1_PC_SDK_Core/Lib/win32/PhysX3CHECKED_x86.lib")
+#pragma comment(lib, "C:/library/PhysX-3.3.1_PC_SDK_Core/Lib/win32/PhysX3CommonCHECKED_x86.lib")
+#pragma comment(lib, "C:/library/PhysX-3.3.1_PC_SDK_Core/Lib/win32/PhysX3ExtensionsCHECKED.lib")
+#pragma comment(lib, "C:/library/PhysX-3.3.1_PC_SDK_Core/Lib/win32/PhysX3CookingCHECKED_x86.lib")
+#pragma comment(lib, "C:/library/PhysX-3.3.1_PC_SDK_Core/Lib/win32/PxTaskCHECKED.lib")
+#pragma comment(lib, "C:/library/PhysX-3.3.1_PC_SDK_Core/Lib/win32/PhysXProfileSDKCHECKED.lib")
 #ifdef COMPIL_WITH_PVD
-#pragma comment(lib, "C:/library/PhysX-3.2.3_PC_SDK_Core/Lib/win32/PhysXVisualDebuggerSDKCHECKED.lib")
+#pragma comment(lib, "C:/library/PhysX-3.3.1_PC_SDK_Core/Lib/win32/PhysXVisualDebuggerSDKCHECKED.lib")
 #endif
 #endif
 

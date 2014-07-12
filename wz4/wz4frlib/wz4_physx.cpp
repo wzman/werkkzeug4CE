@@ -47,7 +47,7 @@ void PhysXInitEngine()
   }
 
   // create cooking object
-  gCooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, PxCookingParams());
+  gCooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, PxCookingParams(PxTolerancesScale()));
   if (!gCooking)
   {
     sLogF(L"PhysX",L"PhysXInitEngine - PxCreateCooking failed!\n");
@@ -1576,12 +1576,18 @@ PxScene * RNPhysx::CreateScene()
   if (!sceneDesc.filterShader)
     sceneDesc.filterShader = gDefaultFilterShader;
 
-  if(Para.Desc&0x01)
+  if(Para.Desc&0x02)
     sceneDesc.flags |= PxSceneFlag::eENABLE_PCM;
   if(Para.Desc&0x04)
-    sceneDesc.flags |= PxSceneFlag::eENABLE_ONE_DIRECTIONAL_FRICTION;
+    sceneDesc.flags |= PxSceneFlag::eENABLE_CCD;
+  if(Para.Desc&0x08)
+    sceneDesc.flags |= PxSceneFlag::eDISABLE_CCD_RESWEEP;
   if(Para.Desc&0x10)
-    sceneDesc.flags |= PxSceneFlag::eENABLE_TWO_DIRECTIONAL_FRICTION;
+    sceneDesc.flags |= PxSceneFlag::eADAPTIVE_FORCE;
+  if(Para.Desc&0x20)
+    sceneDesc.flags |= PxSceneFlag::eENABLE_STABILIZATION;
+  if(Para.Desc&0x40)
+    sceneDesc.flags |= PxSceneFlag::eENABLE_AVERAGE_POINT;
 
   if (Para.ParticlesSimMode == 1)
   {
@@ -1590,8 +1596,8 @@ PxScene * RNPhysx::CreateScene()
     if (!mProfileZoneManager)
       sLogF(L"PhysX", L"PxProfileZoneManager::createProfileZoneManager failed!\n");
 
-    pxtask::CudaContextManagerDesc cudaContextManagerDesc;
-    pxtask::CudaContextManager * cudaContextManager = pxtask::createCudaContextManager(*gFoundation, cudaContextManagerDesc, mProfileZoneManager);
+    PxCudaContextManagerDesc cudaContextManagerDesc;
+    PxCudaContextManager * cudaContextManager = PxCreateCudaContextManager(*gFoundation, cudaContextManagerDesc, mProfileZoneManager);
 
     if (cudaContextManager)
     {
