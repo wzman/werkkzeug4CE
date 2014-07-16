@@ -5009,11 +5009,20 @@ void Wz4Mesh::Render(sInt flags,sInt index,const sMatrix34CM *mat,sF32 time,cons
     sBool nobbox = 0;
     if(Skeleton)
     {
-      sInt bc = Skeleton->Joints.GetCount();
-      bonemat = sALLOCSTACK(sMatrix34,bc);
-      basemat = sALLOCSTACK(sMatrix34CM,bc);
-      
-      Skeleton->EvaluateCM(time,bonemat,basemat);
+      if(!Skeleton->IsAssimp)
+      {
+        sInt bc = Skeleton->Joints.GetCount();
+        bonemat = sALLOCSTACK(sMatrix34,bc);
+        basemat = sALLOCSTACK(sMatrix34CM,bc);
+        Skeleton->EvaluateCM(time,bonemat,basemat);
+      }
+      else
+      {
+        sInt bc = Skeleton->NumBones;
+        bonemat = sALLOCSTACK(sMatrix34,bc);
+        basemat = sALLOCSTACK(sMatrix34CM,bc);
+        Skeleton->EvaluateAssimpCM(time,bonemat,basemat);
+      }
 
       flags |= sRF_MATRIX_BONE;
       nobbox = 1;
@@ -7208,9 +7217,6 @@ sBool Wz4Mesh::LoadWz3MinMesh(const sChar *file)
 /****************************************************************************/
 /****************************************************************************/
 
-extern const aiScene * scene;
-extern Assimp::Importer m_importer;
-
 
 #ifdef sCOMPIL_ASSIMP
 sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImportEx * para)
@@ -7218,33 +7224,34 @@ sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImpor
   sChar8 filename[MAXLEN];
   sCopyString(filename, file ,MAXLEN);
 
-  //Assimp::Importer importer;
+  Skeleton = new Wz4Skeleton;
+  Skeleton->IsAssimp = sTRUE;
 
   if(para->AssimpOptions & 0x01)
-     m_importer.SetPropertyFloat(AI_CONFIG_PP_CT_MAX_SMOOTHING_ANGLE, para->TangentsMaxSmoothAngle);
+     Skeleton->Importer.SetPropertyFloat(AI_CONFIG_PP_CT_MAX_SMOOTHING_ANGLE, para->TangentsMaxSmoothAngle);
   if(para->AssimpOptions & 0x10)
-     m_importer.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS, para->RemoveComponents);
+     Skeleton->Importer.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS, para->RemoveComponents);
   if(para->AssimpOptions & 0x40)
-     m_importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, para->NormalsMaxSmoothAngle);
+     Skeleton->Importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, para->NormalsMaxSmoothAngle);
   if(para->AssimpOptions & 0x100)
-     m_importer.SetPropertyFloat(AI_CONFIG_PP_PTV_NORMALIZE, para->NormalizeSpatialDim);
+     Skeleton->Importer.SetPropertyFloat(AI_CONFIG_PP_PTV_NORMALIZE, para->NormalizeSpatialDim);
   if(para->AssimpOptions & 0x200)
-     m_importer.SetPropertyInteger(AI_CONFIG_PP_LBW_MAX_WEIGHTS, para->LimitBoneWeight);
+     Skeleton->Importer.SetPropertyInteger(AI_CONFIG_PP_LBW_MAX_WEIGHTS, para->LimitBoneWeight);
   if(para->AssimpOptions & 0x8000)
-     m_importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, para->RemovePrimitives);
+     Skeleton->Importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, para->RemovePrimitives);
 
-  scene = m_importer.ReadFile(filename, para->AssimpOptions);
+  Skeleton->Scene = Skeleton->Importer.ReadFile(filename, para->AssimpOptions);
 
-  if(!scene)
+  if(!Skeleton->Scene)
   {
-    sCopyString(errString, m_importer.GetErrorString(), MAXLEN);
+    sCopyString(errString, Skeleton->Importer.GetErrorString(), MAXLEN);
     sLog(L"Assimp", L"Couldn't load model");
     return sFALSE;
   }
 
-  for(sU32 j=0; j<scene->mNumMeshes; j++)
+  for(sU32 j=0; j<Skeleton->Scene->mNumMeshes; j++)
   {
-    const aiMesh* paiMesh = scene->mMeshes[j];
+    const aiMesh* paiMesh = Skeleton->Scene->mMeshes[j];
 
     Wz4Mesh * wz4mesh = new Wz4Mesh();
     wz4mesh->AddDefaultCluster();
@@ -7354,74 +7361,77 @@ sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImpor
 
   // ANIMATION
 
-  if(!scene->HasAnimations())
+  if(!Skeleton->Scene->HasAnimations())
     return sTRUE;
 
-  aiMesh * pmesh = scene->mMeshes[0];
+  aiMesh * pMesh = Skeleton->Scene->mMeshes[0];
 
-  // create and prepare skeleton
-  Skeleton = new Wz4Skeleton;
-  Wz4AnimJoint * joints = Skeleton->Joints.AddMany(pmesh->mNumBones);  
-
-  for(sInt i=0; i<pmesh->mNumBones; i++)
+  // prepare skeleton, wz4 channels and joints are not used in this version, but need to exists here
+  Wz4AnimJoint * joints = Skeleton->Joints.AddMany(pMesh->mNumBones);
+  for(sInt i=0; i<pMesh->mNumBones; i++)
   {
     Wz4ChannelPerFrame * c = new Wz4ChannelPerFrame;    
     joints[i].Init();
     joints[i].Channel = c;
-    sCopyString(joints[i].Name, L"wz4_bonename_undefined", 32);
   }
 
+  Skeleton->GlobalInverseTransform = Skeleton->Scene->mRootNode->mTransformation;
+  Skeleton->GlobalInverseTransform.Inverse();
+  Skeleton->NumBones = 0;
 
-  //Matrix4f(Skeleton->m_GlobalInverseTransform, scene->mRootNode->mTransformation);
-  Skeleton->m_GlobalInverseTransform = scene->mRootNode->mTransformation;
-  Skeleton->m_GlobalInverseTransform.Inverse();
-
-  Skeleton->m_NumBones = 0;
-  aiMesh * paiMesh = scene->mMeshes[0];
-  sArray<VertexBoneData> Bones;
-  Bones.AddMany(paiMesh->mNumVertices);
-
-  for (sU32 i=0 ; i<paiMesh->mNumBones; i++)
+  // pour chaque bone
+  for(sInt boneId=0; boneId<pMesh->mNumBones; boneId++)
   {
-    sU32 BoneIndex = 0;
-    std::string BoneName(paiMesh->mBones[i]->mName.data);
+    // 1st step - build bone mapping
 
-    if (Skeleton->m_BoneMapping.find(BoneName) == Skeleton->m_BoneMapping.end())
+    sU32 BoneIndex = 0;
+    std::string BoneName(pMesh->mBones[boneId]->mName.data);
+
+    if (Skeleton->BoneMapping.find(BoneName) == Skeleton->BoneMapping.end())
     {
-      BoneIndex = Skeleton->m_NumBones;
-      Skeleton->m_NumBones++;
+      BoneIndex = Skeleton->NumBones;
+      Skeleton->NumBones++;
       BoneInfo bi;
-      Skeleton->m_BoneInfo.AddTail(bi);
+      Skeleton->BoneInfo.AddTail(bi);
     }
     else 
     {
-      BoneIndex =  Skeleton->m_BoneMapping[BoneName];
+      BoneIndex =  Skeleton->BoneMapping[BoneName];
     }
 
-    Skeleton->m_BoneMapping[BoneName] = BoneIndex;
-    Skeleton->m_BoneInfo[BoneIndex].BoneOffset = paiMesh->mBones[i]->mOffsetMatrix;
-    //Matrix4f(Skeleton->m_BoneInfo[BoneIndex].BoneOffset, paiMesh->mBones[i]->mOffsetMatrix);
+    Skeleton->BoneMapping[BoneName] = BoneIndex;
+    Skeleton->BoneInfo[BoneIndex].BoneOffset = pMesh->mBones[boneId]->mOffsetMatrix;
 
-    for (sU32 j=0; j<paiMesh->mBones[i]->mNumWeights; j++)
+
+    // 2nd step - skinning (bind vertices to bones according weight influence)
+
+    //  pour chaque vertex influencé par ce bone
+    for(sInt j=0; j<pMesh->mBones[boneId]->mNumWeights; j++)
     {
-      sU32 VertexID = paiMesh->mBones[i]->mWeights[j].mVertexId;
-      float Weight = paiMesh->mBones[i]->mWeights[j].mWeight;
-      Bones[VertexID].AddBoneData(BoneIndex, Weight);
+      // recupere l'index du vertex influencé par ce bone
+      sInt vertexID = pMesh->mBones[boneId]->mWeights[j].mVertexId;
+
+      // recupere la force de son influence
+      sF32 weight = pMesh->mBones[boneId]->mWeights[j].mWeight;
+
+      // affecte a ce vertex (dans le mesh) l'index du bone qui l'influence
+      // le vertex ayant 4 slot pour cela (4 bones possible qui peuvent l'influencer) - cherche un slot libre
+      sBool affected = sFALSE;
+      for(sInt k=0; k<4; k++)
+      {
+        if(Vertices[vertexID].Weight[k] == 0.0f)
+        {
+          Vertices[vertexID].Index[k] = boneId;
+          Vertices[vertexID].Weight[k] = weight;
+          affected = sTRUE;
+          break;
+        }
+      }
+
+      // verifie qu'au moins un slot à été affecté, sinon cele siginifie qu'il n'y plus de slot libre (nbr bones par vertex > 4)
+      sVERIFY(affected)
     }
-  }
 
-  Wz4MeshVertex *v;
-  sFORALL(Vertices,v)
-  {
-    v->Weight[0] = Bones[_i].Weights[0];
-    v->Weight[1] = Bones[_i].Weights[1];
-    v->Weight[2] = Bones[_i].Weights[2];
-    v->Weight[3] = Bones[_i].Weights[3];
-
-    v->Index[0] = Bones[_i].IDs[0];
-    v->Index[1] = Bones[_i].IDs[1];
-    v->Index[2] = Bones[_i].IDs[2];
-    v->Index[3] = Bones[_i].IDs[3];      
   }
 
   return sTRUE;
