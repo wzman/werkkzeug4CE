@@ -5009,20 +5009,14 @@ void Wz4Mesh::Render(sInt flags,sInt index,const sMatrix34CM *mat,sF32 time,cons
     sBool nobbox = 0;
     if(Skeleton)
     {
+      sInt bc = Skeleton->Joints.GetCount();
+      bonemat = sALLOCSTACK(sMatrix34,bc);
+      basemat = sALLOCSTACK(sMatrix34CM,bc);
+
       if(!Skeleton->IsAssimp)
-      {
-        sInt bc = Skeleton->Joints.GetCount();
-        bonemat = sALLOCSTACK(sMatrix34,bc);
-        basemat = sALLOCSTACK(sMatrix34CM,bc);
         Skeleton->EvaluateCM(time,bonemat,basemat);
-      }
       else
-      {
-        sInt bc = Skeleton->NumBones;
-        bonemat = sALLOCSTACK(sMatrix34,bc);
-        basemat = sALLOCSTACK(sMatrix34CM,bc);
         Skeleton->EvaluateAssimpCM(time,bonemat,basemat);
-      }
 
       flags |= sRF_MATRIX_BONE;
       nobbox = 1;
@@ -7366,33 +7360,25 @@ sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImpor
 
   aiMesh * pMesh = Skeleton->Scene->mMeshes[0];
 
-  // prepare skeleton, wz4 channels and joints are not used in this version, but need to exists here
-  Wz4AnimJoint * joints = Skeleton->Joints.AddMany(pMesh->mNumBones);
-  for(sInt i=0; i<pMesh->mNumBones; i++)
-  {
-    Wz4ChannelPerFrame * c = new Wz4ChannelPerFrame;    
-    joints[i].Init();
-    joints[i].Channel = c;
-  }
-
   Skeleton->GlobalInverseTransform = Skeleton->Scene->mRootNode->mTransformation;
   Skeleton->GlobalInverseTransform.Inverse();
-  Skeleton->NumBones = 0;
 
   // pour chaque bone
-  for(sInt boneId=0; boneId<pMesh->mNumBones; boneId++)
+  for(sU32 boneId=0; boneId<pMesh->mNumBones; boneId++)
   {
-    // 1st step - build bone mapping
+    // 1st step - build bone map, used to get bone index from aiNodeAnim name
 
     sU32 BoneIndex = 0;
     std::string BoneName(pMesh->mBones[boneId]->mName.data);
 
     if (Skeleton->BoneMapping.find(BoneName) == Skeleton->BoneMapping.end())
     {
-      BoneIndex = Skeleton->NumBones;
-      Skeleton->NumBones++;
-      BoneInfo bi;
-      Skeleton->BoneInfo.AddTail(bi);
+      // add bone to skeleton
+      BoneIndex = Skeleton->Joints.GetCount();
+      Skeleton->Joints.AddMany(1);
+      Wz4ChannelPerFrame * c = new Wz4ChannelPerFrame;
+      Skeleton->Joints[BoneIndex].Init();
+      Skeleton->Joints[BoneIndex].Channel = c;
     }
     else 
     {
@@ -7400,13 +7386,13 @@ sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImpor
     }
 
     Skeleton->BoneMapping[BoneName] = BoneIndex;
-    Skeleton->BoneInfo[BoneIndex].BoneOffset = pMesh->mBones[boneId]->mOffsetMatrix;
+    Skeleton->Joints[BoneIndex].BoneOffset = pMesh->mBones[boneId]->mOffsetMatrix;
 
 
     // 2nd step - skinning (bind vertices to bones according weight influence)
 
     //  pour chaque vertex influencé par ce bone
-    for(sInt j=0; j<pMesh->mBones[boneId]->mNumWeights; j++)
+    for(sU32 j=0; j<pMesh->mBones[boneId]->mNumWeights; j++)
     {
       // recupere l'index du vertex influencé par ce bone
       sInt vertexID = pMesh->mBones[boneId]->mWeights[j].mVertexId;

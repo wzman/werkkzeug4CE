@@ -788,14 +788,13 @@ void Wz4Skeleton::ReadNodeHierarchy(sF32 AnimationTime, const aiNode* pNode , co
 
   aiMatrix4x4 GlobalTransformation = ParentTransform * NodeTransformation;
 
-
   if (BoneMapping.find(NodeName) != BoneMapping.end()) 
   {
     sU32 BoneIndex = BoneMapping[NodeName];
-    BoneInfo[BoneIndex].FinalTransformation = GlobalInverseTransform * GlobalTransformation * BoneInfo[BoneIndex].BoneOffset;
+    Joints[BoneIndex].FinalTransformation = GlobalInverseTransform * GlobalTransformation * Joints[BoneIndex].BoneOffset;
   }
 
-  for (sU32 i=0; i<pNode->mNumChildren ; i++)
+  for (sU32 i=0; i<pNode->mNumChildren; i++)
     ReadNodeHierarchy(AnimationTime, pNode->mChildren[i], GlobalTransformation);
 }
 
@@ -808,24 +807,25 @@ void Wz4Skeleton::EvaluateAssimpCM(sF32 time,sMatrix34 *mata,sMatrix34CM *basema
   aiMatrix4x4 identity;
   ReadNodeHierarchy(AnimationTime, Scene->mRootNode, identity);
 
-  for (sU32 i=0; i<NumBones; i++) 
+  Wz4AnimJoint * j;
+  sFORALL(Joints, j)
   {
-    basemat[i].Init();
+    basemat[_i].Init();
 
-    basemat[i].x.x = BoneInfo[i].FinalTransformation.a1;
-    basemat[i].x.y = BoneInfo[i].FinalTransformation.a2;
-    basemat[i].x.z = BoneInfo[i].FinalTransformation.a3;
-    basemat[i].x.w = BoneInfo[i].FinalTransformation.a4;
+    basemat[_i].x.x = j->FinalTransformation.a1;
+    basemat[_i].x.y = j->FinalTransformation.a2;
+    basemat[_i].x.z = j->FinalTransformation.a3;
+    basemat[_i].x.w = j->FinalTransformation.a4;
 
-    basemat[i].y.x = BoneInfo[i].FinalTransformation.b1;
-    basemat[i].y.y = BoneInfo[i].FinalTransformation.b2;
-    basemat[i].y.z = BoneInfo[i].FinalTransformation.b3;
-    basemat[i].y.w = BoneInfo[i].FinalTransformation.b4;
+    basemat[_i].y.x = j->FinalTransformation.b1;
+    basemat[_i].y.y = j->FinalTransformation.b2;
+    basemat[_i].y.z = j->FinalTransformation.b3;
+    basemat[_i].y.w = j->FinalTransformation.b4;
 
-    basemat[i].z.x = BoneInfo[i].FinalTransformation.c1;
-    basemat[i].z.y = BoneInfo[i].FinalTransformation.c2;
-    basemat[i].z.z = BoneInfo[i].FinalTransformation.c3;
-    basemat[i].z.w = BoneInfo[i].FinalTransformation.c4;   
+    basemat[_i].z.x = j->FinalTransformation.c1;
+    basemat[_i].z.y = j->FinalTransformation.c2;
+    basemat[_i].z.z = j->FinalTransformation.c3;
+    basemat[_i].z.w = j->FinalTransformation.c4;
   }
 }
 

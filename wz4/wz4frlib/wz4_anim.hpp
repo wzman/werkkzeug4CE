@@ -93,6 +93,11 @@ struct Wz4AnimJoint
   sInt Parent;
   wDocName Name;
   sInt Temp;
+
+#ifdef sCOMPIL_ASSIMP
+  aiMatrix4x4 BoneOffset;
+  aiMatrix4x4 FinalTransformation;
+#endif
 };
 
 /****************************************************************************/
@@ -213,18 +218,6 @@ public:
 #include <map>
 #include <string>
 
-struct BoneInfo
-{
-  aiMatrix4x4 BoneOffset;
-  aiMatrix4x4 FinalTransformation;
-
-  BoneInfo()
-  {
-    BoneOffset = aiMatrix4x4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
-    FinalTransformation = aiMatrix4x4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
-  }
-};
-
 #endif  // sCOMPIL_ASSIMP
 
 /****************************************************************************/
@@ -264,8 +257,6 @@ public:
 
   aiMatrix4x4 GlobalInverseTransform;
   std::map<std::string, sU32> BoneMapping;
-  sArray<BoneInfo> BoneInfo;
-  sU32 NumBones;
   const aiScene * Scene;
   Assimp::Importer Importer;
 
