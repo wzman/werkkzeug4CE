@@ -800,9 +800,9 @@ void Wz4Skeleton::ReadNodeHierarchy(sF32 AnimationTime, const aiNode* pNode , co
 
 void Wz4Skeleton::EvaluateAssimpCM(sF32 time,sMatrix34 *mata,sMatrix34CM *basemat)
 {
-  float TicksPerSecond = Scene->mAnimations[0]->mTicksPerSecond != 0 ? Scene->mAnimations[0]->mTicksPerSecond : 25.0f;
-  float TimeInTicks = time * TicksPerSecond;
-  float AnimationTime = fmod(TimeInTicks, Scene->mAnimations[0]->mDuration);
+  sF32 TicksPerSecond = Scene->mAnimations[0]->mTicksPerSecond != 0 ? Scene->mAnimations[0]->mTicksPerSecond : 25.0f;
+  sF32 TimeInTicks = time * TicksPerSecond;
+  sF32 AnimationTime = sMod(TimeInTicks, Scene->mAnimations[0]->mDuration);
 
   aiMatrix4x4 identity;
   ReadNodeHierarchy(AnimationTime, Scene->mRootNode, identity);
