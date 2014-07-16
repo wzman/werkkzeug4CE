@@ -158,6 +158,95 @@ public:
 
 /****************************************************************************/
 
+
+#ifdef sCOMPIL_ASSIMP
+
+#ifndef __PLACEMENT_NEW_INLINE
+#define PNI_DEF
+#define __PLACEMENT_NEW_INLINE
+#endif
+
+#ifndef __PLACEMENT_VEC_NEW_INLINE
+#define PVNI_DEF
+#define __PLACEMENT_VEC_NEW_INLINE
+#endif
+
+#pragma push_macro("_HAS_EXCEPTIONS")
+#define _HAS_EXCEPTIONS 0
+
+#undef new
+#include "C:/library/assimp-3.1.1-win-binaries/include/assimp/Importer.hpp"
+#include "C:/library/assimp-3.1.1-win-binaries/include/assimp/scene.h"
+#include "C:/library/assimp-3.1.1-win-binaries/include/assimp/postprocess.h"
+#define new sDEFINE_NEW
+
+#ifdef PNI_DEF
+#undef __PLACEMENT_NEW_INLINE
+#endif
+
+#ifdef PVNI_DEF
+#undef __PLACEMENT_VEC_NEW_INLINE
+#endif
+
+#pragma pop_macro("_HAS_EXCEPTIONS")
+
+#ifdef _M_X64
+// 64 bits
+#pragma comment(lib, "C:/library/assimp-3.1.1-win-binaries/lib64/assimp.lib")
+#else
+// 32 bits
+#pragma comment(lib, "C:/library/assimp_3.1.1_build/code/Release/assimp.lib")
+#endif
+
+//#ifdef _DEBUG
+//#pragma comment(linker, "/NODEFAULTLIB:libcmt.lib")
+//#endif
+
+#endif // sCOMPIL_ASSIMP
+
+
+
+void Matrix4f(sMatrix34 & wzmat, const aiMatrix4x4 & aimat);
+#define NUM_BONES_PER_VEREX 4
+#define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
+
+struct BoneInfo
+{
+  aiMatrix4x4 BoneOffset;
+  aiMatrix4x4 FinalTransformation;
+
+  BoneInfo()
+  {
+    BoneOffset = aiMatrix4x4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+    FinalTransformation = aiMatrix4x4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+  }
+};
+
+struct VertexBoneData
+{
+  sU32 IDs[NUM_BONES_PER_VEREX];
+  float Weights[NUM_BONES_PER_VEREX];
+
+  VertexBoneData()
+  {
+    Reset();
+  };
+
+  void Reset()
+  {
+    for (sU32 i=0; i<ARRAY_SIZE_IN_ELEMENTS(IDs); i++)
+      Weights[i] = 0.0f;
+
+    for (sU32 i=0; i<ARRAY_SIZE_IN_ELEMENTS(IDs); i++)
+      IDs[i] = 0;
+  }
+
+  void AddBoneData(sU32 BoneID, float Weight);
+};
+
+#include <map>
+#include <string>
+
 class Wz4Skeleton : public wObject
 {
 public:
@@ -177,6 +266,22 @@ public:
 
   sArray<Wz4AnimJoint> Joints;
   sF32 TotalTime;                     // total time in seconds
+
+
+sU32 FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim);
+sU32 FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim);
+sU32 FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim);
+void CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
+void CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
+void CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
+const aiNodeAnim* FindNodeAnim(const aiAnimation* pAnimation, const std::string NodeName);
+void ReadNodeHeirarchy(sF32 time,  const aiNode* pNode, const aiMatrix4x4 & parentTransform);
+
+aiMatrix4x4 m_GlobalInverseTransform;
+std::map<std::string, sU32> m_BoneMapping;
+sArray<BoneInfo> m_BoneInfo;
+sArray<VertexBoneData> Bones;
+sU32 m_NumBones;
 };
  
 /****************************************************************************/

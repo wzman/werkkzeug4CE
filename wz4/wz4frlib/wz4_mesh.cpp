@@ -7206,53 +7206,11 @@ sBool Wz4Mesh::LoadWz3MinMesh(const sChar *file)
 }
 
 /****************************************************************************/
-
-#ifdef sCOMPIL_ASSIMP
-
-#ifndef __PLACEMENT_NEW_INLINE
-#define PNI_DEF
-#define __PLACEMENT_NEW_INLINE
-#endif
-
-#ifndef __PLACEMENT_VEC_NEW_INLINE
-#define PVNI_DEF
-#define __PLACEMENT_VEC_NEW_INLINE
-#endif
-
-#pragma push_macro("_HAS_EXCEPTIONS")
-#define _HAS_EXCEPTIONS 0
-
-#undef new
-#include "C:/library/assimp-3.1.1-win-binaries/include/assimp/Importer.hpp"
-#include "C:/library/assimp-3.1.1-win-binaries/include/assimp/scene.h"
-#include "C:/library/assimp-3.1.1-win-binaries/include/assimp/postprocess.h"
-#define new sDEFINE_NEW
-
-#ifdef PNI_DEF
-#undef __PLACEMENT_NEW_INLINE
-#endif
-
-#ifdef PVNI_DEF
-#undef __PLACEMENT_VEC_NEW_INLINE
-#endif
-
-#pragma pop_macro("_HAS_EXCEPTIONS")
-
-#ifdef _M_X64
-// 64 bits
-#pragma comment(lib, "C:/library/assimp-3.1.1-win-binaries/lib64/assimp.lib")
-#else
-// 32 bits
-#pragma comment(lib, "C:/library/assimp_3.1.1_build/code/Release/assimp.lib")
-#endif
-
-//#ifdef _DEBUG
-//#pragma comment(linker, "/NODEFAULTLIB:libcmt.lib")
-//#endif
-
-#endif // sCOMPIL_ASSIMP
-
 /****************************************************************************/
+
+extern const aiScene * scene;
+extern Assimp::Importer m_importer;
+
 
 #ifdef sCOMPIL_ASSIMP
 sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImportEx * para)
@@ -7260,26 +7218,26 @@ sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImpor
   sChar8 filename[MAXLEN];
   sCopyString(filename, file ,MAXLEN);
 
-  Assimp::Importer importer;
+  //Assimp::Importer importer;
 
   if(para->AssimpOptions & 0x01)
-    importer.SetPropertyFloat(AI_CONFIG_PP_CT_MAX_SMOOTHING_ANGLE, para->TangentsMaxSmoothAngle);
+     m_importer.SetPropertyFloat(AI_CONFIG_PP_CT_MAX_SMOOTHING_ANGLE, para->TangentsMaxSmoothAngle);
   if(para->AssimpOptions & 0x10)
-    importer.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS, para->RemoveComponents);
+     m_importer.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS, para->RemoveComponents);
   if(para->AssimpOptions & 0x40)
-    importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, para->NormalsMaxSmoothAngle);
+     m_importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, para->NormalsMaxSmoothAngle);
   if(para->AssimpOptions & 0x100)
-    importer.SetPropertyFloat(AI_CONFIG_PP_PTV_NORMALIZE, para->NormalizeSpatialDim);
+     m_importer.SetPropertyFloat(AI_CONFIG_PP_PTV_NORMALIZE, para->NormalizeSpatialDim);
   if(para->AssimpOptions & 0x200)
-    importer.SetPropertyInteger(AI_CONFIG_PP_LBW_MAX_WEIGHTS, para->LimitBoneWeight);
+     m_importer.SetPropertyInteger(AI_CONFIG_PP_LBW_MAX_WEIGHTS, para->LimitBoneWeight);
   if(para->AssimpOptions & 0x8000)
-    importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, para->RemovePrimitives);
+     m_importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, para->RemovePrimitives);
 
-  const aiScene* scene = importer.ReadFile(filename, para->AssimpOptions);
+  scene = m_importer.ReadFile(filename, para->AssimpOptions);
 
   if(!scene)
   {
-    sCopyString(errString, importer.GetErrorString(), MAXLEN);
+    sCopyString(errString, m_importer.GetErrorString(), MAXLEN);
     sLog(L"Assimp", L"Couldn't load model");
     return sFALSE;
   }
@@ -7390,6 +7348,81 @@ sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImpor
     MergeVertices();
   if(para->Wz4MeshOptions & 0x40)
     MergeClusters();
+
+
+  /************************************************************************************/
+
+  // ANIMATION
+
+  if(!scene->HasAnimations())
+    return sTRUE;
+
+  aiMesh * pmesh = scene->mMeshes[0];
+
+  // create and prepare skeleton
+  Skeleton = new Wz4Skeleton;
+  Wz4AnimJoint * joints = Skeleton->Joints.AddMany(pmesh->mNumBones);  
+
+  for(sInt i=0; i<pmesh->mNumBones; i++)
+  {
+    Wz4ChannelPerFrame * c = new Wz4ChannelPerFrame;    
+    joints[i].Init();
+    joints[i].Channel = c;
+    sCopyString(joints[i].Name, L"wz4_bonename_undefined", 32);
+  }
+
+
+  //Matrix4f(Skeleton->m_GlobalInverseTransform, scene->mRootNode->mTransformation);
+  Skeleton->m_GlobalInverseTransform = scene->mRootNode->mTransformation;
+  Skeleton->m_GlobalInverseTransform.Inverse();
+
+  Skeleton->m_NumBones = 0;
+  aiMesh * paiMesh = scene->mMeshes[0];
+  sArray<VertexBoneData> Bones;
+  Bones.AddMany(paiMesh->mNumVertices);
+
+  for (sU32 i=0 ; i<paiMesh->mNumBones; i++)
+  {
+    sU32 BoneIndex = 0;
+    std::string BoneName(paiMesh->mBones[i]->mName.data);
+
+    if (Skeleton->m_BoneMapping.find(BoneName) == Skeleton->m_BoneMapping.end())
+    {
+      BoneIndex = Skeleton->m_NumBones;
+      Skeleton->m_NumBones++;
+      BoneInfo bi;
+      Skeleton->m_BoneInfo.AddTail(bi);
+    }
+    else 
+    {
+      BoneIndex =  Skeleton->m_BoneMapping[BoneName];
+    }
+
+    Skeleton->m_BoneMapping[BoneName] = BoneIndex;
+    Skeleton->m_BoneInfo[BoneIndex].BoneOffset = paiMesh->mBones[i]->mOffsetMatrix;
+    //Matrix4f(Skeleton->m_BoneInfo[BoneIndex].BoneOffset, paiMesh->mBones[i]->mOffsetMatrix);
+
+    for (sU32 j=0; j<paiMesh->mBones[i]->mNumWeights; j++)
+    {
+      sU32 VertexID = paiMesh->mBones[i]->mWeights[j].mVertexId;
+      float Weight = paiMesh->mBones[i]->mWeights[j].mWeight;
+      Bones[VertexID].AddBoneData(BoneIndex, Weight);
+    }
+  }
+
+  Wz4MeshVertex *v;
+  sFORALL(Vertices,v)
+  {
+    v->Weight[0] = Bones[_i].Weights[0];
+    v->Weight[1] = Bones[_i].Weights[1];
+    v->Weight[2] = Bones[_i].Weights[2];
+    v->Weight[3] = Bones[_i].Weights[3];
+
+    v->Index[0] = Bones[_i].IDs[0];
+    v->Index[1] = Bones[_i].IDs[1];
+    v->Index[2] = Bones[_i].IDs[2];
+    v->Index[3] = Bones[_i].IDs[3];      
+  }
 
   return sTRUE;
 }

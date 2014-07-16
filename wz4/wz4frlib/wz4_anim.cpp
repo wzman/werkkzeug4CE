@@ -532,13 +532,375 @@ void Wz4Skeleton::Evaluate(sF32 time,sMatrix34 *mata,sMatrix34 *basemat)
   }
 }
 
+/****************************************************************************/
+// ASSIMP TEST
+/****************************************************************************/
+
+void VertexBoneData::AddBoneData(sU32 BoneID, float Weight)
+{
+    for (sU32 i = 0 ; i < ARRAY_SIZE_IN_ELEMENTS(IDs) ; i++)
+    {
+        if (Weights[i] == 0.0)
+        {
+            IDs[i] = BoneID;
+            Weights[i] = Weight;
+            return;
+        }
+    }
+
+    // should never get here - more bones than we have space for
+    assert(0);
+}
+
+void Matrix4f(sMatrix34 & wzmat, const aiMatrix4x4 & aimat)
+{  
+  wzmat.i.x =  aimat.a1;
+  wzmat.i.y =  aimat.a2;
+  wzmat.i.z =  aimat.a3;
+
+  wzmat.j.x =  aimat.b1;
+  wzmat.j.y =  aimat.b2;
+  wzmat.j.z =  aimat.b3;
+
+  wzmat.k.x =  aimat.c1;
+  wzmat.k.y =  aimat.c2;
+  wzmat.k.z =  aimat.c3;
+
+  wzmat.l.x =  aimat.d1;
+  wzmat.l.y =  aimat.d2;
+  wzmat.l.z =  aimat.d3;
+}
+
+const aiNodeAnim* Wz4Skeleton::FindNodeAnim(const aiAnimation* pAnimation, const std::string NodeName)
+{
+    for (sU32 i = 0 ; i < pAnimation->mNumChannels ; i++) {
+        const aiNodeAnim* pNodeAnim = pAnimation->mChannels[i];
+        
+        if (std::string(pNodeAnim->mNodeName.data) == NodeName) {
+            return pNodeAnim;
+        }
+    }
+    
+    return NULL;
+}
+
+sU32 Wz4Skeleton::FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim)
+{    
+    for (sU32 i = 0 ; i < pNodeAnim->mNumPositionKeys - 1 ; i++) {
+        if (AnimationTime < (float)pNodeAnim->mPositionKeys[i + 1].mTime) {
+            return i;
+        }
+    }
+    
+    assert(0);
+
+    return 0;
+}
+
+sU32 Wz4Skeleton::FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim)
+{
+    assert(pNodeAnim->mNumRotationKeys > 0);
+
+    for (sU32 i = 0 ; i < pNodeAnim->mNumRotationKeys - 1 ; i++) {
+        if (AnimationTime < (float)pNodeAnim->mRotationKeys[i + 1].mTime) {
+            return i;
+        }
+    }
+    
+    assert(0);
+
+    return 0;
+}
+
+sU32 Wz4Skeleton::FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim)
+{
+    assert(pNodeAnim->mNumScalingKeys > 0);
+    
+    for (sU32 i = 0 ; i < pNodeAnim->mNumScalingKeys - 1 ; i++) {
+        if (AnimationTime < (float)pNodeAnim->mScalingKeys[i + 1].mTime) {
+            return i;
+        }
+    }
+    
+    assert(0);
+
+    return 0;
+}
+
+void Wz4Skeleton::CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim)
+{
+    if (pNodeAnim->mNumScalingKeys == 1) {
+        Out = pNodeAnim->mScalingKeys[0].mValue;
+        return;
+    }
+
+    sU32 ScalingIndex = FindScaling(AnimationTime, pNodeAnim);
+    sU32 NextScalingIndex = (ScalingIndex + 1);
+    assert(NextScalingIndex < pNodeAnim->mNumScalingKeys);
+    float DeltaTime = (float)(pNodeAnim->mScalingKeys[NextScalingIndex].mTime - pNodeAnim->mScalingKeys[ScalingIndex].mTime);
+    float Factor = (AnimationTime - (float)pNodeAnim->mScalingKeys[ScalingIndex].mTime) / DeltaTime;
+    assert(Factor >= 0.0f && Factor <= 1.0f);
+    const aiVector3D& Start = pNodeAnim->mScalingKeys[ScalingIndex].mValue;
+    const aiVector3D& End   = pNodeAnim->mScalingKeys[NextScalingIndex].mValue;
+    aiVector3D Delta = End - Start;
+    Out = Start + Factor * Delta;
+}
+
+void Wz4Skeleton::CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim)
+{
+    // we need at least two values to interpolate...
+    if (pNodeAnim->mNumRotationKeys == 1) {
+        Out = pNodeAnim->mRotationKeys[0].mValue;
+        return;
+    }
+
+    sU32 RotationIndex = FindRotation(AnimationTime, pNodeAnim);
+    sU32 NextRotationIndex = (RotationIndex + 1);
+    assert(NextRotationIndex < pNodeAnim->mNumRotationKeys);
+    float DeltaTime = pNodeAnim->mRotationKeys[NextRotationIndex].mTime - pNodeAnim->mRotationKeys[RotationIndex].mTime;
+    float Factor = (AnimationTime - (float)pNodeAnim->mRotationKeys[RotationIndex].mTime) / DeltaTime;
+    assert(Factor >= 0.0f && Factor <= 1.0f);
+    const aiQuaternion& StartRotationQ = pNodeAnim->mRotationKeys[RotationIndex].mValue;
+    const aiQuaternion& EndRotationQ = pNodeAnim->mRotationKeys[NextRotationIndex].mValue;
+    aiQuaternion::Interpolate(Out, StartRotationQ, EndRotationQ, Factor);
+    Out = Out.Normalize();
+} 
+
+void Wz4Skeleton::CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim)
+{
+    if (pNodeAnim->mNumPositionKeys == 1) {
+        Out = pNodeAnim->mPositionKeys[0].mValue;
+        return;
+    }
+            
+    sU32 PositionIndex = FindPosition(AnimationTime, pNodeAnim);
+    sU32 NextPositionIndex = (PositionIndex + 1);
+    assert(NextPositionIndex < pNodeAnim->mNumPositionKeys);
+    float DeltaTime = (float)(pNodeAnim->mPositionKeys[NextPositionIndex].mTime - pNodeAnim->mPositionKeys[PositionIndex].mTime);
+    float Factor = (AnimationTime - (float)pNodeAnim->mPositionKeys[PositionIndex].mTime) / DeltaTime;
+    assert(Factor >= 0.0f && Factor <= 1.0f);
+    const aiVector3D& Start = pNodeAnim->mPositionKeys[PositionIndex].mValue;
+    const aiVector3D& End = pNodeAnim->mPositionKeys[NextPositionIndex].mValue;
+    aiVector3D Delta = End - Start;
+    Out = Start + Factor * Delta;
+}
+
+const aiScene * scene;
+Assimp::Importer m_importer;
+
+
+//void Wz4Skeleton::ReadNodeHeirarchy(sF32 AnimationTime, const aiNode* pNode , const sMatrix34 & ParentTransform)
+void Wz4Skeleton::ReadNodeHeirarchy(sF32 AnimationTime, const aiNode* pNode , const aiMatrix4x4 & ParentTransform)
+{
+
+  std::string NodeName(pNode->mName.data);
+  const aiAnimation* pAnimation = scene->mAnimations[0];
+
+  //sMatrix34 NodeTransformation;
+  //Matrix4f(NodeTransformation, pNode->mTransformation);
+  aiMatrix4x4 NodeTransformation = pNode->mTransformation;
+
+
+  const aiNodeAnim* pNodeAnim = FindNodeAnim(pAnimation, NodeName);
+
+   if (pNodeAnim) {
+
+         sSRT srt;
+
+        // Interpolate scaling and generate scaling transformation matrix
+        aiVector3D Scaling;
+        CalcInterpolatedScaling(Scaling, AnimationTime, pNodeAnim);
+        //Matrix4f ScalingM;
+        //ScalingM.InitScaleTransform(Scaling.x, Scaling.y, Scaling.z);
+        
+        /*sMatrix34 ScalingM;        
+        srt.Scale.x = Scaling.x;
+        srt.Scale.y = Scaling.y;
+        srt.Scale.z = Scaling.z;
+        srt.Rotate = sVector30(0);
+        srt.Translate = sVector31(0);
+        srt.MakeMatrix(ScalingM);*/
+
+        aiMatrix4x4 ScalingM(Scaling, aiQuaternion(), aiVector3t<sF32>(0));
+        
+
+        // Interpolate rotation and generate rotation transformation matrix
+        aiQuaternion RotationQ;
+        CalcInterpolatedRotation(RotationQ, AnimationTime, pNodeAnim);
+        //Matrix4f RotationM = Matrix4f(RotationQ.GetMatrix());
+        
+        /*sMatrix34 RotationM;
+        sQuaternion quat;
+        quat.Init(RotationQ.w, RotationQ.x, RotationQ.y, RotationQ.z);
+        RotationM.Init(quat);*/
+
+        aiMatrix4x4 RotationM(aiVector3t<sF32>(1), RotationQ, aiVector3t<sF32>(0));
+
+
+
+        // Interpolate translation and generate translation transformation matrix
+        aiVector3D Translation;
+        CalcInterpolatedPosition(Translation, AnimationTime, pNodeAnim);
+        //Matrix4f TranslationM;
+        //TranslationM.InitTranslationTransform(Translation.x, Translation.y, Translation.z);
+        
+        /*sMatrix34 TranslationM;
+        srt.Scale = sVector31(1);
+        srt.Rotate = sVector30(0);
+        srt.Translate.x = Translation.x;
+        srt.Translate.y = Translation.y;
+        srt.Translate.z = Translation.z;
+        srt.MakeMatrix(TranslationM);*/
+
+        aiMatrix4x4 TranslationM(aiVector3t<sF32>(1), aiQuaternion(), Translation);
+
+
+        // Combine the above transformations
+        NodeTransformation = TranslationM * RotationM * ScalingM;       
+
+
+
+        /*srt.Scale.x = Scaling.x;
+        srt.Scale.y = Scaling.y;
+        srt.Scale.z = Scaling.z;
+
+        srt.Rotate = sVector30(0);
+
+        srt.Translate.x = Translation.x;
+        srt.Translate.y = Translation.y;
+        srt.Translate.z = Translation.z;
+
+        srt.MakeMatrix(NodeTransformation);
+
+        sVector30 axis;
+        sF32 angle;
+        quat.GetAxisAngle(axis, angle);
+
+        NodeTransformation.RotateAxis(axis,angle);*/
+        //NodeTransformation.Init(quat);
+
+
+    }
+
+   // Matrix4f GlobalTransformation = ParentTransform * NodeTransformation;
+   //sMatrix34 GlobalTransformation;
+   //GlobalTransformation = ParentTransform * NodeTransformation;
+   aiMatrix4x4 GlobalTransformation = ParentTransform * NodeTransformation;
+
+
+    if (m_BoneMapping.find(NodeName) != m_BoneMapping.end()) 
+    {
+        sU32 BoneIndex = m_BoneMapping[NodeName];
+        m_BoneInfo[BoneIndex].FinalTransformation = m_GlobalInverseTransform * GlobalTransformation * m_BoneInfo[BoneIndex].BoneOffset;
+    }
+
+    for (sU32 i = 0 ; i < pNode->mNumChildren ; i++) 
+    {
+        ReadNodeHeirarchy(AnimationTime, pNode->mChildren[i], GlobalTransformation);
+    }
+
+
+
+
+
+
+
+
+  /*wDocName name;
+  sCopyString(name, pNode->mName.C_Str(), pNode->mName.length);
+
+  sMatrix34 NodeTransformation;  
+  Matrix4f(NodeTransformation, pNode->mTransformation);
+
+
+  sInt index = sFindIndex(Joints, &Wz4AnimJoint::Name, name);
+  if(index != -1)
+  {
+    Wz4ChannelPerFrame * c = static_cast<Wz4ChannelPerFrame *>(Joints[index].Channel);
+    
+    sMatrix34 mat;
+    Wz4AnimKey key;
+    c->Evaluate(time, key);
+    key.ToMatrix(mat);   
+  }
+
+  sMatrix34 GlobalTransformation;
+  GlobalTransformation = ParentTransform * NodeTransformation;
+
+  if(index != -1)
+  {
+    Joints[index].aiFinalTransformation = GlobalTransformation * Joints[index].aiBoneOffset;
+  }
+
+
+  for(sU32 i=0; i<pNode->mNumChildren; i++) 
+  {
+    ReadNodeHeirarchy(time, pNode->mChildren[i], GlobalTransformation);
+  }
+  */
+
+}
+
 void Wz4Skeleton::EvaluateCM(sF32 time,sMatrix34 *mata,sMatrix34CM *basemat)
 {
   Wz4AnimJoint *j;
   Wz4AnimKey key;
   sMatrix34 mat;
+  
 
-  sFORALL(Joints,j)
+  float TicksPerSecond = scene->mAnimations[0]->mTicksPerSecond != 0 ? scene->mAnimations[0]->mTicksPerSecond : 25.0f;
+  float TimeInTicks = time * TicksPerSecond;
+  float AnimationTime = fmod(TimeInTicks, scene->mAnimations[0]->mDuration);
+  
+  //sMatrix34 identity;
+  //identity.Init();
+
+  aiMatrix4x4 identity;
+
+
+  ReadNodeHeirarchy(AnimationTime, scene->mRootNode, identity);
+
+   for (sU32 i=0; i<m_NumBones; i++) 
+   {
+     //Matrix4f(sMatrix34(basemat[i]), m_BoneInfo[i].FinalTransformation);
+
+     //m_BoneInfo[i].FinalTransformation.Trans3();
+     //basemat[i] = m_BoneInfo[i].FinalTransformation;
+
+     basemat[i].Init();
+
+     basemat[i].x.x = m_BoneInfo[i].FinalTransformation.a1;
+     basemat[i].x.y = m_BoneInfo[i].FinalTransformation.a2;
+     basemat[i].x.z = m_BoneInfo[i].FinalTransformation.a3;
+     basemat[i].x.w = m_BoneInfo[i].FinalTransformation.a4;
+
+     basemat[i].y.x = m_BoneInfo[i].FinalTransformation.b1;
+     basemat[i].y.y = m_BoneInfo[i].FinalTransformation.b2;
+     basemat[i].y.z = m_BoneInfo[i].FinalTransformation.b3;
+     basemat[i].y.w = m_BoneInfo[i].FinalTransformation.b4;
+
+     basemat[i].z.x = m_BoneInfo[i].FinalTransformation.c1;
+     basemat[i].z.y = m_BoneInfo[i].FinalTransformation.c2;
+     basemat[i].z.z = m_BoneInfo[i].FinalTransformation.c3;
+     basemat[i].z.w = m_BoneInfo[i].FinalTransformation.c4;
+
+    
+   }
+
+
+  /*sFORALL(Joints,j)
+  {
+    basemat[_i] = j->aiFinalTransformation;
+  }*/
+
+
+
+
+
+
+  
+
+  /*sFORALL(Joints,j)
   {
     if(j->Channel)
     {
@@ -552,10 +914,59 @@ void Wz4Skeleton::EvaluateCM(sF32 time,sMatrix34 *mata,sMatrix34CM *basemat)
     if(j->Parent==-1)
       mata[_i] = mat;
     else
-      mata[_i] = mat * mata[j->Parent];
+    {
+
+      //mata[_i] = mat *mata[j->Parent]; // bad
+
+      sMatrix34 keyMatParent;
+      Joints[j->Parent].Channel->Evaluate(time,key);
+      key.ToMatrix(keyMatParent);
+
+      //mata[_i] = mat * matParent;
+      mata[_i] = mat * Joints[j->Parent].BasePose * keyMatParent;
+
+    }
     basemat[_i] = j->BasePose * mata[_i];
-  }
+  }*/
+
+
+  
+ /*j->Channel
+
+  sFORALL(Joints, j)
+  {
+    if(j->Parent == -1)
+    {
+      mat.Init();
+      j->BasePose = j->BasePose;
+    }
+    else
+    {
+      j->BasePose *=  Joints[j->Parent].BasePose;
+    }
+
+    basemat[_i] = j->BasePose;
+  }*/
+
+  
+ 
+
+  /*sFORALL(Joints,j)
+  {
+    if(j->Channel)
+    {
+      j->Channel->Evaluate(time,key);
+      key.ToMatrix(mat);
+    }
+    else
+    {
+      mat.Init();
+    }
+  }*/
 }
+
+/****************************************************************************/
+/****************************************************************************/
 
 void Wz4Skeleton::EvaluateBlendCM(sF32 time1,sF32 time2,sF32 reftime,sMatrix34 *mata,sMatrix34CM *basemat)
 {
