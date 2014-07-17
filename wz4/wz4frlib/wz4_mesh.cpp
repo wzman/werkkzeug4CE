@@ -7218,34 +7218,33 @@ sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImpor
   sChar8 filename[MAXLEN];
   sCopyString(filename, file ,MAXLEN);
 
-  Skeleton = new Wz4Skeleton;
-  Skeleton->IsAssimp = sTRUE;
+  waiImporter = new Assimp::Importer();
 
   if(para->AssimpOptions & 0x01)
-     Skeleton->Importer.SetPropertyFloat(AI_CONFIG_PP_CT_MAX_SMOOTHING_ANGLE, para->TangentsMaxSmoothAngle);
+     waiImporter->SetPropertyFloat(AI_CONFIG_PP_CT_MAX_SMOOTHING_ANGLE, para->TangentsMaxSmoothAngle);
   if(para->AssimpOptions & 0x10)
-     Skeleton->Importer.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS, para->RemoveComponents);
+     waiImporter->SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS, para->RemoveComponents);
   if(para->AssimpOptions & 0x40)
-     Skeleton->Importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, para->NormalsMaxSmoothAngle);
+     waiImporter->SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, para->NormalsMaxSmoothAngle);
   if(para->AssimpOptions & 0x100)
-     Skeleton->Importer.SetPropertyFloat(AI_CONFIG_PP_PTV_NORMALIZE, para->NormalizeSpatialDim);
+     waiImporter->SetPropertyFloat(AI_CONFIG_PP_PTV_NORMALIZE, para->NormalizeSpatialDim);
   if(para->AssimpOptions & 0x200)
-     Skeleton->Importer.SetPropertyInteger(AI_CONFIG_PP_LBW_MAX_WEIGHTS, para->LimitBoneWeight);
+     waiImporter->SetPropertyInteger(AI_CONFIG_PP_LBW_MAX_WEIGHTS, para->LimitBoneWeight);
   if(para->AssimpOptions & 0x8000)
-     Skeleton->Importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, para->RemovePrimitives);
+     waiImporter->SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, para->RemovePrimitives);
 
-  Skeleton->Scene = Skeleton->Importer.ReadFile(filename, para->AssimpOptions);
+  waiScene = waiImporter->ReadFile(filename, para->AssimpOptions);
 
-  if(!Skeleton->Scene)
+  if(!waiScene)
   {
-    sCopyString(errString, Skeleton->Importer.GetErrorString(), MAXLEN);
+    sCopyString(errString, waiImporter->GetErrorString(), MAXLEN);
     sLog(L"Assimp", L"Couldn't load model");
     return sFALSE;
   }
 
-  for(sU32 j=0; j<Skeleton->Scene->mNumMeshes; j++)
+  for(sU32 j=0; j<waiScene->mNumMeshes; j++)
   {
-    const aiMesh* paiMesh = Skeleton->Scene->mMeshes[j];
+    const aiMesh* paiMesh = waiScene->mMeshes[j];
 
     Wz4Mesh * wz4mesh = new Wz4Mesh();
     wz4mesh->AddDefaultCluster();
@@ -7355,12 +7354,16 @@ sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImpor
 
   // ANIMATION
 
-  if(!Skeleton->Scene->HasAnimations())
+  if(!waiScene->HasAnimations())
     return sTRUE;
 
-  aiMesh * pMesh = Skeleton->Scene->mMeshes[0];
+  Skeleton = new Wz4Skeleton;
+  Skeleton->IsAssimp = sTRUE;
+  Skeleton->waipScene = waiScene;
 
-  Skeleton->GlobalInverseTransform = Skeleton->Scene->mRootNode->mTransformation;
+  aiMesh * pMesh = waiScene->mMeshes[0];
+
+  Skeleton->GlobalInverseTransform = waiScene->mRootNode->mTransformation;
   Skeleton->GlobalInverseTransform.Inverse();
 
   // pour chaque bone

@@ -707,9 +707,9 @@ void Wz4Skeleton::CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, 
   sU32 ScalingIndex = FindScaling(AnimationTime, pNodeAnim);
   sU32 NextScalingIndex = (ScalingIndex + 1);
   sVERIFY(NextScalingIndex < pNodeAnim->mNumScalingKeys);
-  float DeltaTime = (float)(pNodeAnim->mScalingKeys[NextScalingIndex].mTime - pNodeAnim->mScalingKeys[ScalingIndex].mTime);
-  float Factor = (AnimationTime - (float)pNodeAnim->mScalingKeys[ScalingIndex].mTime) / DeltaTime;
-  sVERIFY(Factor >= 0.0f && Factor <= 1.0f);
+  sF32 DeltaTime = (sF32)(pNodeAnim->mScalingKeys[NextScalingIndex].mTime - pNodeAnim->mScalingKeys[ScalingIndex].mTime);
+  sF32 Factor = (AnimationTime - (sF32)pNodeAnim->mScalingKeys[ScalingIndex].mTime) / DeltaTime;
+  //sVERIFY(Factor >= 0.0f && Factor <= 1.0f);
   const aiVector3D& Start = pNodeAnim->mScalingKeys[ScalingIndex].mValue;
   const aiVector3D& End   = pNodeAnim->mScalingKeys[NextScalingIndex].mValue;
   aiVector3D Delta = End - Start;
@@ -727,9 +727,9 @@ void Wz4Skeleton::CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTim
   sU32 RotationIndex = FindRotation(AnimationTime, pNodeAnim);
   sU32 NextRotationIndex = (RotationIndex + 1);
   sVERIFY(NextRotationIndex < pNodeAnim->mNumRotationKeys);
-  float DeltaTime = pNodeAnim->mRotationKeys[NextRotationIndex].mTime - pNodeAnim->mRotationKeys[RotationIndex].mTime;
-  float Factor = (AnimationTime - (float)pNodeAnim->mRotationKeys[RotationIndex].mTime) / DeltaTime;
-  sVERIFY(Factor >= 0.0f && Factor <= 1.0f);
+  sF32 DeltaTime = pNodeAnim->mRotationKeys[NextRotationIndex].mTime - pNodeAnim->mRotationKeys[RotationIndex].mTime;
+  sF32 Factor = (AnimationTime - (sF32)pNodeAnim->mRotationKeys[RotationIndex].mTime) / DeltaTime;
+  //sVERIFY(Factor >= 0.0f && Factor <= 1.0f);
   const aiQuaternion& StartRotationQ = pNodeAnim->mRotationKeys[RotationIndex].mValue;
   const aiQuaternion& EndRotationQ = pNodeAnim->mRotationKeys[NextRotationIndex].mValue;
   aiQuaternion::Interpolate(Out, StartRotationQ, EndRotationQ, Factor);
@@ -747,9 +747,9 @@ void Wz4Skeleton::CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime,
   sU32 PositionIndex = FindPosition(AnimationTime, pNodeAnim);
   sU32 NextPositionIndex = (PositionIndex + 1);
   sVERIFY(NextPositionIndex < pNodeAnim->mNumPositionKeys);
-  float DeltaTime = (float)(pNodeAnim->mPositionKeys[NextPositionIndex].mTime - pNodeAnim->mPositionKeys[PositionIndex].mTime);
-  float Factor = (AnimationTime - (float)pNodeAnim->mPositionKeys[PositionIndex].mTime) / DeltaTime;
-  sVERIFY(Factor >= 0.0f && Factor <= 1.0f);
+  sF32 DeltaTime = (float)(pNodeAnim->mPositionKeys[NextPositionIndex].mTime - pNodeAnim->mPositionKeys[PositionIndex].mTime);
+  sF32 Factor = (AnimationTime - (sF32)pNodeAnim->mPositionKeys[PositionIndex].mTime) / DeltaTime;
+  //sVERIFY(Factor >= 0.0f && Factor <= 1.0f);
   const aiVector3D& Start = pNodeAnim->mPositionKeys[PositionIndex].mValue;
   const aiVector3D& End = pNodeAnim->mPositionKeys[NextPositionIndex].mValue;
   aiVector3D Delta = End - Start;
@@ -759,7 +759,7 @@ void Wz4Skeleton::CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime,
 void Wz4Skeleton::ReadNodeHierarchy(sF32 AnimationTime, const aiNode* pNode , const aiMatrix4x4 & ParentTransform)
 {
   std::string NodeName(pNode->mName.data);
-  const aiAnimation* pAnimation = Scene->mAnimations[0];
+  const aiAnimation* pAnimation = waipScene->mAnimations[0];
 
   aiMatrix4x4 NodeTransformation = pNode->mTransformation;
 
@@ -800,12 +800,12 @@ void Wz4Skeleton::ReadNodeHierarchy(sF32 AnimationTime, const aiNode* pNode , co
 
 void Wz4Skeleton::EvaluateAssimpCM(sF32 time,sMatrix34 *mata,sMatrix34CM *basemat)
 {
-  sF32 TicksPerSecond = Scene->mAnimations[0]->mTicksPerSecond != 0 ? Scene->mAnimations[0]->mTicksPerSecond : 25.0f;
+  sF32 TicksPerSecond = waipScene->mAnimations[0]->mTicksPerSecond != 0 ? waipScene->mAnimations[0]->mTicksPerSecond : 25.0f;
   sF32 TimeInTicks = time * TicksPerSecond;
-  sF32 AnimationTime = sMod(TimeInTicks, Scene->mAnimations[0]->mDuration);
+  sF32 AnimationTime = sMod(TimeInTicks, waipScene->mAnimations[0]->mDuration);
 
   aiMatrix4x4 identity;
-  ReadNodeHierarchy(AnimationTime, Scene->mRootNode, identity);
+  ReadNodeHierarchy(AnimationTime, waipScene->mRootNode, identity);
 
   Wz4AnimJoint * j;
   sFORALL(Joints, j)

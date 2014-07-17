@@ -257,8 +257,7 @@ public:
 
   aiMatrix4x4 GlobalInverseTransform;
   std::map<std::string, sU32> BoneMapping;
-  const aiScene * Scene;
-  Assimp::Importer Importer;
+  const aiScene * waipScene;
 
 #endif
 };

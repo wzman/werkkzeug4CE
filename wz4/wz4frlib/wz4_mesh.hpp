@@ -308,6 +308,9 @@ public:
 
 #ifdef sCOMPIL_ASSIMP
   sBool LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImportEx * para);
+
+  const aiScene * waiScene;
+  Assimp::Importer * waiImporter;
 #endif
 };
 
