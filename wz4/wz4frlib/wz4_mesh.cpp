@@ -7361,65 +7361,75 @@ sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImpor
   Skeleton->IsAssimp = sTRUE;
   Skeleton->waipScene = waiScene;
 
-  aiMesh * pMesh = waiScene->mMeshes[0];
-
   Skeleton->GlobalInverseTransform = waiScene->mRootNode->mTransformation;
   Skeleton->GlobalInverseTransform.Inverse();
 
-  // pour chaque bone
-  for(sU32 boneId=0; boneId<pMesh->mNumBones; boneId++)
+  sInt nextMeshVertices = 0;
+  sInt nextMeshBones = 0;
+
+  for(sU32 meshIndex=0; meshIndex<waiScene->mNumMeshes; meshIndex++)
   {
-    // 1st step - build bone map, used to get bone index from aiNodeAnim name
+    aiMesh * pMesh = waiScene->mMeshes[meshIndex];
 
-    sU32 BoneIndex = 0;
-    std::string BoneName(pMesh->mBones[boneId]->mName.data);
-
-    if (Skeleton->BoneMapping.find(BoneName) == Skeleton->BoneMapping.end())
+    // pour chaque bone
+    for(sU32 boneId=0; boneId<pMesh->mNumBones; boneId++)
     {
-      // add bone to skeleton
-      BoneIndex = Skeleton->Joints.GetCount();
-      Skeleton->Joints.AddMany(1);
-      Wz4ChannelPerFrame * c = new Wz4ChannelPerFrame;
-      Skeleton->Joints[BoneIndex].Init();
-      Skeleton->Joints[BoneIndex].Channel = c;
-    }
-    else 
-    {
-      BoneIndex =  Skeleton->BoneMapping[BoneName];
-    }
+      // 1st step - build bone map, used to get bone index from aiNodeAnim name
 
-    Skeleton->BoneMapping[BoneName] = BoneIndex;
-    Skeleton->Joints[BoneIndex].BoneOffset = pMesh->mBones[boneId]->mOffsetMatrix;
+      sU32 BoneIndex = 0;
+      std::string BoneName(pMesh->mBones[boneId]->mName.data);
 
-
-    // 2nd step - skinning (bind vertices to bones according weight influence)
-
-    //  pour chaque vertex influencé par ce bone
-    for(sU32 j=0; j<pMesh->mBones[boneId]->mNumWeights; j++)
-    {
-      // recupere l'index du vertex influencé par ce bone
-      sInt vertexID = pMesh->mBones[boneId]->mWeights[j].mVertexId;
-
-      // recupere la force de son influence
-      sF32 weight = pMesh->mBones[boneId]->mWeights[j].mWeight;
-
-      // affecte a ce vertex (dans le mesh) l'index du bone qui l'influence
-      // le vertex ayant 4 slot pour cela (4 bones possible qui peuvent l'influencer) - cherche un slot libre
-      sBool affected = sFALSE;
-      for(sInt k=0; k<4; k++)
+      if (Skeleton->BoneMapping.find(BoneName) == Skeleton->BoneMapping.end())
       {
-        if(Vertices[vertexID].Weight[k] == 0.0f)
-        {
-          Vertices[vertexID].Index[k] = boneId;
-          Vertices[vertexID].Weight[k] = weight;
-          affected = sTRUE;
-          break;
-        }
+        // add bone to skeleton
+        BoneIndex = Skeleton->Joints.GetCount();
+        Skeleton->Joints.AddMany(1);
+        Wz4ChannelPerFrame * c = new Wz4ChannelPerFrame;
+        Skeleton->Joints[BoneIndex].Init();
+        Skeleton->Joints[BoneIndex].Channel = c;
+      }
+      else
+      {
+        BoneIndex = Skeleton->BoneMapping[BoneName];
       }
 
-      // verifie qu'au moins un slot à été affecté, sinon cele siginifie qu'il n'y plus de slot libre (nbr bones par vertex > 4)
-      sVERIFY(affected)
+      Skeleton->BoneMapping[BoneName] = BoneIndex;
+      Skeleton->Joints[BoneIndex].BoneOffset = pMesh->mBones[boneId]->mOffsetMatrix;
+
+
+      // 2nd step - skinning (bind vertices to bones according weight influence)
+
+
+      //  pour chaque vertex influencé par ce bone
+      for(sU32 j=0; j<pMesh->mBones[boneId]->mNumWeights; j++)
+      {
+        // recupere l'index du vertex influencé par ce bone
+        sInt vertexID = pMesh->mBones[boneId]->mWeights[j].mVertexId + nextMeshVertices;
+
+        // recupere la force de son influence
+        sF32 weight = pMesh->mBones[boneId]->mWeights[j].mWeight;
+
+        // affecte a ce vertex (dans le mesh) l'index du bone qui l'influence
+        // le vertex ayant 4 slot pour cela (4 bones possible qui peuvent l'influencer) - cherche un slot libre
+        sBool affected = sFALSE;
+        for(sInt k=0; k<4; k++)
+        {
+          if(Vertices[vertexID].Weight[k] == 0.0f)
+          {
+            Vertices[vertexID].Index[k] = boneId + nextMeshBones;
+            Vertices[vertexID].Weight[k] = weight;
+            affected = sTRUE;
+            break;
+          }
+        }
+
+        // verifie qu'au moins un slot à été affecté, sinon cele siginifie qu'il n'y plus de slot libre (nbr bones par vertex > 4)
+        sVERIFY(affected);
+      }
     }
+
+    nextMeshVertices += pMesh->mNumVertices;
+    nextMeshBones += pMesh->mNumBones;
 
   }
 
