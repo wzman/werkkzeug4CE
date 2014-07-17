@@ -241,11 +241,9 @@ public:
 
   sArray<Wz4AnimJoint> Joints;
   sF32 TotalTime;                     // total time in seconds
-  sBool IsAssimp;                     // work with assimp treatments
 
 #ifdef sCOMPIL_ASSIMP
-
-  void EvaluateAssimpCM(sF32 time,sMatrix34 *mat,sMatrix34CM *basemat);
+  
   sU32 FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim);
   sU32 FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim);
   sU32 FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim);
@@ -253,7 +251,8 @@ public:
   void CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
   void CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
   const aiNodeAnim* FindNodeAnim(const aiAnimation* pAnimation, const std::string NodeName);
-  void ReadNodeHierarchy(sF32 time,  const aiNode* pNode, const aiMatrix4x4 & parentTransform);
+  void ReadNodeHierarchy(sF32 time,  const aiNode* pNode, const aiMatrix4x4 & parentTransform, sInt animSeq);
+  void EvaluateAssimpCM(sF32 time,sMatrix34 *mat,sMatrix34CM *basemat, sInt animSeq);
 
   aiMatrix4x4 GlobalInverseTransform;
   std::map<std::string, sU32> BoneMapping;

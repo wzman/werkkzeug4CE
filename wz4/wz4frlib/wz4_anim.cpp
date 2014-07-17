@@ -391,7 +391,6 @@ Wz4Skeleton::Wz4Skeleton()
 {
   Type = Wz4SkeletonType;
   TotalTime = 1;
-  IsAssimp = sFALSE;
 }
 
 Wz4Skeleton::~Wz4Skeleton()
@@ -660,7 +659,7 @@ sU32 Wz4Skeleton::FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim)
     }
   }
 
-  sVERIFY(0);
+  //sVERIFY(0);
   return 0;
 }
 
@@ -676,7 +675,7 @@ sU32 Wz4Skeleton::FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim)
     }
   }
 
-  sVERIFY(0);
+  //sVERIFY(0);
   return 0;
 }
 
@@ -692,7 +691,7 @@ sU32 Wz4Skeleton::FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim)
     }
   }
 
-  sVERIFY(0);
+  //sVERIFY(0);
   return 0;
 }
 
@@ -756,10 +755,10 @@ void Wz4Skeleton::CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime,
   Out = Start + Factor * Delta;
 }
 
-void Wz4Skeleton::ReadNodeHierarchy(sF32 AnimationTime, const aiNode* pNode , const aiMatrix4x4 & ParentTransform)
+void Wz4Skeleton::ReadNodeHierarchy(sF32 AnimationTime, const aiNode* pNode , const aiMatrix4x4 & ParentTransform, sInt animSeq)
 {
   std::string NodeName(pNode->mName.data);
-  const aiAnimation* pAnimation = waipScene->mAnimations[0];
+  const aiAnimation* pAnimation = waipScene->mAnimations[animSeq];
 
   aiMatrix4x4 NodeTransformation = pNode->mTransformation;
 
@@ -795,17 +794,20 @@ void Wz4Skeleton::ReadNodeHierarchy(sF32 AnimationTime, const aiNode* pNode , co
   }
 
   for (sU32 i=0; i<pNode->mNumChildren; i++)
-    ReadNodeHierarchy(AnimationTime, pNode->mChildren[i], GlobalTransformation);
+    ReadNodeHierarchy(AnimationTime, pNode->mChildren[i], GlobalTransformation, animSeq);
 }
 
-void Wz4Skeleton::EvaluateAssimpCM(sF32 time,sMatrix34 *mata,sMatrix34CM *basemat)
+void Wz4Skeleton::EvaluateAssimpCM(sF32 time,sMatrix34 *mata,sMatrix34CM *basemat, sInt animSeq)
 {
-  sF32 TicksPerSecond = waipScene->mAnimations[0]->mTicksPerSecond != 0 ? waipScene->mAnimations[0]->mTicksPerSecond : 25.0f;
+  if(animSeq > waipScene->mNumAnimations-1)
+    animSeq = waipScene->mNumAnimations-1;
+
+  sF32 TicksPerSecond = waipScene->mAnimations[animSeq]->mTicksPerSecond != 0 ? waipScene->mAnimations[animSeq]->mTicksPerSecond : 25.0f;
   sF32 TimeInTicks = time * TicksPerSecond;
-  sF32 AnimationTime = sMod(TimeInTicks, waipScene->mAnimations[0]->mDuration);
+  sF32 AnimationTime = sMod(TimeInTicks, waipScene->mAnimations[animSeq]->mDuration);
 
   aiMatrix4x4 identity;
-  ReadNodeHierarchy(AnimationTime, waipScene->mRootNode, identity);
+  ReadNodeHierarchy(AnimationTime, waipScene->mRootNode, identity, animSeq);
 
   Wz4AnimJoint * j;
   sFORALL(Joints, j)

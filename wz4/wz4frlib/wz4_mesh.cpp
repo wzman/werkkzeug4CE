@@ -399,6 +399,7 @@ Wz4Mesh::Wz4Mesh()
   SaveFlags = 0;
   ChargeCount = 0;
   DontClearVertices = 0;
+  IsAssimp = sFALSE;
 }
 
 /****************************************************************************/
@@ -5013,10 +5014,10 @@ void Wz4Mesh::Render(sInt flags,sInt index,const sMatrix34CM *mat,sF32 time,cons
       bonemat = sALLOCSTACK(sMatrix34,bc);
       basemat = sALLOCSTACK(sMatrix34CM,bc);
 
-      if(!Skeleton->IsAssimp)
+      if(!IsAssimp)
         Skeleton->EvaluateCM(time,bonemat,basemat);
       else
-        Skeleton->EvaluateAssimpCM(time,bonemat,basemat);
+        Skeleton->EvaluateAssimpCM(time,bonemat,basemat,waiAnimSequence);
 
       flags |= sRF_MATRIX_BONE;
       nobbox = 1;
@@ -7242,6 +7243,8 @@ sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImpor
     return sFALSE;
   }
 
+  IsAssimp = sTRUE;
+
   for(sU32 j=0; j<waiScene->mNumMeshes; j++)
   {
     const aiMesh* paiMesh = waiScene->mMeshes[j];
@@ -7349,16 +7352,14 @@ sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImpor
   if(para->Wz4MeshOptions & 0x40)
     MergeClusters();
 
-
-  /************************************************************************************/
-
-  // ANIMATION
+  // Animation : create skeleton
 
   if(!waiScene->HasAnimations())
     return sTRUE;
 
+  waiAnimSequence = 1;
+
   Skeleton = new Wz4Skeleton;
-  Skeleton->IsAssimp = sTRUE;
   Skeleton->waipScene = waiScene;
 
   Skeleton->GlobalInverseTransform = waiScene->mRootNode->mTransformation;
