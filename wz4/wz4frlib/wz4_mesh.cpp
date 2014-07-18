@@ -7212,8 +7212,8 @@ sBool Wz4Mesh::LoadWz3MinMesh(const sChar *file)
 /****************************************************************************/
 /****************************************************************************/
 
-
 #ifdef sCOMPIL_ASSIMP
+
 sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImportEx * para)
 {
   sChar8 filename[MAXLEN];
@@ -7367,10 +7367,18 @@ sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImpor
 
   sInt nextMeshVertices = 0;
   sInt nextMeshBones = 0;
+  struct sVertexBoneData
+  {
+    sU32 IDs[4];
+    float Weights[4];
+    sVertexBoneData() { for(sInt i=0; i<4; i++) { IDs[i]=0; Weights[i]=0.0f; } }
+  };
+  sArray<sVertexBoneData> bones;
 
   for(sU32 meshIndex=0; meshIndex<waiScene->mNumMeshes; meshIndex++)
   {
     aiMesh * pMesh = waiScene->mMeshes[meshIndex];
+    bones.AddMany(pMesh->mNumVertices);
 
     // pour chaque bone
     for(sU32 boneId=0; boneId<pMesh->mNumBones; boneId++)
@@ -7397,51 +7405,50 @@ sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImpor
       Skeleton->BoneMapping[BoneName] = BoneIndex;
       Skeleton->Joints[BoneIndex].BoneOffset = pMesh->mBones[boneId]->mOffsetMatrix;
 
-
-      // 2nd step - skinning (bind vertices to bones according weight influence)
-
-
-      //  pour chaque vertex influencé par ce bone
-      for(sU32 j=0; j<pMesh->mBones[boneId]->mNumWeights; j++)
+      // populate bones array with ids and weights
+      for (sU32 j=0; j<pMesh->mBones[boneId]->mNumWeights; j++)
       {
-        // recupere l'index du vertex influencé par ce bone
-        sInt vertexID = pMesh->mBones[boneId]->mWeights[j].mVertexId + nextMeshVertices;
-
-        // recupere la force de son influence
+        sU32 vertexID = pMesh->mBones[boneId]->mWeights[j].mVertexId + nextMeshVertices;
         sF32 weight = pMesh->mBones[boneId]->mWeights[j].mWeight;
 
-        // affecte a ce vertex (dans le mesh) l'index du bone qui l'influence
-        // le vertex ayant 4 slot pour cela (4 bones possible qui peuvent l'influencer) - cherche un slot libre
-        sBool affected = sFALSE;
-        for(sInt k=0; k<4; k++)
+        for (sU32 i=0; i<4; i++)
         {
-          if(Vertices[vertexID].Weight[k] == 0.0f)
+          if (bones[vertexID].Weights[i] == 0.0f)
           {
-            //Vertices[vertexID].Index[k] = boneId + nextMeshBones;
-            sU32 id = boneId;
-            if(para->Wz4MeshOptions&0x80) // SplittedMesh
-              id += nextMeshBones;
-
-            Vertices[vertexID].Index[k] = id;
-
-            Vertices[vertexID].Weight[k] = weight;
-            affected = sTRUE;
+            bones[vertexID].IDs[i] = BoneIndex;
+            bones[vertexID].Weights[i] = weight;
             break;
           }
         }
-
-        // verifie qu'au moins un slot à été affecté, sinon cele siginifie qu'il n'y plus de slot libre (nbr bones par vertex > 4)
-        sVERIFY(affected);
       }
+
     }
 
     nextMeshVertices += pMesh->mNumVertices;
     nextMeshBones += pMesh->mNumBones;
+  }
 
+  // skinning (bind vertices to bones according weight influence)
+
+  Wz4MeshVertex *v;
+  sFORALL(Vertices,v)
+  {
+    v->Index[0] = bones[_i].IDs[0];
+    v->Index[1] = bones[_i].IDs[1];
+    v->Index[2] = bones[_i].IDs[2];
+    v->Index[3] = bones[_i].IDs[3];
+
+    v->Weight[0] = bones[_i].Weights[0];
+    v->Weight[1] = bones[_i].Weights[1];
+    v->Weight[2] = bones[_i].Weights[2];
+    v->Weight[3] = bones[_i].Weights[3];
   }
 
   return sTRUE;
 }
+
+
+
 #endif // sCOMPIL_ASSIMP
 
 /****************************************************************************/
