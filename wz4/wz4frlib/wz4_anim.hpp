@@ -215,8 +215,8 @@ public:
 
 #ifdef sCOMPIL_ASSIMP
 
-#include <map>
 #include <string>
+#include <unordered_map>
 
 #endif  // sCOMPIL_ASSIMP
 
@@ -255,7 +255,7 @@ public:
   void EvaluateAssimpCM(sF32 time,sMatrix34 *mat,sMatrix34CM *basemat, sInt animSeq);
 
   aiMatrix4x4 GlobalInverseTransform;
-  std::map<std::string, sU32> BoneMapping;
+  std::unordered_map<std::string, sU32> BoneMapping;
   const aiScene * waipScene;
 
 #endif

@@ -640,7 +640,7 @@ const aiNodeAnim* Wz4Skeleton::FindNodeAnim(const aiAnimation* pAnimation, const
   for (sU32 i=0; i<pAnimation->mNumChannels ; i++)
   {
     const aiNodeAnim* pNodeAnim = pAnimation->mChannels[i];
-    if (std::string(pNodeAnim->mNodeName.data) == NodeName)
+    if(strcmp(pNodeAnim->mNodeName.C_Str(), NodeName.c_str()) == 0)
     {
       return pNodeAnim;
     }
@@ -812,8 +812,6 @@ void Wz4Skeleton::EvaluateAssimpCM(sF32 time,sMatrix34 *mata,sMatrix34CM *basema
   Wz4AnimJoint * j;
   sFORALL(Joints, j)
   {
-    basemat[_i].Init();
-
     basemat[_i].x.x = j->FinalTransformation.a1;
     basemat[_i].x.y = j->FinalTransformation.a2;
     basemat[_i].x.z = j->FinalTransformation.a3;
