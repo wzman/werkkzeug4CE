@@ -7417,7 +7417,13 @@ sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImpor
         {
           if(Vertices[vertexID].Weight[k] == 0.0f)
           {
-            Vertices[vertexID].Index[k] = boneId + nextMeshBones;
+            //Vertices[vertexID].Index[k] = boneId + nextMeshBones;
+            sU32 id = boneId;
+            if(para->Wz4MeshOptions&0x80) // SplittedMesh
+              id += nextMeshBones;
+
+            Vertices[vertexID].Index[k] = id;
+
             Vertices[vertexID].Weight[k] = weight;
             affected = sTRUE;
             break;
