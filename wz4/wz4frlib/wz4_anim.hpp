@@ -222,6 +222,14 @@ public:
 
 /****************************************************************************/
 
+struct sAiNode
+{
+	std::string mName;            // node name
+	aiMatrix4x4 mTransformation;  // The transformation relative to the node's parent
+	unsigned int mNumChildren;    // The number of child nodes of this node
+	sArray<sAiNode*> mChildren;   // The child nodes of this node
+};
+
 class Wz4Skeleton : public wObject
 {
 public:
@@ -248,12 +256,15 @@ public:
   void WaiEvaluateRotation(aiQuaternion& out, sF32 time, const aiNodeAnim* pNodeAnim);
   void WaiEvaluateScaling(aiVector3D& out, sF32 time, const aiNodeAnim* pNodeAnim);
   void WaiEvaluatePosition(aiVector3D& out, sF32 time, const aiNodeAnim* pNodeAnim);
-  void WaiReadNodeTree(sF32 time, const aiNode* pNode, const aiMatrix4x4 & parentTransform, sInt animSeq);
+  void WaiReadNodeTree(sF32 time, const sAiNode* pNode, const aiMatrix4x4 & parentTransform, sInt animSeq);
   void EvaluateAssimpCM(sF32 time, sMatrix34 *mat,sMatrix34CM *basemat, sInt animSeq);
 
   aiMatrix4x4 GlobalInverseTransform;
   std::unordered_map<std::string, sU32> BoneMapping;
   const aiScene * waipScene;
+
+
+  sAiNode * WaiRootNode;
 
 #endif
 };

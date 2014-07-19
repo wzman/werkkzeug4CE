@@ -7214,6 +7214,8 @@ sBool Wz4Mesh::LoadWz3MinMesh(const sChar *file)
 
 #ifdef sCOMPIL_ASSIMP
 
+void WaiBuildNodeTreeR(aiNode * node, sAiNode * r);
+
 sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImportEx * para)
 {
   sChar8 filename[MAXLEN];
@@ -7444,10 +7446,28 @@ sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImpor
     v->Weight[3] = bones[_i].Weights[3];
   }
 
+  // build node tree
+
+  sAiNode * r = new sAiNode();
+  WaiBuildNodeTreeR(waiScene->mRootNode, r);
+  Skeleton->WaiRootNode = r;
+
   return sTRUE;
 }
 
+void WaiBuildNodeTreeR(aiNode * node, sAiNode * n)
+{
+  n->mNumChildren = node->mNumChildren;
+  n->mName = node->mName.C_Str();
+  n->mTransformation = node->mTransformation;
 
+  for (sU32 i=0; i<node->mNumChildren; i++)
+  {
+    sAiNode * c = new sAiNode();
+    WaiBuildNodeTreeR(node->mChildren[i], c);
+    n->mChildren.AddTail(c);
+  }
+}
 
 #endif // sCOMPIL_ASSIMP
 

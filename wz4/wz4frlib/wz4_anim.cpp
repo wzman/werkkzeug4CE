@@ -696,9 +696,9 @@ void Wz4Skeleton::WaiEvaluatePosition(aiVector3D& out, sF32 time, const aiNodeAn
   out = pNodeAnim->mPositionKeys[key+0].mValue + Factor * Delta;
 }
 
-void Wz4Skeleton::WaiReadNodeTree(sF32 time, const aiNode* pNode, const aiMatrix4x4 & parentTransform, sInt animSeq)
+void Wz4Skeleton::WaiReadNodeTree(sF32 time, const sAiNode* pNode, const aiMatrix4x4 & parentTransform, sInt animSeq)
 {
-  std::string nodeName(pNode->mName.data);
+  std::string nodeName(pNode->mName);
   aiMatrix4x4 nodeTransformation = pNode->mTransformation;
   const aiNodeAnim* pNodeAnim = WaiGetAnimNode(nodeName, animSeq);
 
@@ -731,7 +731,7 @@ void Wz4Skeleton::EvaluateAssimpCM(sF32 time,sMatrix34 *mata,sMatrix34CM *basema
     animSeq = waipScene->mNumAnimations-1;
 
   aiMatrix4x4 mat;
-  WaiReadNodeTree(time, waipScene->mRootNode, mat, animSeq);
+  WaiReadNodeTree(time, WaiRootNode, mat, animSeq);
 
   Wz4AnimJoint * j;
   sFORALL(Joints, j)
