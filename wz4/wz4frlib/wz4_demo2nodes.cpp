@@ -427,8 +427,10 @@ void RNRenderMesh::Simulate(Wz4RenderContext *ctx)
   SimulateCalc(ctx);
 //  Anim.UnBind(ctx->Script,&Para);
 
+#ifdef sCOMPIL_ASSIMP
   if(Mesh->WaiAnimSequence != -1)
     Mesh->WaiAnimSequence = Para.AnimSequence;
+#endif
 }
 
 void RNRenderMesh::Prepare(Wz4RenderContext *ctx)

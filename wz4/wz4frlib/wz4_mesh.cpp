@@ -399,12 +399,17 @@ Wz4Mesh::Wz4Mesh()
   SaveFlags = 0;
   ChargeCount = 0;
   DontClearVertices = 0;
+
+#ifdef sCOMPIL_ASSIMP
   WaiIsAssimpAnimated = sFALSE;
+#endif
 }
 
 /****************************************************************************/
 
+#ifdef sCOMPIL_ASSIMP
 void WaiReleaseNodeTreeR(sAiNode * n);
+#endif
 
 Wz4Mesh::~Wz4Mesh()
 {
@@ -416,6 +421,7 @@ Wz4Mesh::~Wz4Mesh()
   delete InstanceGeo;
   delete InstancePlusGeo;
 
+#ifdef sCOMPIL_ASSIMP
   if(WaiIsAssimpAnimated)
   {
     WaiReleaseNodeTreeR(Skeleton->WaiRootNode);
@@ -435,6 +441,7 @@ Wz4Mesh::~Wz4Mesh()
       delete anim;
     }
   }
+#endif
 
   Skeleton->Release();
 }
@@ -5037,10 +5044,14 @@ void Wz4Mesh::Render(sInt flags,sInt index,const sMatrix34CM *mat,sF32 time,cons
       bonemat = sALLOCSTACK(sMatrix34,bc);
       basemat = sALLOCSTACK(sMatrix34CM,bc);
 
+#ifdef sCOMPIL_ASSIMP
       if(!WaiIsAssimpAnimated)
+#endif
         Skeleton->EvaluateCM(time,bonemat,basemat);
+#ifdef sCOMPIL_ASSIMP
       else
         Skeleton->WaiEvaluateAssimpCM(time,bonemat,basemat,WaiAnimSequence);
+#endif
 
       flags |= sRF_MATRIX_BONE;
       nobbox = 1;

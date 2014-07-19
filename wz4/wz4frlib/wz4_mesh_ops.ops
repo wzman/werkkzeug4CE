@@ -213,14 +213,20 @@ operator Wz4Mesh ImportEx()
   }
   code
   {
+#ifdef sCOMPIL_ASSIMP
     sBool result = 0;
     sChar errString[1024];
+
     result = out->WaiLoadAssimp(cmd->Strings[0], errString, para);
 
     if(!result)
       cmd->SetError(errString);
 
     return result;
+#else
+    cmd->SetError(L"Assimp not available in this build.");
+    return sFALSE;
+#endif
   }
 }
 
