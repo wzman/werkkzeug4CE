@@ -404,6 +404,8 @@ Wz4Mesh::Wz4Mesh()
 
 /****************************************************************************/
 
+void WaiReleaseNodeTreeR(sAiNode * n);
+
 Wz4Mesh::~Wz4Mesh()
 {
   sDeleteAll(Clusters);
@@ -413,6 +415,27 @@ Wz4Mesh::~Wz4Mesh()
   delete WireGeoInst;
   delete InstanceGeo;
   delete InstancePlusGeo;
+
+  if(WaiIsAssimp)
+  {
+    WaiReleaseNodeTreeR(Skeleton->WaiRootNode);
+    delete Skeleton->WaiRootNode;
+
+    for(sInt i=0; i<Skeleton->WaiAnimations.GetCount(); i++)
+    {
+      sAiAnimation * anim = Skeleton->WaiAnimations[i];
+      for(sU32 j=0; j<anim->mNumChannels; j++)
+      {
+        sAiNodeAnim * n = anim->mChannels[j];
+        delete[] n->mScalingKeys;
+        delete[] n->mRotationKeys;
+        delete[] n->mPositionKeys;
+        delete n;
+      }
+      delete anim;
+    }
+  }
+
   Skeleton->Release();
 }
 
@@ -7380,30 +7403,24 @@ sBool Wz4Mesh::WaiLoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaIm
     aiMesh * pMesh = waiScene->mMeshes[meshIndex];
     bones.AddMany(pMesh->mNumVertices);
 
-    // pour chaque bone
+    // for each bone
     for(sU32 boneId=0; boneId<pMesh->mNumBones; boneId++)
     {
-      // 1st step - build bone map, used to get bone index from aiNodeAnim name
+      sU32 boneIndex = 0;
+      std::string boneName(pMesh->mBones[boneId]->mName.data);
 
-      sU32 BoneIndex = 0;
-      std::string BoneName(pMesh->mBones[boneId]->mName.data);
-
-      if (Skeleton->WaiBoneMap.find(BoneName) == Skeleton->WaiBoneMap.end())
+      std::unordered_map<std::string, sU32>::iterator it = Skeleton->WaiBoneMap.find(boneName);
+      if(it == Skeleton->WaiBoneMap.end())
       {
-        // add bone to skeleton
-        BoneIndex = Skeleton->Joints.GetCount();
+        boneIndex = Skeleton->Joints.GetCount();
         Skeleton->Joints.AddMany(1);
-        Wz4Channel * c = new Wz4Channel;
-        Skeleton->Joints[BoneIndex].Init();
-        Skeleton->Joints[BoneIndex].Channel = c;
+        Skeleton->Joints[boneIndex].Init();
       }
       else
-      {
-        BoneIndex = Skeleton->WaiBoneMap[BoneName];
-      }
+        boneIndex = it->second;
 
-      Skeleton->WaiBoneMap[BoneName] = BoneIndex;
-      Skeleton->Joints[BoneIndex].BoneOffset = pMesh->mBones[boneId]->mOffsetMatrix;
+      Skeleton->WaiBoneMap[boneName] = boneIndex;
+      Skeleton->Joints[boneIndex].BoneOffset = pMesh->mBones[boneId]->mOffsetMatrix;
 
       // populate bones array with ids and weights
       for (sU32 j=0; j<pMesh->mBones[boneId]->mNumWeights; j++)
@@ -7415,7 +7432,7 @@ sBool Wz4Mesh::WaiLoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaIm
         {
           if (bones[vertexID].Weights[i] == 0.0f)
           {
-            bones[vertexID].IDs[i] = BoneIndex;
+            bones[vertexID].IDs[i] = boneIndex;
             bones[vertexID].Weights[i] = weight;
             break;
           }
@@ -7506,6 +7523,15 @@ void WaiBuildNodeTreeR(aiNode * node, sAiNode * n)
     sAiNode * c = new sAiNode();
     WaiBuildNodeTreeR(node->mChildren[i], c);
     n->mChildren.AddTail(c);
+  }
+}
+
+void WaiReleaseNodeTreeR(sAiNode * n)
+{
+  for (sU32 i=0; i<n->mNumChildren; i++)
+  {
+    WaiReleaseNodeTreeR(n->mChildren[i]);
+    delete n->mChildren[i];
   }
 }
 
