@@ -307,9 +307,9 @@ public:
   sBool SaveOBJ(const sChar *file);
 
 #ifdef sCOMPIL_ASSIMP
-  sBool LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImportEx * para);
-  sInt waiAnimSequence;               // animation index to play
-  sBool IsAssimp;                     // work with assimp treatments
+  sBool WaiLoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImportEx * para);
+  sInt WaiAnimSequence;               // animation index to play
+  sBool WaiIsAssimp;                  // work with assimp treatments
 #endif
 };
 

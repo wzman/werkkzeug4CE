@@ -427,8 +427,8 @@ void RNRenderMesh::Simulate(Wz4RenderContext *ctx)
   SimulateCalc(ctx);
 //  Anim.UnBind(ctx->Script,&Para);
 
-  if(Mesh->waiAnimSequence != -1)
-    Mesh->waiAnimSequence = Para.AnimSequence;
+  if(Mesh->WaiAnimSequence != -1)
+    Mesh->WaiAnimSequence = Para.AnimSequence;
 }
 
 void RNRenderMesh::Prepare(Wz4RenderContext *ctx)

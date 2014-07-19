@@ -270,15 +270,15 @@ public:
 
 #ifdef sCOMPIL_ASSIMP
 
-  const sAiNodeAnim* WaiGetAnimNode(const std::string NodeName, sInt animSeq);
-  void WaiEvaluateRotation(aiQuaternion& out, sF32 time, const sAiNodeAnim* pNodeAnim);
-  void WaiEvaluateScaling(aiVector3D& out, sF32 time, const sAiNodeAnim* pNodeAnim);
-  void WaiEvaluatePosition(aiVector3D& out, sF32 time, const sAiNodeAnim* pNodeAnim);
-  void WaiReadNodeTree(sF32 time, const sAiNode* pNode, const aiMatrix4x4 & parentTransform, sInt animSeq);
-  void EvaluateAssimpCM(sF32 time, sMatrix34 *mat,sMatrix34CM *basemat, sInt animSeq);
+  const sAiNodeAnim* WaiGetAnimNode(const std::string nodeName, sInt animSeq);
+  void WaiEvaluateRotation(aiQuaternion& out, sF32 time, const sAiNodeAnim* nodeAnim);
+  void WaiEvaluateScaling(aiVector3D& out, sF32 time, const sAiNodeAnim* nodeAnim);
+  void WaiEvaluatePosition(aiVector3D& out, sF32 time, const sAiNodeAnim* nodeAnim);
+  void WaiReadNodeTree(sF32 time, const sAiNode* node, const aiMatrix4x4 & parentTransform, sInt animSeq);
+  void WaiEvaluateAssimpCM(sF32 time, sMatrix34 *mat,sMatrix34CM *basemat, sInt animSeq);
 
-  aiMatrix4x4 GlobalInverseTransform;
-  std::unordered_map<std::string, sU32> BoneMapping;
+  aiMatrix4x4 WaiGlobalInverseTransform;
+  std::unordered_map<std::string, sU32> WaiBoneMap;
   sAiNode * WaiRootNode;
   sArray<sAiAnimation *> WaiAnimations;
 

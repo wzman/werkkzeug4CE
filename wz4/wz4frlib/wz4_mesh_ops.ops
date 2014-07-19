@@ -215,7 +215,7 @@ operator Wz4Mesh ImportEx()
   {
     sBool result = 0;
     sChar errString[1024];
-    result = out->LoadAssimp(cmd->Strings[0], errString, para);
+    result = out->WaiLoadAssimp(cmd->Strings[0], errString, para);
 
     if(!result)
       cmd->SetError(errString);

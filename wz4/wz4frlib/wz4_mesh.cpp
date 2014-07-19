@@ -399,7 +399,7 @@ Wz4Mesh::Wz4Mesh()
   SaveFlags = 0;
   ChargeCount = 0;
   DontClearVertices = 0;
-  IsAssimp = sFALSE;
+  WaiIsAssimp = sFALSE;
 }
 
 /****************************************************************************/
@@ -5014,10 +5014,10 @@ void Wz4Mesh::Render(sInt flags,sInt index,const sMatrix34CM *mat,sF32 time,cons
       bonemat = sALLOCSTACK(sMatrix34,bc);
       basemat = sALLOCSTACK(sMatrix34CM,bc);
 
-      if(!IsAssimp)
+      if(!WaiIsAssimp)
         Skeleton->EvaluateCM(time,bonemat,basemat);
       else
-        Skeleton->EvaluateAssimpCM(time,bonemat,basemat,waiAnimSequence);
+        Skeleton->WaiEvaluateAssimpCM(time,bonemat,basemat,WaiAnimSequence);
 
       flags |= sRF_MATRIX_BONE;
       nobbox = 1;
@@ -7216,7 +7216,7 @@ sBool Wz4Mesh::LoadWz3MinMesh(const sChar *file)
 
 void WaiBuildNodeTreeR(aiNode * node, sAiNode * r);
 
-sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImportEx * para)
+sBool Wz4Mesh::WaiLoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImportEx * para)
 {
   sChar8 filename[MAXLEN];
   sCopyString(filename, file ,MAXLEN);
@@ -7246,7 +7246,7 @@ sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImpor
     return sFALSE;
   }
 
-  IsAssimp = sTRUE;
+  WaiIsAssimp = sTRUE;
 
   for(sU32 j=0; j<waiScene->mNumMeshes; j++)
   {
@@ -7360,10 +7360,10 @@ sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImpor
   if(!waiScene->HasAnimations())
     return sTRUE;
 
-  waiAnimSequence = 0;
+  WaiAnimSequence = 0;
   Skeleton = new Wz4Skeleton;
-  Skeleton->GlobalInverseTransform = waiScene->mRootNode->mTransformation;
-  Skeleton->GlobalInverseTransform.Inverse();
+  Skeleton->WaiGlobalInverseTransform = waiScene->mRootNode->mTransformation;
+  Skeleton->WaiGlobalInverseTransform.Inverse();
 
   sInt nextMeshVertices = 0;
   sInt nextMeshBones = 0;
@@ -7388,21 +7388,21 @@ sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImpor
       sU32 BoneIndex = 0;
       std::string BoneName(pMesh->mBones[boneId]->mName.data);
 
-      if (Skeleton->BoneMapping.find(BoneName) == Skeleton->BoneMapping.end())
+      if (Skeleton->WaiBoneMap.find(BoneName) == Skeleton->WaiBoneMap.end())
       {
         // add bone to skeleton
         BoneIndex = Skeleton->Joints.GetCount();
         Skeleton->Joints.AddMany(1);
-        Wz4ChannelPerFrame * c = new Wz4ChannelPerFrame;
+        Wz4Channel * c = new Wz4Channel;
         Skeleton->Joints[BoneIndex].Init();
         Skeleton->Joints[BoneIndex].Channel = c;
       }
       else
       {
-        BoneIndex = Skeleton->BoneMapping[BoneName];
+        BoneIndex = Skeleton->WaiBoneMap[BoneName];
       }
 
-      Skeleton->BoneMapping[BoneName] = BoneIndex;
+      Skeleton->WaiBoneMap[BoneName] = BoneIndex;
       Skeleton->Joints[BoneIndex].BoneOffset = pMesh->mBones[boneId]->mOffsetMatrix;
 
       // populate bones array with ids and weights
