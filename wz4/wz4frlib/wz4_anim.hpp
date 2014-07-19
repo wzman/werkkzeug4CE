@@ -243,16 +243,13 @@ public:
   sF32 TotalTime;                     // total time in seconds
 
 #ifdef sCOMPIL_ASSIMP
-  
-  sU32 FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim);
-  sU32 FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim);
-  sU32 FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim);
-  void CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
-  void CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
-  void CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
-  const aiNodeAnim* FindNodeAnim(const aiAnimation* pAnimation, const std::string NodeName);
-  void ReadNodeHierarchy(sF32 time,  const aiNode* pNode, const aiMatrix4x4 & parentTransform, sInt animSeq);
-  void EvaluateAssimpCM(sF32 time,sMatrix34 *mat,sMatrix34CM *basemat, sInt animSeq);
+
+  const aiNodeAnim* WaiGetAnimNode(const std::string NodeName, sInt animSeq);
+  void WaiEvaluateRotation(aiQuaternion& out, sF32 time, const aiNodeAnim* pNodeAnim);
+  void WaiEvaluateScaling(aiVector3D& out, sF32 time, const aiNodeAnim* pNodeAnim);
+  void WaiEvaluatePosition(aiVector3D& out, sF32 time, const aiNodeAnim* pNodeAnim);
+  void WaiReadNodeTree(sF32 time, const aiNode* pNode, const aiMatrix4x4 & parentTransform, sInt animSeq);
+  void EvaluateAssimpCM(sF32 time, sMatrix34 *mat,sMatrix34CM *basemat, sInt animSeq);
 
   aiMatrix4x4 GlobalInverseTransform;
   std::unordered_map<std::string, sU32> BoneMapping;

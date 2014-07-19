@@ -635,166 +635,94 @@ void Wz4Skeleton::EvaluateFadeCM(sF32 time1,sF32 time2,sF32 fade,sMatrix34 *mata
 
 #ifdef sCOMPIL_ASSIMP
 
-const aiNodeAnim* Wz4Skeleton::FindNodeAnim(const aiAnimation* pAnimation, const std::string NodeName)
+const aiNodeAnim* Wz4Skeleton::WaiGetAnimNode(const std::string NodeName, sInt animSeq)
 {
-  for (sU32 i=0; i<pAnimation->mNumChannels ; i++)
+  const aiAnimation * anim = waipScene->mAnimations[animSeq];
+  for (sU32 i=0; i<anim->mNumChannels; i++)
   {
-    const aiNodeAnim* pNodeAnim = pAnimation->mChannels[i];
+    const aiNodeAnim* pNodeAnim = anim->mChannels[i];
     if(strcmp(pNodeAnim->mNodeName.C_Str(), NodeName.c_str()) == 0)
-    {
       return pNodeAnim;
-    }
   }
 
   return 0;
 }
 
-sU32 Wz4Skeleton::FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim)
-{    
-  for (sU32 i=0; i<pNodeAnim->mNumPositionKeys-1; i++)
-  {
-    if (AnimationTime < (float)pNodeAnim->mPositionKeys[i+1].mTime)
-    {
-      return i;
-    }
-  }
-
-  //sVERIFY(0);
-  return 0;
-}
-
-sU32 Wz4Skeleton::FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim)
-{
-  sVERIFY(pNodeAnim->mNumRotationKeys > 0);
-
-  for (sU32 i=0; i<pNodeAnim->mNumRotationKeys-1; i++)
-  {
-    if (AnimationTime < (float)pNodeAnim->mRotationKeys[i+1].mTime) 
-    {
-      return i;
-    }
-  }
-
-  //sVERIFY(0);
-  return 0;
-}
-
-sU32 Wz4Skeleton::FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim)
-{
-  sVERIFY(pNodeAnim->mNumScalingKeys > 0);
-
-  for (sU32 i=0; i<pNodeAnim->mNumScalingKeys-1; i++) 
-  {
-    if (AnimationTime < (float)pNodeAnim->mScalingKeys[i+1].mTime)
-    {
-      return i;
-    }
-  }
-
-  //sVERIFY(0);
-  return 0;
-}
-
-void Wz4Skeleton::CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim)
+void Wz4Skeleton::WaiEvaluateScaling(aiVector3D& out, sF32 time, const aiNodeAnim* pNodeAnim)
 {
   if (pNodeAnim->mNumScalingKeys == 1)
   {
-    Out = pNodeAnim->mScalingKeys[0].mValue;
+    out = pNodeAnim->mScalingKeys[0].mValue;
     return;
   }
 
-  sU32 ScalingIndex = FindScaling(AnimationTime, pNodeAnim);
-  sU32 NextScalingIndex = (ScalingIndex + 1);
-  sVERIFY(NextScalingIndex < pNodeAnim->mNumScalingKeys);
-  sF32 DeltaTime = (sF32)(pNodeAnim->mScalingKeys[NextScalingIndex].mTime - pNodeAnim->mScalingKeys[ScalingIndex].mTime);
-  sF32 Factor = (AnimationTime - (sF32)pNodeAnim->mScalingKeys[ScalingIndex].mTime) / DeltaTime;
-  //sVERIFY(Factor >= 0.0f && Factor <= 1.0f);
-  const aiVector3D& Start = pNodeAnim->mScalingKeys[ScalingIndex].mValue;
-  const aiVector3D& End   = pNodeAnim->mScalingKeys[NextScalingIndex].mValue;
-  aiVector3D Delta = End - Start;
-  Out = Start + Factor * Delta;
+  time *= (pNodeAnim->mNumScalingKeys-1);
+  sInt key = sClamp<sInt>(sInt(sRoundDown(time*1024)),0,pNodeAnim->mNumScalingKeys*1024-1025);
+  sF32 f = (key&1023)/1024.0f;
+  key = key/1024;
+  aiVector3D Delta = pNodeAnim->mScalingKeys[key+1].mValue - pNodeAnim->mScalingKeys[key+0].mValue;
+  out = pNodeAnim->mScalingKeys[key+0].mValue + f * Delta;
 }
 
-void Wz4Skeleton::CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim)
+void Wz4Skeleton::WaiEvaluateRotation(aiQuaternion& out, sF32 time, const aiNodeAnim* pNodeAnim)
 {  
   if (pNodeAnim->mNumRotationKeys == 1)
   {
-    Out = pNodeAnim->mRotationKeys[0].mValue;
+    out = pNodeAnim->mRotationKeys[0].mValue;
     return;
   }
 
-  sU32 RotationIndex = FindRotation(AnimationTime, pNodeAnim);
-  sU32 NextRotationIndex = (RotationIndex + 1);
-  sVERIFY(NextRotationIndex < pNodeAnim->mNumRotationKeys);
-  sF32 DeltaTime = pNodeAnim->mRotationKeys[NextRotationIndex].mTime - pNodeAnim->mRotationKeys[RotationIndex].mTime;
-  sF32 Factor = (AnimationTime - (sF32)pNodeAnim->mRotationKeys[RotationIndex].mTime) / DeltaTime;
-  //sVERIFY(Factor >= 0.0f && Factor <= 1.0f);
-  const aiQuaternion& StartRotationQ = pNodeAnim->mRotationKeys[RotationIndex].mValue;
-  const aiQuaternion& EndRotationQ = pNodeAnim->mRotationKeys[NextRotationIndex].mValue;
-  aiQuaternion::Interpolate(Out, StartRotationQ, EndRotationQ, Factor);
-  Out = Out.Normalize();
+  time *= (pNodeAnim->mNumRotationKeys-1);
+  sInt key = sClamp<sInt>(sInt(sRoundDown(time*1024)),0,pNodeAnim->mNumRotationKeys*1024-1025);
+  sF32 f = (key&1023)/1024.0f;
+  key = key/1024;
+  aiQuaternion::Interpolate(out, pNodeAnim->mRotationKeys[key+0].mValue, pNodeAnim->mRotationKeys[key+1].mValue, f);
+  out = out.Normalize();
 } 
 
-void Wz4Skeleton::CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim)
+void Wz4Skeleton::WaiEvaluatePosition(aiVector3D& out, sF32 time, const aiNodeAnim* pNodeAnim)
 {
   if (pNodeAnim->mNumPositionKeys == 1)
   {
-    Out = pNodeAnim->mPositionKeys[0].mValue;
+    out = pNodeAnim->mPositionKeys[0].mValue;
     return;
   }
 
-  sU32 PositionIndex = FindPosition(AnimationTime, pNodeAnim);
-  sU32 NextPositionIndex = (PositionIndex + 1);
-  sVERIFY(NextPositionIndex < pNodeAnim->mNumPositionKeys);
-  sF32 DeltaTime = (float)(pNodeAnim->mPositionKeys[NextPositionIndex].mTime - pNodeAnim->mPositionKeys[PositionIndex].mTime);
-  sF32 Factor = (AnimationTime - (sF32)pNodeAnim->mPositionKeys[PositionIndex].mTime) / DeltaTime;
-  //sVERIFY(Factor >= 0.0f && Factor <= 1.0f);
-  const aiVector3D& Start = pNodeAnim->mPositionKeys[PositionIndex].mValue;
-  const aiVector3D& End = pNodeAnim->mPositionKeys[NextPositionIndex].mValue;
-  aiVector3D Delta = End - Start;
-  Out = Start + Factor * Delta;
+  time *= (pNodeAnim->mNumPositionKeys-1);
+  sInt key = sClamp<sInt>(sInt(sRoundDown(time*1024)),0,pNodeAnim->mNumPositionKeys*1024-1025);
+  sF32 Factor = (key&1023)/1024.0f;
+  key = key/1024;
+  aiVector3D Delta = pNodeAnim->mPositionKeys[key+1].mValue - pNodeAnim->mPositionKeys[key+0].mValue;
+  out = pNodeAnim->mPositionKeys[key+0].mValue + Factor * Delta;
 }
 
-void Wz4Skeleton::ReadNodeHierarchy(sF32 AnimationTime, const aiNode* pNode , const aiMatrix4x4 & ParentTransform, sInt animSeq)
+void Wz4Skeleton::WaiReadNodeTree(sF32 time, const aiNode* pNode, const aiMatrix4x4 & parentTransform, sInt animSeq)
 {
-  std::string NodeName(pNode->mName.data);
-  const aiAnimation* pAnimation = waipScene->mAnimations[animSeq];
-
-  aiMatrix4x4 NodeTransformation = pNode->mTransformation;
-
-  const aiNodeAnim* pNodeAnim = FindNodeAnim(pAnimation, NodeName);
+  std::string nodeName(pNode->mName.data);
+  aiMatrix4x4 nodeTransformation = pNode->mTransformation;
+  const aiNodeAnim* pNodeAnim = WaiGetAnimNode(nodeName, animSeq);
 
   if (pNodeAnim)
   {
-    // Interpolate scaling and generate scaling transformation matrix
-    aiVector3D Scaling;
-    CalcInterpolatedScaling(Scaling, AnimationTime, pNodeAnim);
-    aiMatrix4x4 ScalingM(Scaling, aiQuaternion(), aiVector3t<sF32>(0));
+    aiVector3D scale, translate;
+    aiQuaternion rotate;
 
-    // Interpolate rotation and generate rotation transformation matrix
-    aiQuaternion RotationQ;
-    CalcInterpolatedRotation(RotationQ, AnimationTime, pNodeAnim);
-    aiMatrix4x4 RotationM(aiVector3t<sF32>(1), RotationQ, aiVector3t<sF32>(0));
-
-    // Interpolate translation and generate translation transformation matrix
-    aiVector3D Translation;
-    CalcInterpolatedPosition(Translation, AnimationTime, pNodeAnim);
-    aiMatrix4x4 TranslationM(aiVector3t<sF32>(1), aiQuaternion(), Translation);
-
-    // Combine the above transformations
-    NodeTransformation = TranslationM * RotationM * ScalingM;
+    WaiEvaluateScaling(scale, time, pNodeAnim);
+    WaiEvaluateRotation(rotate, time, pNodeAnim);
+    WaiEvaluatePosition(translate, time, pNodeAnim);
+    nodeTransformation = aiMatrix4x4(scale, rotate, translate);
   }
 
-  aiMatrix4x4 GlobalTransformation = ParentTransform * NodeTransformation;
+  aiMatrix4x4 globalTransformation = parentTransform * nodeTransformation;
 
-  if (BoneMapping.find(NodeName) != BoneMapping.end()) 
+  if (BoneMapping.find(nodeName) != BoneMapping.end())
   {
-    sU32 BoneIndex = BoneMapping[NodeName];
-    Joints[BoneIndex].FinalTransformation = GlobalInverseTransform * GlobalTransformation * Joints[BoneIndex].BoneOffset;
+    sU32 boneIndex = BoneMapping[nodeName];
+    Joints[boneIndex].FinalTransformation = GlobalInverseTransform * globalTransformation * Joints[boneIndex].BoneOffset;
   }
 
   for (sU32 i=0; i<pNode->mNumChildren; i++)
-    ReadNodeHierarchy(AnimationTime, pNode->mChildren[i], GlobalTransformation, animSeq);
+    WaiReadNodeTree(time, pNode->mChildren[i], globalTransformation, animSeq);
 }
 
 void Wz4Skeleton::EvaluateAssimpCM(sF32 time,sMatrix34 *mata,sMatrix34CM *basemat, sInt animSeq)
@@ -802,12 +730,8 @@ void Wz4Skeleton::EvaluateAssimpCM(sF32 time,sMatrix34 *mata,sMatrix34CM *basema
   if(animSeq > waipScene->mNumAnimations-1)
     animSeq = waipScene->mNumAnimations-1;
 
-  sF32 TicksPerSecond = waipScene->mAnimations[animSeq]->mTicksPerSecond != 0 ? waipScene->mAnimations[animSeq]->mTicksPerSecond : 25.0f;
-  sF32 TimeInTicks = time * TicksPerSecond;
-  sF32 AnimationTime = sMod(TimeInTicks, waipScene->mAnimations[animSeq]->mDuration);
-
-  aiMatrix4x4 identity;
-  ReadNodeHierarchy(AnimationTime, waipScene->mRootNode, identity, animSeq);
+  aiMatrix4x4 mat;
+  WaiReadNodeTree(time, waipScene->mRootNode, mat, animSeq);
 
   Wz4AnimJoint * j;
   sFORALL(Joints, j)
