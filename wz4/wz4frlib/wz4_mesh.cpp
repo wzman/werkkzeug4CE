@@ -7221,26 +7221,27 @@ sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImpor
   sChar8 filename[MAXLEN];
   sCopyString(filename, file ,MAXLEN);
 
-  waiImporter = new Assimp::Importer();
+  const aiScene * waiScene = 0;
+  Assimp::Importer waiImporter;
 
   if(para->AssimpOptions & 0x01)
-     waiImporter->SetPropertyFloat(AI_CONFIG_PP_CT_MAX_SMOOTHING_ANGLE, para->TangentsMaxSmoothAngle);
+     waiImporter.SetPropertyFloat(AI_CONFIG_PP_CT_MAX_SMOOTHING_ANGLE, para->TangentsMaxSmoothAngle);
   if(para->AssimpOptions & 0x10)
-     waiImporter->SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS, para->RemoveComponents);
+     waiImporter.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS, para->RemoveComponents);
   if(para->AssimpOptions & 0x40)
-     waiImporter->SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, para->NormalsMaxSmoothAngle);
+     waiImporter.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, para->NormalsMaxSmoothAngle);
   if(para->AssimpOptions & 0x100)
-     waiImporter->SetPropertyFloat(AI_CONFIG_PP_PTV_NORMALIZE, para->NormalizeSpatialDim);
+     waiImporter.SetPropertyFloat(AI_CONFIG_PP_PTV_NORMALIZE, para->NormalizeSpatialDim);
   if(para->AssimpOptions & 0x200)
-     waiImporter->SetPropertyInteger(AI_CONFIG_PP_LBW_MAX_WEIGHTS, para->LimitBoneWeight);
+     waiImporter.SetPropertyInteger(AI_CONFIG_PP_LBW_MAX_WEIGHTS, para->LimitBoneWeight);
   if(para->AssimpOptions & 0x8000)
-     waiImporter->SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, para->RemovePrimitives);
+     waiImporter.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, para->RemovePrimitives);
 
-  waiScene = waiImporter->ReadFile(filename, para->AssimpOptions);
+  waiScene = waiImporter.ReadFile(filename, para->AssimpOptions);
 
   if(!waiScene)
   {
-    sCopyString(errString, waiImporter->GetErrorString(), MAXLEN);
+    sCopyString(errString, waiImporter.GetErrorString(), MAXLEN);
     sLog(L"Assimp", L"Couldn't load model");
     return sFALSE;
   }
@@ -7359,11 +7360,8 @@ sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImpor
   if(!waiScene->HasAnimations())
     return sTRUE;
 
-  waiAnimSequence = 1;
-
+  waiAnimSequence = 0;
   Skeleton = new Wz4Skeleton;
-  Skeleton->waipScene = waiScene;
-
   Skeleton->GlobalInverseTransform = waiScene->mRootNode->mTransformation;
   Skeleton->GlobalInverseTransform.Inverse();
 
@@ -7446,11 +7444,53 @@ sBool Wz4Mesh::LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImpor
     v->Weight[3] = bones[_i].Weights[3];
   }
 
-  // build node tree
+  // copy assimp node tree into internal structure
 
   sAiNode * r = new sAiNode();
   WaiBuildNodeTreeR(waiScene->mRootNode, r);
   Skeleton->WaiRootNode = r;
+
+  // copy assimp animations and keys into internal structure
+
+  for (sU32 j=0; j<waiScene->mNumAnimations; j++)
+  {
+    const aiAnimation * anim = waiScene->mAnimations[j];
+
+    sAiAnimation * a = new sAiAnimation;
+    a->mName = anim->mName.data;
+    a->mNumChannels = anim->mNumChannels;
+
+    for (sU32 i=0; i<anim->mNumChannels; i++)
+    {
+      const aiNodeAnim* pNodeAnim = anim->mChannels[i];
+
+      sAiNodeAnim * an = new sAiNodeAnim;
+      an->mNodeName = pNodeAnim->mNodeName.data;
+
+      an->mNumScalingKeys = pNodeAnim->mNumScalingKeys;
+      an->mScalingKeys = new aiVector3D[an->mNumScalingKeys];
+      for (sU32 k=0; k<an->mNumScalingKeys; k++)
+        an->mScalingKeys[k] = pNodeAnim->mScalingKeys[k].mValue;
+
+      an->mNumRotationKeys = pNodeAnim->mNumRotationKeys;
+      an->mRotationKeys = new aiQuaternion[an->mNumRotationKeys];
+      for (sU32 k=0; k<an->mNumRotationKeys; k++)
+        an->mRotationKeys[k] = pNodeAnim->mRotationKeys[k].mValue;
+
+      an->mNumPositionKeys = pNodeAnim->mNumPositionKeys;
+      an->mPositionKeys = new aiVector3D[an->mNumPositionKeys];
+      for (sU32 k=0; k<an->mNumPositionKeys; k++)
+        an->mPositionKeys[k] = pNodeAnim->mPositionKeys[k].mValue;
+
+      a->mChannels.AddTail(an);
+    }
+
+    Skeleton->WaiAnimations.AddTail(a);
+  }
+
+  // free assimp
+
+  waiImporter.FreeScene();
 
   return sTRUE;
 }

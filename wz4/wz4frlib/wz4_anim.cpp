@@ -635,24 +635,24 @@ void Wz4Skeleton::EvaluateFadeCM(sF32 time1,sF32 time2,sF32 fade,sMatrix34 *mata
 
 #ifdef sCOMPIL_ASSIMP
 
-const aiNodeAnim* Wz4Skeleton::WaiGetAnimNode(const std::string NodeName, sInt animSeq)
+const sAiNodeAnim* Wz4Skeleton::WaiGetAnimNode(const std::string NodeName, sInt animSeq)
 {
-  const aiAnimation * anim = waipScene->mAnimations[animSeq];
+  const sAiAnimation * anim = WaiAnimations[animSeq];
   for (sU32 i=0; i<anim->mNumChannels; i++)
   {
-    const aiNodeAnim* pNodeAnim = anim->mChannels[i];
-    if(strcmp(pNodeAnim->mNodeName.C_Str(), NodeName.c_str()) == 0)
+    const sAiNodeAnim* pNodeAnim = anim->mChannels[i];
+    if(strcmp(pNodeAnim->mNodeName.c_str(), NodeName.c_str()) == 0)
       return pNodeAnim;
   }
 
   return 0;
 }
 
-void Wz4Skeleton::WaiEvaluateScaling(aiVector3D& out, sF32 time, const aiNodeAnim* pNodeAnim)
+void Wz4Skeleton::WaiEvaluateScaling(aiVector3D& out, sF32 time, const sAiNodeAnim* pNodeAnim)
 {
   if (pNodeAnim->mNumScalingKeys == 1)
   {
-    out = pNodeAnim->mScalingKeys[0].mValue;
+    out = pNodeAnim->mScalingKeys[0];
     return;
   }
 
@@ -660,15 +660,15 @@ void Wz4Skeleton::WaiEvaluateScaling(aiVector3D& out, sF32 time, const aiNodeAni
   sInt key = sClamp<sInt>(sInt(sRoundDown(time*1024)),0,pNodeAnim->mNumScalingKeys*1024-1025);
   sF32 f = (key&1023)/1024.0f;
   key = key/1024;
-  aiVector3D Delta = pNodeAnim->mScalingKeys[key+1].mValue - pNodeAnim->mScalingKeys[key+0].mValue;
-  out = pNodeAnim->mScalingKeys[key+0].mValue + f * Delta;
+  aiVector3D Delta = pNodeAnim->mScalingKeys[key+1] - pNodeAnim->mScalingKeys[key+0];
+  out = pNodeAnim->mScalingKeys[key+0] + f * Delta;
 }
 
-void Wz4Skeleton::WaiEvaluateRotation(aiQuaternion& out, sF32 time, const aiNodeAnim* pNodeAnim)
+void Wz4Skeleton::WaiEvaluateRotation(aiQuaternion& out, sF32 time, const sAiNodeAnim* pNodeAnim)
 {  
   if (pNodeAnim->mNumRotationKeys == 1)
   {
-    out = pNodeAnim->mRotationKeys[0].mValue;
+    out = pNodeAnim->mRotationKeys[0];
     return;
   }
 
@@ -676,15 +676,15 @@ void Wz4Skeleton::WaiEvaluateRotation(aiQuaternion& out, sF32 time, const aiNode
   sInt key = sClamp<sInt>(sInt(sRoundDown(time*1024)),0,pNodeAnim->mNumRotationKeys*1024-1025);
   sF32 f = (key&1023)/1024.0f;
   key = key/1024;
-  aiQuaternion::Interpolate(out, pNodeAnim->mRotationKeys[key+0].mValue, pNodeAnim->mRotationKeys[key+1].mValue, f);
+  aiQuaternion::Interpolate(out, pNodeAnim->mRotationKeys[key+0], pNodeAnim->mRotationKeys[key+1], f);
   out = out.Normalize();
 } 
 
-void Wz4Skeleton::WaiEvaluatePosition(aiVector3D& out, sF32 time, const aiNodeAnim* pNodeAnim)
+void Wz4Skeleton::WaiEvaluatePosition(aiVector3D& out, sF32 time, const sAiNodeAnim* pNodeAnim)
 {
   if (pNodeAnim->mNumPositionKeys == 1)
   {
-    out = pNodeAnim->mPositionKeys[0].mValue;
+    out = pNodeAnim->mPositionKeys[0];
     return;
   }
 
@@ -692,15 +692,15 @@ void Wz4Skeleton::WaiEvaluatePosition(aiVector3D& out, sF32 time, const aiNodeAn
   sInt key = sClamp<sInt>(sInt(sRoundDown(time*1024)),0,pNodeAnim->mNumPositionKeys*1024-1025);
   sF32 Factor = (key&1023)/1024.0f;
   key = key/1024;
-  aiVector3D Delta = pNodeAnim->mPositionKeys[key+1].mValue - pNodeAnim->mPositionKeys[key+0].mValue;
-  out = pNodeAnim->mPositionKeys[key+0].mValue + Factor * Delta;
+  aiVector3D Delta = pNodeAnim->mPositionKeys[key+1] - pNodeAnim->mPositionKeys[key+0];
+  out = pNodeAnim->mPositionKeys[key+0] + Factor * Delta;
 }
 
 void Wz4Skeleton::WaiReadNodeTree(sF32 time, const sAiNode* pNode, const aiMatrix4x4 & parentTransform, sInt animSeq)
 {
   std::string nodeName(pNode->mName);
   aiMatrix4x4 nodeTransformation = pNode->mTransformation;
-  const aiNodeAnim* pNodeAnim = WaiGetAnimNode(nodeName, animSeq);
+  const sAiNodeAnim* pNodeAnim = WaiGetAnimNode(nodeName, animSeq);
 
   if (pNodeAnim)
   {
@@ -727,9 +727,6 @@ void Wz4Skeleton::WaiReadNodeTree(sF32 time, const sAiNode* pNode, const aiMatri
 
 void Wz4Skeleton::EvaluateAssimpCM(sF32 time,sMatrix34 *mata,sMatrix34CM *basemat, sInt animSeq)
 {
-  if(animSeq > waipScene->mNumAnimations-1)
-    animSeq = waipScene->mNumAnimations-1;
-
   aiMatrix4x4 mat;
   WaiReadNodeTree(time, WaiRootNode, mat, animSeq);
 

@@ -218,17 +218,35 @@ public:
 #include <string>
 #include <unordered_map>
 
+struct sAiNode
+{
+	std::string mName;
+	aiMatrix4x4 mTransformation;
+	unsigned int mNumChildren;
+	sArray<sAiNode*> mChildren;
+};
+
+struct sAiNodeAnim
+{
+  std::string mNodeName;
+  sU32 mNumPositionKeys;
+  sU32 mNumRotationKeys;
+  sU32 mNumScalingKeys;
+  aiVector3D * mPositionKeys;
+  aiQuaternion * mRotationKeys;
+  aiVector3D * mScalingKeys;
+};
+
+struct sAiAnimation
+{
+  std::string mName;
+  sU32 mNumChannels;
+  sArray<sAiNodeAnim *> mChannels;
+};
+
 #endif  // sCOMPIL_ASSIMP
 
 /****************************************************************************/
-
-struct sAiNode
-{
-	std::string mName;            // node name
-	aiMatrix4x4 mTransformation;  // The transformation relative to the node's parent
-	unsigned int mNumChildren;    // The number of child nodes of this node
-	sArray<sAiNode*> mChildren;   // The child nodes of this node
-};
 
 class Wz4Skeleton : public wObject
 {
@@ -252,19 +270,17 @@ public:
 
 #ifdef sCOMPIL_ASSIMP
 
-  const aiNodeAnim* WaiGetAnimNode(const std::string NodeName, sInt animSeq);
-  void WaiEvaluateRotation(aiQuaternion& out, sF32 time, const aiNodeAnim* pNodeAnim);
-  void WaiEvaluateScaling(aiVector3D& out, sF32 time, const aiNodeAnim* pNodeAnim);
-  void WaiEvaluatePosition(aiVector3D& out, sF32 time, const aiNodeAnim* pNodeAnim);
+  const sAiNodeAnim* WaiGetAnimNode(const std::string NodeName, sInt animSeq);
+  void WaiEvaluateRotation(aiQuaternion& out, sF32 time, const sAiNodeAnim* pNodeAnim);
+  void WaiEvaluateScaling(aiVector3D& out, sF32 time, const sAiNodeAnim* pNodeAnim);
+  void WaiEvaluatePosition(aiVector3D& out, sF32 time, const sAiNodeAnim* pNodeAnim);
   void WaiReadNodeTree(sF32 time, const sAiNode* pNode, const aiMatrix4x4 & parentTransform, sInt animSeq);
   void EvaluateAssimpCM(sF32 time, sMatrix34 *mat,sMatrix34CM *basemat, sInt animSeq);
 
   aiMatrix4x4 GlobalInverseTransform;
   std::unordered_map<std::string, sU32> BoneMapping;
-  const aiScene * waipScene;
-
-
   sAiNode * WaiRootNode;
+  sArray<sAiAnimation *> WaiAnimations;
 
 #endif
 };

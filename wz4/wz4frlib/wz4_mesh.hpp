@@ -308,9 +308,6 @@ public:
 
 #ifdef sCOMPIL_ASSIMP
   sBool LoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImportEx * para);
-
-  const aiScene * waiScene;           // assimp scene
-  Assimp::Importer * waiImporter;     // assimp importer
   sInt waiAnimSequence;               // animation index to play
   sBool IsAssimp;                     // work with assimp treatments
 #endif
