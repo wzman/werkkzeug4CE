@@ -728,6 +728,8 @@ void Wz4Skeleton::WaiReadNodeTree(sF32 time, const sAiNode* node, const aiMatrix
 
 void Wz4Skeleton::WaiEvaluateAssimpCM(sF32 time,sMatrix34 *mata,sMatrix34CM *basemat, sInt animSeq)
 {
+  sVERIFY(WaiAnimations.GetCount());
+
   if(animSeq >= WaiAnimations.GetCount())
     animSeq = WaiAnimations.GetCount()-1;
 

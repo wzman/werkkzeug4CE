@@ -310,6 +310,7 @@ public:
   sBool WaiLoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImportEx * para);
   sInt WaiAnimSequence;               // animation index to play
   sBool WaiIsAssimpAnimated;          // assimp animation flag
+  void WaiReleaseAnimation();
 #endif
 };
 

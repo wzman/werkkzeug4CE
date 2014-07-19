@@ -422,6 +422,15 @@ Wz4Mesh::~Wz4Mesh()
   delete InstancePlusGeo;
 
 #ifdef sCOMPIL_ASSIMP
+  WaiReleaseAnimation();
+#endif
+
+  Skeleton->Release();
+}
+
+#ifdef sCOMPIL_ASSIMP
+void Wz4Mesh::WaiReleaseAnimation()
+{
   if(WaiIsAssimpAnimated)
   {
     WaiReleaseNodeTreeR(Skeleton->WaiRootNode);
@@ -441,10 +450,8 @@ Wz4Mesh::~Wz4Mesh()
       delete anim;
     }
   }
-#endif
-
-  Skeleton->Release();
 }
+#endif
 
 /****************************************************************************/
 
@@ -565,6 +572,22 @@ void Wz4Mesh::Serialize(sReader &stream) { Serialize_(stream); }
 
 /****************************************************************************/
 
+#ifdef sCOMPIL_ASSIMP
+void WaiCopyNodeTreeR(sAiNode * s, sAiNode * d)
+{
+  d->mNumChildren = s->mNumChildren;
+  d->mName = s->mName;
+  d->mTransformation = s->mTransformation;
+
+  for (sU32 i=0; i<s->mNumChildren; i++)
+  {
+    sAiNode * c = new sAiNode();
+    d->mChildren.AddTail(c);
+    WaiCopyNodeTreeR(s->mChildren[i], c);
+  }
+}
+#endif
+
 void Wz4Mesh::CopyFrom(Wz4Mesh *src)
 {
   sVERIFY(IsEmpty());
@@ -580,8 +603,63 @@ void Wz4Mesh::CopyFrom(Wz4Mesh *src)
 
   if(src->Skeleton)
   {
-    Skeleton = src->Skeleton;
-    Skeleton->AddRef();
+#ifdef sCOMPIL_ASSIMP
+    if(!src->WaiIsAssimpAnimated)
+    {
+#endif
+      Skeleton = src->Skeleton;
+      Skeleton->AddRef();
+#ifdef sCOMPIL_ASSIMP
+    }
+    else
+    {
+      WaiIsAssimpAnimated = src->WaiIsAssimpAnimated;
+      WaiAnimSequence = src->WaiAnimSequence;
+
+      Wz4Skeleton * dd = new Wz4Skeleton; Skeleton = dd;
+      Wz4Skeleton * ss = src->Skeleton;
+
+      dd->Joints.Add(ss->Joints);
+      dd->WaiGlobalInverseTransform = ss->WaiGlobalInverseTransform;
+      dd->WaiBoneMap = ss->WaiBoneMap;
+
+      sAiNode * rootNode = new sAiNode();
+      WaiCopyNodeTreeR(ss->WaiRootNode, rootNode);
+      dd->WaiRootNode = rootNode;
+
+      for(sInt i=0; i<ss->WaiAnimations.GetCount(); i++)
+      {
+        sAiAnimation * anim = new sAiAnimation;
+        dd->WaiAnimations.AddTail(anim);
+        anim->mName = ss->WaiAnimations[i]->mName;
+        anim->mNumChannels = ss->WaiAnimations[i]->mNumChannels;
+
+        for(sInt j=0; j<ss->WaiAnimations[i]->mNumChannels; j++)
+        {
+          sAiNodeAnim * nodeAnim = new sAiNodeAnim;
+          dd->WaiAnimations[i]->mChannels.AddTail(nodeAnim);
+
+          nodeAnim->mNodeName = ss->WaiAnimations[i]->mChannels[j]->mNodeName;
+          nodeAnim->mNumPositionKeys = ss->WaiAnimations[i]->mChannels[j]->mNumPositionKeys;
+          nodeAnim->mNumRotationKeys = ss->WaiAnimations[i]->mChannels[j]->mNumRotationKeys;
+          nodeAnim->mNumScalingKeys = ss->WaiAnimations[i]->mChannels[j]->mNumScalingKeys;
+
+          nodeAnim->mPositionKeys = new aiVector3D[nodeAnim->mNumPositionKeys];
+          nodeAnim->mRotationKeys = new aiQuaternion[nodeAnim->mNumRotationKeys];
+          nodeAnim->mScalingKeys = new aiVector3D[nodeAnim->mNumScalingKeys];
+
+          for(sInt k=0; k<nodeAnim->mNumPositionKeys; k++)
+            nodeAnim->mPositionKeys[k] = ss->WaiAnimations[i]->mChannels[j]->mPositionKeys[k];
+
+          for(sInt k=0; k<nodeAnim->mNumRotationKeys; k++)
+            nodeAnim->mRotationKeys[k] = ss->WaiAnimations[i]->mChannels[j]->mRotationKeys[k];
+
+          for(sInt k=0; k<nodeAnim->mNumScalingKeys; k++)
+            nodeAnim->mScalingKeys[k] = ss->WaiAnimations[i]->mChannels[j]->mScalingKeys[k];
+        }
+      }
+    }
+#endif
   }
 
   Chunks.Copy(src->Chunks);
