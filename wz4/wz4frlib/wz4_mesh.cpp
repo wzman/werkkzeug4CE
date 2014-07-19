@@ -1034,6 +1034,10 @@ void Wz4Mesh::InsertClusterAfter(Wz4MeshCluster *cl,sInt pos)
 
 void Wz4Mesh::SplitClustersAnim(sInt maxMats)
 {
+#ifdef sCOMPIL_ASSIMP
+  if(WaiIsAssimpAnimated) return;
+#endif
+
   sInt mc,maxcluster,used,total;
   Wz4AnimJoint *joint;
   Wz4MeshCluster *cl,*clnew;
