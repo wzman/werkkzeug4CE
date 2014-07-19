@@ -399,7 +399,7 @@ Wz4Mesh::Wz4Mesh()
   SaveFlags = 0;
   ChargeCount = 0;
   DontClearVertices = 0;
-  WaiIsAssimp = sFALSE;
+  WaiIsAssimpAnimated = sFALSE;
 }
 
 /****************************************************************************/
@@ -416,7 +416,7 @@ Wz4Mesh::~Wz4Mesh()
   delete InstanceGeo;
   delete InstancePlusGeo;
 
-  if(WaiIsAssimp)
+  if(WaiIsAssimpAnimated)
   {
     WaiReleaseNodeTreeR(Skeleton->WaiRootNode);
     delete Skeleton->WaiRootNode;
@@ -5037,7 +5037,7 @@ void Wz4Mesh::Render(sInt flags,sInt index,const sMatrix34CM *mat,sF32 time,cons
       bonemat = sALLOCSTACK(sMatrix34,bc);
       basemat = sALLOCSTACK(sMatrix34CM,bc);
 
-      if(!WaiIsAssimp)
+      if(!WaiIsAssimpAnimated)
         Skeleton->EvaluateCM(time,bonemat,basemat);
       else
         Skeleton->WaiEvaluateAssimpCM(time,bonemat,basemat,WaiAnimSequence);
@@ -7269,8 +7269,6 @@ sBool Wz4Mesh::WaiLoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaIm
     return sFALSE;
   }
 
-  WaiIsAssimp = sTRUE;
-
   for(sU32 j=0; j<waiScene->mNumMeshes; j++)
   {
     const aiMesh* paiMesh = waiScene->mMeshes[j];
@@ -7383,7 +7381,9 @@ sBool Wz4Mesh::WaiLoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaIm
   if(!waiScene->HasAnimations())
     return sTRUE;
 
+  WaiIsAssimpAnimated = sTRUE;
   WaiAnimSequence = 0;
+
   Skeleton = new Wz4Skeleton;
   Skeleton->WaiGlobalInverseTransform = waiScene->mRootNode->mTransformation;
   Skeleton->WaiGlobalInverseTransform.Inverse();

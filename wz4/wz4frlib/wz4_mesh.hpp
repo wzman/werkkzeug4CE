@@ -309,7 +309,7 @@ public:
 #ifdef sCOMPIL_ASSIMP
   sBool WaiLoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImportEx * para);
   sInt WaiAnimSequence;               // animation index to play
-  sBool WaiIsAssimp;                  // work with assimp treatments
+  sBool WaiIsAssimpAnimated;          // assimp animation flag
 #endif
 };
 
