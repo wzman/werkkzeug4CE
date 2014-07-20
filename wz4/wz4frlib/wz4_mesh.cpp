@@ -622,6 +622,7 @@ void Wz4Mesh::CopyFrom(Wz4Mesh *src)
       dd->Joints.Add(ss->Joints);
       dd->WaiGlobalInverseTransform = ss->WaiGlobalInverseTransform;
       dd->WaiBoneMap = ss->WaiBoneMap;
+      dd->WaiPreTransform = ss->WaiPreTransform;
 
       sAiNode * rootNode = new sAiNode();
       WaiCopyNodeTreeR(ss->WaiRootNode, rootNode);
