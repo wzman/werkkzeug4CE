@@ -17,7 +17,7 @@
 
 /****************************************************************************/
 
-struct Wz4MeshParaImportEx;   // required for ImportAssimp to bind parameters ops
+struct Wz4MeshParaAiImport;   // required for ImportAssimp to bind parameters ops
 
 /****************************************************************************/
 
@@ -307,7 +307,9 @@ public:
   sBool SaveOBJ(const sChar *file);
 
 #ifdef sCOMPIL_ASSIMP
-  sBool WaiLoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImportEx * para);
+  sBool WaiLoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaAiImport * para);
+  void WaiTransformBones(sMatrix34 &mat);
+
   sInt WaiAnimSequence;               // animation index to play
   sBool WaiIsAssimpAnimated;          // assimp animation flag
   void WaiReleaseAnimation();

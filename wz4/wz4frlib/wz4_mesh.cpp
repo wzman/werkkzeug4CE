@@ -635,7 +635,7 @@ void Wz4Mesh::CopyFrom(Wz4Mesh *src)
         anim->mName = ss->WaiAnimations[i]->mName;
         anim->mNumChannels = ss->WaiAnimations[i]->mNumChannels;
 
-        for(sInt j=0; j<ss->WaiAnimations[i]->mNumChannels; j++)
+        for(sU32 j=0; j<ss->WaiAnimations[i]->mNumChannels; j++)
         {
           sAiNodeAnim * nodeAnim = new sAiNodeAnim;
           dd->WaiAnimations[i]->mChannels.AddTail(nodeAnim);
@@ -649,13 +649,13 @@ void Wz4Mesh::CopyFrom(Wz4Mesh *src)
           nodeAnim->mRotationKeys = new aiQuaternion[nodeAnim->mNumRotationKeys];
           nodeAnim->mScalingKeys = new aiVector3D[nodeAnim->mNumScalingKeys];
 
-          for(sInt k=0; k<nodeAnim->mNumPositionKeys; k++)
+          for(sU32 k=0; k<nodeAnim->mNumPositionKeys; k++)
             nodeAnim->mPositionKeys[k] = ss->WaiAnimations[i]->mChannels[j]->mPositionKeys[k];
 
-          for(sInt k=0; k<nodeAnim->mNumRotationKeys; k++)
+          for(sU32 k=0; k<nodeAnim->mNumRotationKeys; k++)
             nodeAnim->mRotationKeys[k] = ss->WaiAnimations[i]->mChannels[j]->mRotationKeys[k];
 
-          for(sInt k=0; k<nodeAnim->mNumScalingKeys; k++)
+          for(sU32 k=0; k<nodeAnim->mNumScalingKeys; k++)
             nodeAnim->mScalingKeys[k] = ss->WaiAnimations[i]->mChannels[j]->mScalingKeys[k];
         }
       }
@@ -7333,7 +7333,7 @@ sBool Wz4Mesh::LoadWz3MinMesh(const sChar *file)
 
 void WaiBuildNodeTreeR(aiNode * node, sAiNode * r);
 
-sBool Wz4Mesh::WaiLoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaImportEx * para)
+sBool Wz4Mesh::WaiLoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaAiImport * para)
 {
   sChar8 filename[MAXLEN];
   sCopyString(filename, file ,MAXLEN);
@@ -7539,29 +7539,8 @@ sBool Wz4Mesh::WaiLoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaIm
     nextMeshBones += pMesh->mNumBones;
   }
 
-  // compute pre-transform matrix
-
-  sSRT srt;
-  sMatrix34 m;
-  srt.Scale = para->PreScale;
-  srt.Rotate = para->PreRot;
-  srt.Translate = para->PreTrans;
-  srt.MakeMatrix(m);
-  sMatrix34CM mat(m);
-  aiMatrix4x4 pretrans;
-  pretrans.a1 = mat.x.x;
-  pretrans.a2 = mat.x.y;
-  pretrans.a3 = mat.x.z;
-  pretrans.a4 = mat.x.w;
-  pretrans.b1 = mat.y.x;
-  pretrans.b2 = mat.y.y;
-  pretrans.b3 = mat.y.z;
-  pretrans.b4 = mat.y.w;
-  pretrans.c1 = mat.z.x;
-  pretrans.c2 = mat.z.y;
-  pretrans.c3 = mat.z.z;
-  pretrans.b4 = mat.z.w;
-  Skeleton->WaiPreTransform = pretrans;
+  // pre-transform default matrix is identity
+  Skeleton->WaiPreTransform = aiMatrix4x4();
 
   // skinning (bind vertices to bones according weight influence)
 
@@ -7650,6 +7629,28 @@ void WaiReleaseNodeTreeR(sAiNode * n)
   {
     WaiReleaseNodeTreeR(n->mChildren[i]);
     delete n->mChildren[i];
+  }
+}
+
+void Wz4Mesh::WaiTransformBones(sMatrix34 &mat)
+{
+  if(Skeleton && WaiIsAssimpAnimated)
+  {
+    sMatrix34CM m(mat);
+    aiMatrix4x4 pretrans;
+    pretrans.a1 = m.x.x;
+    pretrans.a2 = m.x.y;
+    pretrans.a3 = m.x.z;
+    pretrans.a4 = m.x.w;
+    pretrans.b1 = m.y.x;
+    pretrans.b2 = m.y.y;
+    pretrans.b3 = m.y.z;
+    pretrans.b4 = m.y.w;
+    pretrans.c1 = m.z.x;
+    pretrans.c2 = m.z.y;
+    pretrans.c3 = m.z.z;
+    pretrans.b4 = m.z.w;
+    Skeleton->WaiPreTransform = pretrans;
   }
 }
 

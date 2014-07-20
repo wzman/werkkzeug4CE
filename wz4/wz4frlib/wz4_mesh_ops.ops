@@ -182,7 +182,7 @@ operator Wz4Mesh Import()
   } 
 }
 
-operator Wz4Mesh ImportEx()
+operator Wz4Mesh AiImport()
 {
   column=0;
 
@@ -211,11 +211,6 @@ operator Wz4Mesh ImportEx()
     group "Wz4Mesh post-process";
     layout flags Wz4MeshOptions ("*1-|CalcNormals:*2-|CalcTangents:*3-|CalcTangentsAndNormals:*4-|RemoveDegeneratedFaces:*5-|MergeVertices:*6-|MergeClusters:*7-|SplittedMesh");    
     int DefaultAnimSequence (0..1000000 step 1) = 0;
-
-    group "Skeleton pre-transform";
-    float31 PreScale (-0x10000..0x10000 step 0.01) = { 1,1,1 } ;
-    float30 PreRot (-16..16 step 0.01) = 0;
-    float31 PreTrans (-0x10000..0x10000 step 0.01) = { 0,0,0 } ;
   }
   code
   {
@@ -233,6 +228,30 @@ operator Wz4Mesh ImportEx()
     cmd->SetError(L"Assimp not available in this build.");
     return sFALSE;
 #endif
+  }
+}
+
+operator Wz4Mesh AiTransformBones(Wz4Mesh)
+{
+  column=1;
+  flags = passinput | passoutput;
+
+  parameter
+  {
+    group "Skeleton transform";
+    float31 Scale (-0x10000..0x10000 step 0.01) = { 1,1,1 } ;
+    float30 Rot (-16..16 step 0.01) = 0;
+    float31 Trans (-0x10000..0x10000 step 0.01) = { 0,0,0 } ;
+  }
+  code
+  {
+    sSRT srt;
+    sMatrix34 mat;
+    srt.Scale = para->Scale;
+    srt.Rotate = para->Rot;
+    srt.Translate = para->Trans;
+    srt.MakeMatrix(mat);
+    out->WaiTransformBones(mat);
   }
 }
 
