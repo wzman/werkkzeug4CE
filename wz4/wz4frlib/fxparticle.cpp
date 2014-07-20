@@ -1273,7 +1273,14 @@ void RNChunks::Render(Wz4RenderContext *ctx)
               if(n>0)
                 Meshes[i]->RenderBoneInst(ctx->RenderMode,Para.EnvNum,bc,basemat,n,imat);
               n = 0;
-              Meshes[i]->Skeleton->EvaluateCM(p->Anim,bonemat,basemat);
+#ifdef sCOMPIL_ASSIMP
+              if(!Meshes[i]->WaiIsAssimpAnimated)
+#endif
+                Meshes[i]->Skeleton->EvaluateCM(p->Anim,bonemat,basemat);
+#ifdef sCOMPIL_ASSIMP
+              else
+                Meshes[i]->Skeleton->WaiEvaluateAssimpCM(p->Anim,bonemat,basemat,Meshes[i]->WaiAnimSequence);
+#endif
             }
             if(p->Time>=0 && p->Index==i)
             {

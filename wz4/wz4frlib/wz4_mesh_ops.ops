@@ -209,7 +209,8 @@ operator Wz4Mesh ImportEx()
     filein Filename("3d|3ds|ac|ase|b3d|blend|bvh|cob|dae|dxf|csm|dxf|fbx|hmp|ifc|irr|irrmesh|lwo|lxo|lws|md2|md3|md5|mdl|ms3d|nff|obj|ply|q3o|raw|smd|max|stl|ter|wrl|x|zgl");
 
     group "Wz4Mesh post-process";
-    layout flags Wz4MeshOptions ("*1-|CalcNormals:*2-|CalcTangents:*3-|CalcTangentsAndNormals:*4-|RemoveDegeneratedFaces:*5-|MergeVertices:*6-|MergeClusters:*7-|SplittedMesh");
+    layout flags Wz4MeshOptions ("*1-|CalcNormals:*2-|CalcTangents:*3-|CalcTangentsAndNormals:*4-|RemoveDegeneratedFaces:*5-|MergeVertices:*6-|MergeClusters:*7-|SplittedMesh");    
+    int DefaultAnimSequence (0..1000000 step 1) = 0;
   }
   code
   {

@@ -7475,7 +7475,7 @@ sBool Wz4Mesh::WaiLoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaIm
     return sTRUE;
 
   WaiIsAssimpAnimated = sTRUE;
-  WaiAnimSequence = 0;
+  WaiAnimSequence = para->DefaultAnimSequence;
 
   Skeleton = new Wz4Skeleton;
   Skeleton->WaiGlobalInverseTransform = waiScene->mRootNode->mTransformation;
