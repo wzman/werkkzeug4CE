@@ -7538,6 +7538,30 @@ sBool Wz4Mesh::WaiLoadAssimp(const sChar *file, sChar * errString, Wz4MeshParaIm
     nextMeshBones += pMesh->mNumBones;
   }
 
+  // compute pre-transform matrix
+
+  sSRT srt;
+  sMatrix34 m;
+  srt.Scale = para->PreScale;
+  srt.Rotate = para->PreRot;
+  srt.Translate = para->PreTrans;
+  srt.MakeMatrix(m);
+  sMatrix34CM mat(m);
+  aiMatrix4x4 pretrans;
+  pretrans.a1 = mat.x.x;
+  pretrans.a2 = mat.x.y;
+  pretrans.a3 = mat.x.z;
+  pretrans.a4 = mat.x.w;
+  pretrans.b1 = mat.y.x;
+  pretrans.b2 = mat.y.y;
+  pretrans.b3 = mat.y.z;
+  pretrans.b4 = mat.y.w;
+  pretrans.c1 = mat.z.x;
+  pretrans.c2 = mat.z.y;
+  pretrans.c3 = mat.z.z;
+  pretrans.b4 = mat.z.w;
+  Skeleton->WaiPreTransform = pretrans;
+
   // skinning (bind vertices to bones according weight influence)
 
   Wz4MeshVertex *v;

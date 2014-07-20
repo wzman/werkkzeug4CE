@@ -281,6 +281,7 @@ public:
   std::unordered_map<std::string, sU32> WaiBoneMap;
   sAiNode * WaiRootNode;
   sArray<sAiAnimation *> WaiAnimations;
+  aiMatrix4x4 WaiPreTransform;
 
 #endif
 };

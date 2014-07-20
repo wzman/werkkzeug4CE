@@ -733,8 +733,7 @@ void Wz4Skeleton::WaiEvaluateAssimpCM(sF32 time,sMatrix34 *mata,sMatrix34CM *bas
   if(animSeq >= WaiAnimations.GetCount())
     animSeq = WaiAnimations.GetCount()-1;
 
-  aiMatrix4x4 mat;
-  WaiReadNodeTree(time, WaiRootNode, mat, animSeq);
+  WaiReadNodeTree(time, WaiRootNode, WaiPreTransform, animSeq);
 
   Wz4AnimJoint * j;
   sFORALL(Joints, j)
