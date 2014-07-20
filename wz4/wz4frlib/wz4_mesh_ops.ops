@@ -856,7 +856,7 @@ operator Wz4Mesh SetMaterial(Wz4Mesh,Wz4Mtrl)
   parameter
   {
     link Material:1 (both);
-    layout flags Selection("all|none|selected|unselected|cluster");
+    layout flags Selection("all|none|selected|unselected|cluster|all clusters");
     if(Selection==4)
       int Cluster(0..0x10000);
   }
@@ -869,6 +869,16 @@ operator Wz4Mesh SetMaterial(Wz4Mesh,Wz4Mtrl)
       {
         out->Clusters[cli]->Mtrl->Release();
         out->Clusters[cli]->Mtrl = in1;
+        in1->AddRef();
+      }
+    }
+    else if(para->Selection==5)
+    {
+      Wz4MeshCluster * c;
+      sFORALL(out->Clusters, c)
+      {
+        c->Mtrl->Release();
+        c->Mtrl = in1;
         in1->AddRef();
       }
     }
