@@ -7639,19 +7639,19 @@ void Wz4Mesh::WaiTransformBones(sMatrix34 &mat)
     sMatrix34CM m(mat);
     aiMatrix4x4 pretrans;
     pretrans.a1 = m.x.x;
-    pretrans.a2 = m.x.z;
-    pretrans.a3 = m.x.y;
+    pretrans.a2 = m.x.y;
+    pretrans.a3 = m.x.z;
     pretrans.a4 = m.x.w;
 
-    pretrans.b1 = m.z.x;
-    pretrans.b2 = m.z.z;
-    pretrans.b3 = m.z.y;
-    pretrans.b4 = m.z.w;
+    pretrans.b1 = m.y.x;
+    pretrans.b2 = m.y.y;
+    pretrans.b3 = m.y.z;
+    pretrans.b4 = m.y.w;
 
-    pretrans.c1 = m.y.x;
-    pretrans.c2 = m.y.z;
-    pretrans.c3 = m.y.y;
-    pretrans.c4 = m.y.w;
+    pretrans.c1 = m.z.x;
+    pretrans.c2 = m.z.y;
+    pretrans.c3 = m.z.z;
+    pretrans.c4 = m.z.w;
     Skeleton->WaiPreTransform = pretrans;
   }
 }
