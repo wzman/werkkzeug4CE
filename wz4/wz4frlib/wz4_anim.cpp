@@ -701,9 +701,8 @@ sINLINE void Wz4Skeleton::WaiEvaluatePosition(aiVector3D& out, sF32 time, const 
 
 void Wz4Skeleton::WaiReadNodeTree(sF32 time, const sAiNode* node, const aiMatrix4x4 & parentTransform, sInt animSeq)
 {
-  std::string nodeName(node->mName);
   aiMatrix4x4 nodeTransformation = node->mTransformation;
-  const sAiNodeAnim * nodeAnim = WaiGetAnimNode(nodeName, animSeq);
+  const sAiNodeAnim * nodeAnim = WaiGetAnimNode(node->mName, animSeq);
 
   if (nodeAnim)
   {
@@ -718,7 +717,7 @@ void Wz4Skeleton::WaiReadNodeTree(sF32 time, const sAiNode* node, const aiMatrix
 
   aiMatrix4x4 globalTransformation = parentTransform * nodeTransformation;
 
-  std::unordered_map<std::string, sU32>::iterator it = WaiBoneMap.find(nodeName);
+  std::unordered_map<std::string, sU32>::iterator it = WaiBoneMap.find(node->mName);
   if(it != WaiBoneMap.end())
     Joints[it->second].FinalTransformation = WaiGlobalInverseTransform * globalTransformation * Joints[it->second].BoneOffset;
 
