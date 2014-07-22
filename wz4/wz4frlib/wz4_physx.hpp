@@ -231,6 +231,7 @@ class WpxRigidBody : public WpxActorBase
 public:
   WpxColliderBase * RootCollider;     // associated colliders geometries, root collider in collider graph
   sArray<sActor*> AllActors;          // list of actors
+  sArray<sVector31> ListPositions;    // used to store position list, when building rigidbody from vertex mode
 
   WpxRigidBodyParaRigidBody ParaBase, Para;
 
@@ -243,6 +244,7 @@ public:
   void AddRootCollider(WpxColliderBase * col);
   void PhysxBuildActor(const sMatrix34 & mat, PxScene * scene, sArray<sActor*> &allActors);   // build physx actor
   void PhysxWakeUp();
+  void GetPositionsFromMeshVertices(Wz4Mesh * mesh, sInt selection);
 };
 
 /****************************************************************************/

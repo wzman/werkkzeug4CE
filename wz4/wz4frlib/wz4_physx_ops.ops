@@ -340,7 +340,7 @@ type WpxRigidBodyDebris : WpxActorBase
 /****************************************************************************/
 /****************************************************************************/
 
-operator WpxRigidBody RigidBody (Wz4Render, WpxColliderBase)
+operator WpxRigidBody RigidBody (Wz4Render, WpxColliderBase, ?Wz4Mesh)
 {
   tab = PhysXTab;
   column = 1;
@@ -355,7 +355,14 @@ operator WpxRigidBody RigidBody (Wz4Render, WpxColliderBase)
     anim float30 Rot (-16..16 step 0.01) = 0;
     anim float31 Trans (-0x10000..0x10000 step 0.01) = 0;
 
-    group "Actor type";
+    group "Build options";
+    layout flags BuildMode("standard|fromVertex") = 0;
+    if(BuildMode==1)
+    {
+      flags Selection("all|none|selected|unselected");
+    }
+
+    group "Physx actor type";
     layout flags ActorType("static|dynamic|kinematic") = 0;
 
     if(ActorType == 1)
@@ -415,6 +422,18 @@ operator WpxRigidBody RigidBody (Wz4Render, WpxColliderBase)
 
     // add colliders
     out->AddRootCollider(in1);
+
+    // build mode from vertex, add mesh to build rb from its vertices
+    if(para->BuildMode == 1)
+    {
+      if(in2)
+        out->GetPositionsFromMeshVertices(in2, para->Selection);
+      else
+      {
+        cmd->SetError(L"Missing mesh (input 3) to build rigidbodies from.");
+        return 0;
+      }
+    }
 
     out->RootNode = node;
     out->AddChilds(cmd, para->Renderpass, 0, 1);

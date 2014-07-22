@@ -386,7 +386,7 @@ void WpxCollider::GetDensity(sArray<PxReal> * densities)
 
 void WpxCollider::Render(Wz4RenderContext &ctx, sMatrix34 &mat)
 {
-  if (MeshCollider)
+  if (MeshCollider && Matrices.GetCount()>0)
   {
     // render mesh geometry (instance mode)
     sMatrix34CM * cm = &Matrices[0];
@@ -705,6 +705,18 @@ void WpxRigidBody::PhysxWakeUp()
   PhysxWakeUpRigidDynamics(&AllActors, Para);
 }
 
+void WpxRigidBody::GetPositionsFromMeshVertices(Wz4Mesh * mesh, sInt selection)
+{
+  sArray<sVector31> listPos;
+  mesh->GetUniquePositionsFromMeshVertex(listPos, selection);
+
+  sVector31 * p;
+  sFORALL(listPos, p)
+  {
+    ListPositions.AddTail(*p);
+  }
+}
+
 void WpxRigidBody::PhysxBuildActor(const sMatrix34 & mat, PxScene * scene, sArray<sActor*> &allActors)
 {
   // ptr for local use
@@ -834,8 +846,27 @@ void WpxRigidBody::Transform(const sMatrix34 & mat, PxScene * ptr)
     Matrices.AddTail(sMatrix34CM(mulmat));
 
     // instead of WpxRigidBody it has a RootCollider and a RootNode, so transform them
-    RootCollider->Transform(mulmat, 0);
-    RootNode->Transform(0, mulmat);
+
+    if(Para.BuildMode == 1)
+    {
+      for(sInt i=0; i<ListPositions.GetCount(); i++)
+      {
+        sSRT srt2;
+        sMatrix34 matvert;
+        srt2.Scale = sVector31(1.0f);
+        srt2.Rotate = sVector30(0.0f);
+        srt2.Translate = ListPositions[i];
+        srt2.MakeMatrix(matvert);
+
+        RootCollider->Transform(mulmat * matvert, 0);
+        RootNode->Transform(0, mulmat * matvert);
+      }
+    }
+    else
+    {
+      RootCollider->Transform(mulmat, 0);
+      RootNode->Transform(0, mulmat);
+    }
 
   }
   else
@@ -843,7 +874,25 @@ void WpxRigidBody::Transform(const sMatrix34 & mat, PxScene * ptr)
     // ptr not null : transform is calling from Physx init to build physx objects
 
     // build physx actors
-    PhysxBuildActor(mulmat, ptr, AllActors);
+    if(Para.BuildMode == 1)
+    {
+      for(sInt i=0; i<ListPositions.GetCount(); i++)
+      {
+        sSRT srt2;
+        sMatrix34 matvert;
+        srt2.Scale = sVector31(1.0f);
+        srt2.Rotate = sVector30(0.0f);
+        srt2.Translate = ListPositions[i];
+        srt2.MakeMatrix(matvert);
+
+        PhysxBuildActor(mulmat * matvert, ptr, AllActors);
+      }
+    }
+    else
+    {
+      PhysxBuildActor(mulmat, ptr, AllActors);
+    }
+
 
     // kinematics need this matrix as initial pose
     if (Para.ActorType == EAT_KINEMATIC)

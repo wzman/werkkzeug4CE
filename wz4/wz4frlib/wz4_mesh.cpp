@@ -6940,6 +6940,33 @@ static inline bool operator <(const sVector31 &a, const sVector31 &b)
   return a.z < b.z;
 }
 
+void Wz4Mesh::GetUniquePositionsFromMeshVertex(sArray<sVector31> &positions, sInt selection)
+{
+  sArray<sVector31> postmp;
+  Wz4MeshVertex * vp;
+
+  // build list of all positions (including duplicates)
+  sFORALL(Vertices, vp)
+  {
+    if(logic(selection, vp->Select))
+    {
+      postmp.AddTail(vp->Pos);
+    }
+  }
+
+  // sort positions
+  sIntroSort(sAll(postmp));
+
+  // for each position get unique one (different from previous in list)
+  for(sInt i=0; i<postmp.GetCount(); i++)
+  {
+    if(i==0 || postmp[i] != postmp[i-1])
+    {
+      positions.AddTail(postmp[i]);
+    }
+  }
+}
+
 void Wz4Mesh::FromVertex(Wz4Mesh * inputMesh, Wz4Mesh * outputMesh, sF32 amount, sInt seed, sInt selection, sVector31 scale, sVector30 rot, sVector31 trans, sInt cumulated)
 {
   sVERIFY(inputMesh != 0);

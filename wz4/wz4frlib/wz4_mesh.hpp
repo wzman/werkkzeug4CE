@@ -229,6 +229,7 @@ public:
   sBool DivideInChunksR(Wz4MeshFace *mf,sInt mfi,Wz4MeshFaceConnect *conn);
   sVector30 GetFaceNormal(sInt face) const;
   void CalcBBox(sAABBox &box) const;
+  void GetUniquePositionsFromMeshVertex(sArray<sVector31> &positions, sInt selection);
 
   // selection
   void SelStoreLoad(sInt mode, sInt type, sInt slot);
