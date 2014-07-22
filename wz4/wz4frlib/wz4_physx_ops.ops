@@ -356,7 +356,7 @@ operator WpxRigidBody RigidBody (Wz4Render, WpxColliderBase, ?Wz4Mesh)
     anim float31 Trans (-0x10000..0x10000 step 0.01) = 0;
 
     group "Build options";
-    layout flags BuildMode("standard|fromVertex") = 0;
+    layout flags BuildMode("standard|fromVertex|fromChunks") = 0;
     if(BuildMode==1)
     {
       flags Selection("all|none|selected|unselected");
@@ -430,7 +430,19 @@ operator WpxRigidBody RigidBody (Wz4Render, WpxColliderBase, ?Wz4Mesh)
         out->GetPositionsFromMeshVertices(in2, para->Selection);
       else
       {
-        cmd->SetError(L"Missing mesh (input 3) to build rigidbodies from.");
+        cmd->SetError(L"Missing mesh (input 3) to build rigidbodies from vertices.");
+        return 0;
+      }
+    }
+
+     // build mode from chunks, add mesh to build rb from its chunks
+    if(para->BuildMode == 2)
+    {
+      if(in2)
+        out->GetPositionsFromMeshChunks(in2);
+      else
+      {
+        cmd->SetError(L"Missing mesh (input 3) to build rigidbodies from chunks.");
         return 0;
       }
     }

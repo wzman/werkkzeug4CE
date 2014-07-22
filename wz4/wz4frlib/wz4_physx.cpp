@@ -717,6 +717,15 @@ void WpxRigidBody::GetPositionsFromMeshVertices(Wz4Mesh * mesh, sInt selection)
   }
 }
 
+void WpxRigidBody::GetPositionsFromMeshChunks(Wz4Mesh * mesh)
+{
+  Wz4ChunkPhysics * c;
+  sFORALL(mesh->Chunks, c)
+  {
+    ListPositions.AddTail(c->COM);
+  }
+}
+
 void WpxRigidBody::PhysxBuildActor(const sMatrix34 & mat, PxScene * scene, sArray<sActor*> &allActors)
 {
   // ptr for local use
@@ -847,7 +856,7 @@ void WpxRigidBody::Transform(const sMatrix34 & mat, PxScene * ptr)
 
     // instead of WpxRigidBody it has a RootCollider and a RootNode, so transform them
 
-    if(Para.BuildMode == 1)
+    if(Para.BuildMode == 1 || Para.BuildMode == 2)
     {
       for(sInt i=0; i<ListPositions.GetCount(); i++)
       {
@@ -874,7 +883,7 @@ void WpxRigidBody::Transform(const sMatrix34 & mat, PxScene * ptr)
     // ptr not null : transform is calling from Physx init to build physx objects
 
     // build physx actors
-    if(Para.BuildMode == 1)
+    if(Para.BuildMode == 1 || Para.BuildMode == 2)
     {
       for(sInt i=0; i<ListPositions.GetCount(); i++)
       {

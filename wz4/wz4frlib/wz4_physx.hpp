@@ -245,6 +245,7 @@ public:
   void PhysxBuildActor(const sMatrix34 & mat, PxScene * scene, sArray<sActor*> &allActors);   // build physx actor
   void PhysxWakeUp();
   void GetPositionsFromMeshVertices(Wz4Mesh * mesh, sInt selection);
+  void GetPositionsFromMeshChunks(Wz4Mesh * mesh);
 };
 
 /****************************************************************************/
