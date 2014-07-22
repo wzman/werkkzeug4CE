@@ -178,6 +178,7 @@ operator WpxColliderAdd ColliderAdd "Add" (*WpxColliderBase)
 {
   tab = PhysXTab;
   column = 2;
+  shortcut = 'A';
 
   parameter
   {
@@ -195,6 +196,7 @@ operator WpxColliderTransform ColliderTransform "Transform" (WpxColliderBase)
 {
   tab = PhysXTab;
   column = 2;
+  shortcut = 'T';
 
   parameter
   {
@@ -215,6 +217,7 @@ operator WpxColliderMul ColliderMul "Multiply" (WpxColliderBase)
 {
   tab = PhysXTab;
   column = 2;
+  shortcut = 'M';
 
   parameter
   {
@@ -486,6 +489,7 @@ operator WpxRigidBodyDebris RigidBodyDebris "Debris" (Wz4Render)
 {
   tab = PhysXTab;
   column = 1;
+  shortcut = 'd';
 
   parameter
   {
@@ -573,6 +577,7 @@ operator WpxRigidBodyAdd RigidBodyAdd "Add" (*WpxActorBase)
 {
   tab = PhysXTab;
   column = 1;
+  shortcut = 'a';
 
   parameter
   {
@@ -596,6 +601,7 @@ operator WpxRigidBodyTransform RigidBodyTransform "Transform" (WpxActorBase)
 {
   tab = PhysXTab;
   column = 1;
+  shortcut = 't';
 
   parameter
   {
@@ -622,6 +628,7 @@ operator WpxRigidBodyMul RigidBodyMul "Multiply" (WpxActorBase)
 {
   tab = PhysXTab;
   column = 1;
+  shortcut = 'm';
 
   parameter
   {
@@ -748,7 +755,7 @@ operator PhysxObject PhysxTarget ()
 {
   tab = PhysXTab;
   column = 0;
-  shortcut = 't';
+
   code
   {
   }
