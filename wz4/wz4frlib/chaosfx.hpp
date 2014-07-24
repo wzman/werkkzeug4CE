@@ -40,6 +40,25 @@ public:
 
 /****************************************************************************/
 
+class RNTest : public Wz4RenderNode
+{
+  sGeometry *Geo;
+  sMatrix34 Matrix;
+  sMaterial * Mtrl;
+
+public:
+  RNTest();
+  ~RNTest();
+
+  void Simulate(Wz4RenderContext *ctx);
+  void Prepare(Wz4RenderContext *ctx);
+  void Render(Wz4RenderContext *ctx);
+
+  Wz4RenderParaTest Para,ParaBase;
+  Wz4RenderAnimTest Anim;
+};
+/****************************************************************************/
+
 class RNPrint : public Wz4RenderNode
 {
   sMatrix34 Matrix;

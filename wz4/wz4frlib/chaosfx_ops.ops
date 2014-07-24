@@ -49,6 +49,30 @@ operator Wz4Render CubeExample(Wz4Mtrl)
 
 /****************************************************************************/
 
+operator Wz4Render Test()
+{
+  column = 1;
+  parameter
+  {
+    anim float31 Scale:1 (-1024..1024 step 0.01) = 1;
+    anim float30 Rot (-16..16 step 0.01) = 0;
+    anim float31 Trans (-0x10000..0x10000 step 0.01) = { 0,0,0 } ;
+    int EnvNum(0..15)=0;
+    int Renderpass(-127..127);
+
+    group "Animation Script"; overbox overlabel linenumber lines 5 string Script;
+  }
+  code
+  {
+    RNTest *node = new RNTest();
+    node->ParaBase = node->Para = *para;
+    out->RootNode = node;
+    out->AddCode(cmd,para->Renderpass);
+  }
+}
+
+/****************************************************************************/
+
 operator Wz4Render Print(ChaosFont)
 {
   column = 1;

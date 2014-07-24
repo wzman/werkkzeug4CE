@@ -129,6 +129,8 @@ void RNCubeExample::Prepare(Wz4RenderContext *ctx)
 
 // called for each rendering: once for ZOnly, once for MAIN, may be for shadows...
 
+
+
 void RNCubeExample::Render(Wz4RenderContext *ctx)
 {
   // here we can filter out passes that do not interesst us
@@ -154,6 +156,70 @@ void RNCubeExample::Render(Wz4RenderContext *ctx)
       Mtrl->Set(ctx->RenderMode|sRF_MATRIX_ONE,Para.EnvNum,&mat1,0,0,0);
       Geo->Draw();
     }
+  }
+}
+
+/****************************************************************************/
+/****************************************************************************/
+
+RNTest::RNTest()
+{
+  Mtrl = 0;
+  Anim.Init(Wz4RenderType->Script);
+
+  Geo = new sGeometry(sGF_TRILIST|sGF_INDEX16,sVertexFormatStandard);
+  Geo->LoadCube();
+
+  sImage img(256,256);
+  img.Checker(0xFFAABBCC, 0xFF445566, 16, 16);
+
+  Mtrl = new MaterialTest;
+  //Mtrl->Flags = sMTRL_CULLOFF|sMTRL_ZOFF;
+  //Mtrl->BlendColor = sMB_ALPHA;
+  Mtrl->Texture[0] = sLoadTexture2D(&img,sTEX_ARGB8888);
+  Mtrl->TFlags[0] = sMTF_CLAMP|sMTF_LEVEL2;
+  Mtrl->Prepare(sVertexFormatSingle);
+}
+
+RNTest::~RNTest()
+{
+  sDelete(Mtrl->Texture[0]);
+  delete Geo;
+  delete Mtrl;
+}
+
+void RNTest::Simulate(Wz4RenderContext *ctx)
+{
+  Para = ParaBase;
+  Anim.Bind(ctx->Script,&Para);
+  SimulateCalc(ctx);
+}
+
+void RNTest::Prepare(Wz4RenderContext *ctx)
+{
+  sSRT srt;
+  srt.Scale = Para.Scale;
+  srt.Rotate = Para.Rot*sPI2F;
+  srt.Translate = Para.Trans;
+  srt.MakeMatrix(Matrix);
+}
+
+void RNTest::Render(Wz4RenderContext *ctx)
+{
+  if((ctx->RenderMode & sRF_TARGET_MASK)==sRF_TARGET_MAIN)
+  {
+    // mvp = view.ModelScreen;
+    // mv = view.ModelView;
+    // m = view.Model;
+
+    sCBuffer<MaterialTestVSPara> cbv;
+    cbv.Data->mvp = ctx->View.ModelScreen;
+
+    sCBuffer<MaterialTestPSPara> cbp;
+    cbp.Data->color1 = sVector4(0.8f,0.7f,0.9f,1.0f);
+
+    Mtrl->Set(&cbv, &cbp);
+    Geo->Draw();
   }
 }
 
