@@ -685,8 +685,7 @@ operator Wz4Render Physx (?PhysxObject,*WpxActorBase)
     if(TimeSync==1)
     {
       layout flags SyncMethod ("method1|method2") = 0;
-      if(SyncMethod==1)
-        anim float DeltaLimit (-1000..1000 step 0.001) = 0.03;
+      anim float DeltaLimit (-1000..1000 step 0.001) = 0.03;
       anim float DeltaScale (-1000..1000 step 0.001) = 0.001;
     }
 

@@ -1744,19 +1744,19 @@ void RNPhysx::Simulate(Wz4RenderContext *ctx)
   else
   {
     // compute real elapsed time to synchronize simulation with real time
-    static sTiming time;
-    time.OnFrame(sGetTime());
-    sF32 deltaTime = time.GetDelta() * Para.DeltaScale;
-    // or
-    /*sF32 newTime = sGetTimeUS() * 0.001;
-    sF32 deltaTime = (newTime - LastTime) * Para.TimeScale;
-    LastTime = newTime;*/
+    sF32 newTime = sGetTimeUS() * 0.001;
+    sF32 deltaTime = (newTime - LastTime) * Para.DeltaScale;
+    LastTime = newTime;
+
+    // fix max delta limit
+    if (deltaTime > Para.DeltaLimit)
+        deltaTime = Para.DeltaLimit;
 
     if (Para.SyncMethod==0)
     {
-      // simulation loop method 2
-      Accumulator += deltaTime;
+      // simulation loop method 1
 
+      Accumulator += deltaTime;
       if (Accumulator < stepSize)
         return;
 
@@ -1768,9 +1768,7 @@ void RNPhysx::Simulate(Wz4RenderContext *ctx)
     }
     else
     {
-      // simulation loop method 1
-      if (deltaTime > Para.DeltaLimit)
-        deltaTime = Para.DeltaLimit; // avoid spiral of death
+      // simulation loop method 2
 
       Accumulator += deltaTime;
       while (Accumulator >= stepSize)
