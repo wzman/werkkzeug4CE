@@ -985,6 +985,37 @@ void WpxRigidBodyMul::Transform(const sMatrix34 & mat, PxScene * ptr)
 
 /****************************************************************************/
 
+void WpxRigidBodyJointsSpherical::Transform(const sMatrix34 & mat, PxScene * ptr)
+{
+  TransformChilds(mat, ptr);
+
+  // TEMP : Test to create joints between 2 first RIGIDBODY childs
+
+  // todo : if entries are not rigidbodies (mul, add, transform op), need to recurse parents to find a RigidBody op and get access to AllActors ptr.
+  // for each actors in left op create a joint with actors in right op.
+  // todo : define attach rules between left and right actors
+
+  if(ptr)
+  {
+    WpxActorBase * ab1 = static_cast<WpxActorBase *>(Childs[0]);
+    WpxRigidBody * rb1 = static_cast<WpxRigidBody *>(ab1);
+
+    WpxActorBase * ab2 = static_cast<WpxActorBase *>(Childs[1]);
+    WpxRigidBody * rb2 = static_cast<WpxRigidBody *>(ab2);
+
+    sVERIFY(rb2 && rb1);
+
+    PxRigidActor * ra1 = static_cast<PxRigidActor*>(rb1->AllActors[0]->actor);
+    PxRigidActor * ra2 = static_cast<PxRigidActor*>(rb2->AllActors[0]->actor);
+
+    PxVec3 JointPos = PxVec3(0,2,0);
+    PxJoint * joint = 0;
+    joint = PxSphericalJointCreate(*gPhysicsSDK, ra1, PxTransform(JointPos), ra2, PxTransform(-JointPos));
+  }
+}
+
+/****************************************************************************/
+
 WpxRigidBodyDebris::WpxRigidBodyDebris()
 {
   ChunkedMesh = 0;

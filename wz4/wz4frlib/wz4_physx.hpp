@@ -276,6 +276,15 @@ public:
 
 /****************************************************************************/
 
+class WpxRigidBodyJointsSpherical : public WpxActorBase
+{
+public:
+  WpxRigidBodyJointsSphericalParaJointSpherical ParaBase, Para;
+  void Transform(const sMatrix34 & mat, PxScene * ptr);
+};
+
+/****************************************************************************/
+
 struct sChunkCollider
 {
   WpxCollider * wCollider;      // physx collider

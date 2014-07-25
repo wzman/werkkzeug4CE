@@ -340,6 +340,14 @@ type WpxRigidBodyDebris : WpxActorBase
   color = 0xFF9CCC52;
 }
 
+type WpxRigidBodyJointsSpherical : WpxActorBase
+{
+  name = "WpxRigidBodyJointsSpherical";
+  gui = base3d;
+  flags = render3d|notab;
+  color = 0xFF9CCC52;
+}
+
 /****************************************************************************/
 /****************************************************************************/
 
@@ -655,6 +663,29 @@ operator WpxRigidBodyMul RigidBodyMul "Multiply" (WpxActorBase)
     out->AddChilds(cmd, para->Renderpass);
   }
 }
+
+/****************************************************************************/
+
+operator WpxRigidBodyJointsSpherical JointSpherical "JointSpherical" (WpxActorBase, WpxActorBase)
+{
+  tab = PhysXTab;
+  column = 1;
+
+  parameter
+  {
+  }
+  code
+  {
+    WpxRigidBodyNodeBase * node = new WpxRigidBodyNodeBase();
+    out->ParaBase = out->Para = *para;
+
+    out->AddActorsChilds(cmd);
+
+    out->RootNode = node;
+    out->AddChilds(cmd, 0);
+  }
+}
+
 
 /****************************************************************************/
 /****************************************************************************/
