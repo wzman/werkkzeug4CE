@@ -458,8 +458,6 @@ void WpxCollider::CreatePhysxCollider(PxRigidActor * actor, sMatrix34 & mat)
   sSRT srt;
   srt.Scale = sVector31(1.0f);
   srt.Rotate = Para.Rot;
-  if (Para.GeometryType == EGT_PLANE)
-    srt.Rotate.z += 0.25;
   srt.Translate = Para.Trans;
   srt.MakeMatrix(wzMat34);
 
@@ -470,6 +468,10 @@ void WpxCollider::CreatePhysxCollider(PxRigidActor * actor, sMatrix34 & mat)
   PxMat44 pxMat;
   sMatrix34ToPxMat44(wzMat34, pxMat);
   PxTransform transform(pxMat);
+
+  // always rotate physx plane
+  if (Para.GeometryType == EGT_PLANE)
+     transform = transform * PxTransform(physx::PxQuat(0.25f * sPI2F, physx::PxVec3(0,0,1)));
 
   // create shape for actor
   actor->createShape(*geometry, *material, transform);
