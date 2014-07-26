@@ -206,6 +206,8 @@ public:
 // WpxActorBase is the base type for all actors operators
 // WpxActorBase inherited classes are used to preview a graph of actors + associated colliders graph
 
+class WpxRigidBody;
+
 class WpxActorBase : public WpxGenericGraph<WpxActorBase, Wz4Render, PxScene>
 {
 public:
@@ -215,6 +217,7 @@ public:
   void AddActorsChilds(wCommand *cmd);     // add childs
   void PhysxResetChilds();                 // recurse to childs
   void PhysxWakeUpChilds();                // recurse to childs
+  WpxRigidBody * GetRigidBodyR(WpxActorBase * node);  // recurse to childs to get a rigidbody (used by joints to find a rigidbody op in tree)
 };
 
 /****************************************************************************/

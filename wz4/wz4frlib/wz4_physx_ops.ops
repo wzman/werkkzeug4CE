@@ -410,6 +410,13 @@ operator WpxRigidBody RigidBody (Wz4Render, WpxColliderBase, ?Wz4Mesh)
     }
 
     group "Animation Script"; overbox overlabel linenumber lines 5 string Script;
+
+    group "Joint Fixation Poses";
+    array
+    {
+      float30 Rot (-16..16 step 0.01) = 0;
+      float31 Trans (-0x10000..0x10000 step 0.01) = { 0,0,0 };
+    }
   }
   code
   {
@@ -665,29 +672,6 @@ operator WpxRigidBodyMul RigidBodyMul "Multiply" (WpxActorBase)
 }
 
 /****************************************************************************/
-
-operator WpxRigidBodyJointsSpherical JointSpherical "JointSpherical" (WpxActorBase, WpxActorBase)
-{
-  tab = PhysXTab;
-  column = 1;
-
-  parameter
-  {
-  }
-  code
-  {
-    WpxRigidBodyNodeBase * node = new WpxRigidBodyNodeBase();
-    out->ParaBase = out->Para = *para;
-
-    out->AddActorsChilds(cmd);
-
-    out->RootNode = node;
-    out->AddChilds(cmd, 0);
-  }
-}
-
-
-/****************************************************************************/
 /****************************************************************************/
 
 operator Wz4Render Physx (?PhysxObject,*WpxActorBase)
@@ -767,6 +751,30 @@ operator Wz4Render Physx (?PhysxObject,*WpxActorBase)
 
     out->RootNode = node;
     out->AddChilds(cmd, para->Renderpass,1);
+  }
+}
+
+/****************************************************************************/
+/****************************************************************************/
+
+operator WpxRigidBodyJointsSpherical JointSpherical "JointSpherical" (WpxActorBase, WpxActorBase)
+{
+  tab = PhysXTab;
+  column = 1;
+
+  parameter
+  {
+    layout flags JointRule ("one to one|one to all|all to one|all to all") = 0;
+  }
+  code
+  {
+    WpxRigidBodyNodeBase * node = new WpxRigidBodyNodeBase();
+    out->ParaBase = out->Para = *para;
+
+    out->AddActorsChilds(cmd);
+
+    out->RootNode = node;
+    out->AddChilds(cmd, 0);
   }
 }
 
