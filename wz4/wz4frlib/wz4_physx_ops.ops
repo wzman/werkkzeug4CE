@@ -465,6 +465,8 @@ operator WpxRigidBody RigidBody (Wz4Render, WpxColliderBase, ?Wz4Mesh)
       }
     }
 
+    out->BuildJoints((WpxRigidBodyArrayRigidBody *) cmd->Array, cmd->ArrayCount);
+
     out->RootNode = node;
     out->AddChilds(cmd, para->Renderpass, 0, 1);
   }
@@ -764,7 +766,19 @@ operator WpxRigidBodyJointsSpherical JointSpherical "JointSpherical" (WpxActorBa
 
   parameter
   {
-    layout flags JointRule ("one to one|one to all|all to one|all to all") = 0;
+    layout flags JointRule ("each to each|first to each|first to first|specified") = 0;
+    int Joint1Index (0..0x100000 step 1) = 0;
+    int Joint2Index (0..0x100000 step 1) = 0;
+    if(JointRule==3)
+    {
+      group "Specified attach rules";
+      int StartIndex1 (0..0x100000 step 1) = 0;
+      int StopIndex1 (0..0x100000 step 1) = 1;
+      int StepIndex1 (0..0x100000 step 1) = 1;
+      int StartIndex2 (0..0x100000 step 1) = 0;
+      int StopIndex2 (0..0x100000 step 1) = 1;
+      int StepIndex2 (0..0x100000 step 1) = 1;
+    }
   }
   code
   {

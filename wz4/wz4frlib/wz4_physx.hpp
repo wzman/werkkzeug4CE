@@ -229,6 +229,12 @@ struct sActor
   sMatrix34 * matrix;     // store matrix at actor creation (used by kinematics and debris)
 };
 
+struct sJoint
+{
+  Wz4Mesh MeshPreview;
+  sMatrix34 Pose;
+};
+
 class WpxRigidBody : public WpxActorBase
 {
 public:
@@ -249,6 +255,10 @@ public:
   void PhysxWakeUp();
   void GetPositionsFromMeshVertices(Wz4Mesh * mesh, sInt selection);
   void GetPositionsFromMeshChunks(Wz4Mesh * mesh);
+
+  void BuildJoints(WpxRigidBodyArrayRigidBody * array, sInt arrayCount);
+  void CreateJointMeshViewer(sJoint * joint);
+  sArray<sJoint *> JointsFixations;
 };
 
 /****************************************************************************/
