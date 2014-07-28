@@ -1873,7 +1873,7 @@ WpxRigidBody * WpxActorBase::GetRigidBodyR(WpxActorBase * node)
 {
   WpxRigidBody * rb = static_cast<WpxRigidBody *>(node);
 
-  if(rb->AllActors.GetCount() > 0)
+  if(rb->RootCollider)
     return rb;
   else
   {
@@ -1985,7 +1985,7 @@ void WpxRigidBodyJointsSpherical::Transform(const sMatrix34 & mat, PxScene * ptr
 
       for(sInt i=0; i<sMin(c1,c2); i++)
       {
-        if(index1 > stop1 || index2 > stop2)
+        if(index1 >= stop1 || index2 >= stop2)
           break;
 
         PxRigidActor * ra1 = static_cast<PxRigidActor*>(rb1->AllActors[index1]->actor);
@@ -2003,7 +2003,59 @@ void WpxRigidBodyJointsSpherical::Transform(const sMatrix34 & mat, PxScene * ptr
   }
 }
 
+/****************************************************************************/
 
+void WpxRigidBodyJointsChained::Transform(const sMatrix34 & mat, PxScene * ptr)
+{
+  TransformChilds(mat, ptr);
+
+  if(ptr)
+  {
+    // get rigidbodies for input1
+    WpxActorBase * ab1 = static_cast<WpxActorBase *>(Childs[0]);
+    WpxRigidBody * rb1 = GetRigidBodyR(ab1);
+
+    sVERIFY(rb1);
+
+    // do nothing if no joint poses in rigidbody
+    if(rb1->JointsFixations.GetCount()==0)
+      return;
+
+    // do nothing if joint indices are incorrect
+    if(Para.Joint1Index >= rb1->JointsFixations.GetCount() || Para.Joint2Index >= rb1->JointsFixations.GetCount())
+      return;
+
+    // get joint 1 pose
+    sInt indexJoint1 = Para.Joint1Index;
+    PxMat44 pxmat1;
+    sMatrix34 m1 = rb1->JointsFixations[indexJoint1]->Pose;
+    sMatrix34ToPxMat44(m1, pxmat1);
+
+    // get joint 2 pose
+    sInt indexJoint2 = Para.Joint2Index;
+    PxMat44 pxmat2;
+    sMatrix34 m2 = rb1->JointsFixations[indexJoint2]->Pose;
+    sMatrix34ToPxMat44(m2, pxmat2);
+
+    // get number of actors in both input
+    sInt c1 = rb1->AllActors.GetCount();
+
+    sVERIFY(c1 > 0);
+
+    for(sInt i=0; i<c1; i++)
+    {
+      if(i+1<c1)
+      {
+        PxRigidActor * ra1 = static_cast<PxRigidActor*>(rb1->AllActors[i]->actor);
+        PxRigidActor * ra2 = static_cast<PxRigidActor*>(rb1->AllActors[i+1]->actor);
+
+        PxJoint * joint = 0;
+        joint = PxSphericalJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
+      }
+    }
+
+  }
+}
 
 /****************************************************************************/
 /****************************************************************************/

@@ -289,6 +289,15 @@ public:
 
 /****************************************************************************/
 
+class WpxRigidBodyJointsChained : public WpxActorBase
+{
+public:
+  WpxRigidBodyJointsChainedParaJointsChained ParaBase, Para;
+  void Transform(const sMatrix34 & mat, PxScene * ptr);
+};
+
+/****************************************************************************/
+
 class WpxRigidBodyJointsSpherical : public WpxActorBase
 {
 public:

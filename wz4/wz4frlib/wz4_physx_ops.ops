@@ -348,6 +348,14 @@ type WpxRigidBodyJointsSpherical : WpxActorBase
   color = 0xFF9CCC52;
 }
 
+type WpxRigidBodyJointsChained : WpxActorBase
+{
+  name = "WpxRigidBodyJointsChained";
+  gui = base3d;
+  flags = render3d|notab;
+  color = 0xFF9CCC52;
+}
+
 /****************************************************************************/
 /****************************************************************************/
 
@@ -779,6 +787,30 @@ operator WpxRigidBodyJointsSpherical JointSpherical "JointSpherical" (WpxActorBa
       int StopIndex2 (0..0x100000 step 1) = 1;
       int StepIndex2 (0..0x100000 step 1) = 1;
     }
+  }
+  code
+  {
+    WpxRigidBodyNodeBase * node = new WpxRigidBodyNodeBase();
+    out->ParaBase = out->Para = *para;
+
+    out->AddActorsChilds(cmd);
+
+    out->RootNode = node;
+    out->AddChilds(cmd, 0);
+  }
+}
+
+/****************************************************************************/
+
+operator WpxRigidBodyJointsChained JointsChained "Chain" (WpxActorBase)
+{
+  tab = PhysXTab;
+  column = 1;
+
+  parameter
+  {
+    int Joint1Index (0..0x100000 step 1) = 0;
+    int Joint2Index (0..0x100000 step 1) = 1;
   }
   code
   {
