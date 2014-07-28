@@ -943,19 +943,19 @@ void WpxRigidBody::Render(Wz4RenderContext &ctx, sMatrix34 &mat)
   RootCollider->Render(ctx, mat);
 
   // render joints fixation pose
-  sMatrix34CM * m;
-  sFORALL(Matrices, m)
+  sJoint *j;
+  sFORALL(JointsFixations, j)
   {
-    sJoint *j;
-    sFORALL(JointsFixations, j)
+    sMatrix34CM *mat;
+    sFORALL(Matrices,mat)
     {
-      sMatrix34CM pose = sMatrix34CM(  j->Pose * sMatrix34(*m) );
-      j->MeshPreview.RenderInst(sRF_TARGET_MAIN, 0, Matrices.GetCount(), &pose, 0);
+      sMatrix34CM pose = sMatrix34CM(  j->Pose * sMatrix34(*mat) );
+      j->MeshPreview.Render(ctx.RenderMode,0,&pose,0,ctx.Frustum);
     }
   }
 }
 
-void WpxRigidBody::CreateJointMeshViewer(sJoint * joint)
+void WpxRigidBody::CreateAttachmentPointMesh(sJoint * joint)
 {
   sSRT srt;
   sMatrix34 mat;
@@ -992,7 +992,7 @@ void WpxRigidBody::CreateJointMeshViewer(sJoint * joint)
   joint->MeshPreview.Flush();
 }
 
-void WpxRigidBody::BuildJoints(WpxRigidBodyArrayRigidBody * array, sInt arrayCount)
+void WpxRigidBody::BuildAttachmentPoints(WpxRigidBodyArrayRigidBody * array, sInt arrayCount)
 {
   for(sInt i=0; i<arrayCount; i++)
   {
@@ -1004,7 +1004,7 @@ void WpxRigidBody::BuildJoints(WpxRigidBodyArrayRigidBody * array, sInt arrayCou
     srt.Translate = array->Trans;
     srt.MakeMatrix(j->Pose);
 
-    CreateJointMeshViewer(j);
+    CreateAttachmentPointMesh(j);
     JointsFixations.AddTail(j);
 
     array++;

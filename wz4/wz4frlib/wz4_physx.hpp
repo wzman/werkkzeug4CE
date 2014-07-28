@@ -256,8 +256,8 @@ public:
   void GetPositionsFromMeshVertices(Wz4Mesh * mesh, sInt selection);
   void GetPositionsFromMeshChunks(Wz4Mesh * mesh);
 
-  void BuildJoints(WpxRigidBodyArrayRigidBody * array, sInt arrayCount);
-  void CreateJointMeshViewer(sJoint * joint);
+  void BuildAttachmentPoints(WpxRigidBodyArrayRigidBody * array, sInt arrayCount);
+  void CreateAttachmentPointMesh(sJoint * joint);
   sArray<sJoint *> JointsFixations;
 };
 
