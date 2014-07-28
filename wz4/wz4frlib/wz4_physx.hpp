@@ -218,6 +218,9 @@ public:
   void PhysxResetChilds();                 // recurse to childs
   void PhysxWakeUpChilds();                // recurse to childs
   WpxRigidBody * GetRigidBodyR(WpxActorBase * node);  // recurse to childs to get a rigidbody (used by joints to find a rigidbody op in tree)
+
+  WpxRigidBody * GetRigidBodyR(WpxActorBase * node, sChar * name);
+  sChar Name[255];
 };
 
 /****************************************************************************/
@@ -304,6 +307,9 @@ class WpxRigidBodyJointsSpherical : public WpxActorBase
 public:
   WpxRigidBodyJointsSphericalParaJointSpherical ParaBase, Para;
   void Transform(const sMatrix34 & mat, PxScene * ptr);
+
+  sChar NameA[255];
+  sChar NameB[255];
 };
 
 /****************************************************************************/

@@ -425,6 +425,7 @@ operator WpxRigidBody RigidBody (Wz4Render, WpxColliderBase, ?Wz4Mesh)
       float30 Rot (-16..16 step 0.01) = 0;
       float31 Trans (-0x10000..0x10000 step 0.01) = { 0,0,0 };
     }
+    string ActorName;
   }
   code
   {
@@ -473,7 +474,9 @@ operator WpxRigidBody RigidBody (Wz4Render, WpxColliderBase, ?Wz4Mesh)
       }
     }
 
+    // joints
     out->BuildAttachmentPoints((WpxRigidBodyArrayRigidBody *) cmd->Array, cmd->ArrayCount);
+    sCopyString(out->Name, cmd->Strings[1], 255);
 
     out->RootNode = node;
     out->AddChilds(cmd, para->Renderpass, 0, 1);
@@ -775,6 +778,7 @@ operator WpxRigidBodyJointsSpherical JointSpherical "JointSpherical" (WpxActorBa
   parameter
   {
     group "Input Left";
+    string RigidBodyNameA "Name";
     layout flags RigidBodyA "RigidBody" ("first|last|all|specified|range");
     if(RigidBodyA==3 || RigidBodyA==4)
       int IdA "Identifier" (0..0x100000 step 1) = 0;
@@ -786,6 +790,7 @@ operator WpxRigidBodyJointsSpherical JointSpherical "JointSpherical" (WpxActorBa
     int AttachmentPointA "AttachmentPoint" (0..0x100000 step 1) = 0;
 
     group "Input Right";
+    string RigidBodyNameB "Name";
     layout flags RigidBodyB "RigidBody" ("first|last|all|specified|range");
     if(RigidBodyB==3 || RigidBodyB==4)
       int IdB "Identifier" (0..0x100000 step 1) = 0;
@@ -803,7 +808,11 @@ operator WpxRigidBodyJointsSpherical JointSpherical "JointSpherical" (WpxActorBa
 
     out->AddActorsChilds(cmd);
 
+    sCopyString(out->NameA, cmd->Strings[0], 255);
+    sCopyString(out->NameB, cmd->Strings[1], 255);
+
     out->RootNode = node;
+    cmd->Strings[0] = 0;  // we don't want code
     out->AddChilds(cmd, 0);
   }
 }

@@ -628,6 +628,7 @@ void WpxColliderMul::Transform(const sMatrix34 & mat, PxRigidActor * ptr)
 WpxActorBase::WpxActorBase()
 {
   Type = WpxActorBaseType;
+  Name[0] = '\0';
 }
 
 void WpxActorBase::AddActorsChilds(wCommand *cmd)
@@ -1889,6 +1890,27 @@ WpxRigidBody * WpxActorBase::GetRigidBodyR(WpxActorBase * node)
 
 /****************************************************************************/
 
+WpxRigidBody * WpxActorBase::GetRigidBodyR(WpxActorBase * node, sChar * name)
+{
+  WpxRigidBody * rb = static_cast<WpxRigidBody *>(node);
+
+  if(sCmpString(rb->Name, name) == 0)
+    return rb;
+  else
+  {
+    WpxActorBase * c;
+    sFORALL(node->Childs, c)
+    {
+      rb = GetRigidBodyR(c, name);
+      if(rb) return rb;
+    }
+  }
+
+  return 0;
+}
+
+/****************************************************************************/
+
 void WpxRigidBodyJointsSpherical::Transform(const sMatrix34 & mat, PxScene * ptr)
 {
   TransformChilds(mat, ptr);
@@ -1898,11 +1920,12 @@ void WpxRigidBodyJointsSpherical::Transform(const sMatrix34 & mat, PxScene * ptr
   {
     // get rigidbodies for input1 and input2
     WpxActorBase * ab1 = static_cast<WpxActorBase *>(Childs[0]);
-    WpxRigidBody * rb1 = GetRigidBodyR(ab1);
+    WpxRigidBody * rb1 = GetRigidBodyR(ab1, NameA);
     WpxActorBase * ab2 = static_cast<WpxActorBase *>(Childs[1]);
-    WpxRigidBody * rb2 = GetRigidBodyR(ab2);
+    WpxRigidBody * rb2 = GetRigidBodyR(ab2, NameB);
 
-    sVERIFY(rb2 && rb1);
+    //sVERIFY(rb2 && rb1);
+    if(!rb1 || !rb2) return;
 
     // do nothing if no joint poses in rigidbodies
     if(rb1->JointsFixations.GetCount()==0 || rb2->JointsFixations.GetCount()==0)
