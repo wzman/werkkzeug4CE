@@ -942,7 +942,7 @@ void WpxRigidBody::Render(Wz4RenderContext &ctx, sMatrix34 &mat)
   // colliders render
   RootCollider->Render(ctx, mat);
 
-  // render joints fixation pose
+  // render joints attachment points
   sJoint *j;
   sFORALL(JointsFixations, j)
   {
@@ -1893,12 +1893,7 @@ void WpxRigidBodyJointsSpherical::Transform(const sMatrix34 & mat, PxScene * ptr
 {
   TransformChilds(mat, ptr);
 
-  // TEMP : Test to create joints between 2 first RIGIDBODY childs
-
-  // todo : if entries are not rigidbodies (mul, add, transform op), need to recurse parents to find a RigidBody op and get access to AllActors ptr.
-  // for each actors in left op create a joint with actors in right op.
-  // todo : define attach rules between left and right actors
-
+  // if ptr is not null, physx scene creation is in progress
   if(ptr)
   {
     // get rigidbodies for input1 and input2
@@ -1914,94 +1909,133 @@ void WpxRigidBodyJointsSpherical::Transform(const sMatrix34 & mat, PxScene * ptr
       return;
 
     // do nothing if joint indices are incorrect
-    if(Para.Joint1Index >= rb1->JointsFixations.GetCount() || Para.Joint2Index >= rb2->JointsFixations.GetCount())
+    if(Para.AttachmentPointA >= rb1->JointsFixations.GetCount() || Para.AttachmentPointB >= rb2->JointsFixations.GetCount())
       return;
 
-    // get joint 1 pose
-    sInt indexJoint1 = Para.Joint1Index;
+    // get attachement point of rigidbody A
     PxMat44 pxmat1;
-    sMatrix34 m1 = rb1->JointsFixations[indexJoint1]->Pose;
+    sMatrix34 m1 = rb1->JointsFixations[Para.AttachmentPointA]->Pose;
     sMatrix34ToPxMat44(m1, pxmat1);
 
-    // get joint 2 pose
-    sInt indexJoint2 = Para.Joint2Index;
+    // get attachement point of rigidbody B
     PxMat44 pxmat2;
-    sMatrix34 m2 = rb2->JointsFixations[indexJoint2]->Pose;
+    sMatrix34 m2 = rb2->JointsFixations[Para.AttachmentPointB]->Pose;
     sMatrix34ToPxMat44(m2, pxmat2);
 
     // get number of actors in both input
-    sInt c1 = rb1->AllActors.GetCount();
-    sInt c2 = rb2->AllActors.GetCount();
+    sInt maxA = rb1->AllActors.GetCount();
+    sInt maxB = rb2->AllActors.GetCount();
 
-    sVERIFY(c1 > 0 && c2 > 0);
+    sVERIFY(maxA>0 && maxB>0);
 
-    // each to each : each input 1 is attached to each input 2
-    if(Para.JointRule == 0)
+    // loop rules for actors A
+    sInt start1;
+    sInt count1;
+    sInt step1;
+    switch(Para.RigidBodyA)
     {
-      for(sInt i=0; i<sMin(c1,c2); i++)
-      {
-        PxRigidActor * ra1 = static_cast<PxRigidActor*>(rb1->AllActors[i]->actor);
-        PxRigidActor * ra2 = static_cast<PxRigidActor*>(rb2->AllActors[i]->actor);
+    case 0: // first
+      start1 = 0;
+      count1 = 1;
+      step1 = 0;
+      break;
 
-        PxJoint * joint = 0;
-        joint = PxSphericalJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
-      }
+    case 1: // last
+      start1 = maxA-1;//rb1->AllActors.GetCount()-1;
+      count1 = 1;
+      step1 = 0;
+      break;
+
+    case 2: // all
+      start1 = 0;
+      count1 = maxA;// rb1->AllActors.GetCount();
+      step1 = 1;
+      break;
+
+    case 3: // specified
+      start1 = Para.IdA;
+      count1 = 1;
+      step1 = 0;
+      break;
+
+    case 4: // range
+      start1 = Para.IdA;
+      count1 = sMin(Para.CountA,maxA);
+      step1 = Para.StepA;
+      break;
     }
 
-    // first to each : first input 1 is attached to each input 2
-    if(Para.JointRule == 1)
-    {
-      PxRigidActor * ra1 = static_cast<PxRigidActor*>(rb1->AllActors[0]->actor);
-      for(sInt j=0; j<c2; j++)
-      {
-        PxRigidActor * ra2 = static_cast<PxRigidActor*>(rb2->AllActors[j]->actor);
 
-        PxJoint * joint = 0;
-        joint = PxSphericalJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
-      }
+    // loop rules for actors B
+    sInt start2;
+    sInt count2;
+    sInt step2;
+    switch(Para.RigidBodyB)
+    {
+    case 0: // first
+      start2 = 0;
+      count2 = 1;
+      step2 = 0;
+      break;
+
+    case 1: // last
+      start2 = maxB-1;
+      count2 = 1;
+      step2 = 0;
+      break;
+
+    case 2: // all
+      start2 = 0;
+      count2 = maxB;
+      step2 = 1;
+      break;
+
+    case 3: // specified
+      start2 = Para.IdB;
+      count2 = 1;
+      step2 = 0;
+      break;
+
+    case 4: // range
+      start2 = Para.IdB;
+      count2 = sMin(Para.CountB,maxB);
+      step2 = Para.StepB;
+      break;
     }
 
-    // first to first : first input 1 is attached to first input 2
-    if(Para.JointRule == 2)
+    sInt index1 = start1;
+    sInt index2 = start2;
+    sInt stop = sMax(count1,count2);
+
+    if(Para.RigidBodyA == 4 && Para.RigidBodyB != 4)
+      stop = count1;
+    else if(Para.RigidBodyB == 4 && Para.RigidBodyA != 4)
+      stop = count2;
+    else if (Para.RigidBodyA == 4 && Para.RigidBodyB == 4)
+      stop = sMin(count1,count2);
+
+    for(sInt i=0; i<stop; i++)
     {
-      PxRigidActor * ra1 = static_cast<PxRigidActor*>(rb1->AllActors[0]->actor);
-      PxRigidActor * ra2 = static_cast<PxRigidActor*>(rb2->AllActors[0]->actor);
+      if(index1>=maxA) index1 = maxA-1;
+      if(index2>=maxB) index2 = maxB-1;
+
+      sVERIFY(index1 < maxA);
+      sVERIFY(index2 < maxB);
+
+      PxRigidActor * ra1 = static_cast<PxRigidActor*>(rb1->AllActors[index1]->actor);
+      PxRigidActor * ra2 = static_cast<PxRigidActor*>(rb2->AllActors[index2]->actor);
 
       PxJoint * joint = 0;
       joint = PxSphericalJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
-    }
 
-
-    // specified : user rules
-    if(Para.JointRule == 3)
-    {
-      sInt index1 = Para.StartIndex1;
-      sInt index2 = Para.StartIndex2;
-      sInt stop1 = Para.StopIndex1;
-      sInt stop2 = Para.StopIndex2;
-
-      if(stop1 >= c1) stop1 = c1;
-      if(stop2 >= c2) stop2 = c2;
-
-      for(sInt i=0; i<sMin(c1,c2); i++)
-      {
-        if(index1 >= stop1 || index2 >= stop2)
-          break;
-
-        PxRigidActor * ra1 = static_cast<PxRigidActor*>(rb1->AllActors[index1]->actor);
-        PxRigidActor * ra2 = static_cast<PxRigidActor*>(rb2->AllActors[index2]->actor);
-
-        PxJoint * joint = 0;
-        joint = PxSphericalJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
-
-        index1 += Para.StepIndex1;
-        index2 += Para.StepIndex2;
-      }
+      if(index1<maxA) index1 += step1;
+      if(index2<maxB) index2 += step2;
     }
 
 
   }
 }
+
 
 /****************************************************************************/
 

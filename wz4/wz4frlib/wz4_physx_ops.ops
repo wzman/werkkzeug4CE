@@ -774,19 +774,27 @@ operator WpxRigidBodyJointsSpherical JointSpherical "JointSpherical" (WpxActorBa
 
   parameter
   {
-    layout flags JointRule ("each to each|first to each|first to first|specified") = 0;
-    int Joint1Index (0..0x100000 step 1) = 0;
-    int Joint2Index (0..0x100000 step 1) = 0;
-    if(JointRule==3)
+    group "Input Left";
+    layout flags RigidBodyA "RigidBody" ("first|last|all|specified|range");
+    if(RigidBodyA==3 || RigidBodyA==4)
+      int IdA "Identifier" (0..0x100000 step 1) = 0;
+    if(RigidBodyA==4)
     {
-      group "Specified attach rules";
-      int StartIndex1 (0..0x100000 step 1) = 0;
-      int StopIndex1 (0..0x100000 step 1) = 1;
-      int StepIndex1 (0..0x100000 step 1) = 1;
-      int StartIndex2 (0..0x100000 step 1) = 0;
-      int StopIndex2 (0..0x100000 step 1) = 1;
-      int StepIndex2 (0..0x100000 step 1) = 1;
+      int CountA "Count" (0..0x100000 step 1) = 1;
+      int StepA "Step" (0..0x100000 step 1) = 1;
     }
+    int AttachmentPointA "AttachmentPoint" (0..0x100000 step 1) = 0;
+
+    group "Input Right";
+    layout flags RigidBodyB "RigidBody" ("first|last|all|specified|range");
+    if(RigidBodyB==3 || RigidBodyB==4)
+      int IdB "Identifier" (0..0x100000 step 1) = 0;
+    if(RigidBodyB==4)
+    {
+      int CountB "Count" (0..0x100000 step 1) = 1;
+      int StepB "Step" (0..0x100000 step 1) = 1;
+    }
+    int AttachmentPointB "AttachmentPoint" (0..0x100000 step 1) = 0;
   }
   code
   {
