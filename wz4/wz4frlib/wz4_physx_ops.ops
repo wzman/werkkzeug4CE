@@ -417,7 +417,14 @@ operator WpxRigidBody RigidBody (Wz4Render, WpxColliderBase, ?Wz4Mesh)
       layout flags TimeFlag("once|loop") = 0;
     }
 
-    group "Animation Script"; overbox overlabel linenumber lines 5 string Script;
+    if(ActorType==2)
+    {
+      group "Animation Script";
+      overbox overlabel linenumber lines 5 string Script;
+    }
+
+    group "Identity";
+    string ActorName "RigidBodyName";
 
     group "Attachment points for joints";
     array
@@ -425,7 +432,6 @@ operator WpxRigidBody RigidBody (Wz4Render, WpxColliderBase, ?Wz4Mesh)
       float30 Rot (-16..16 step 0.01) = 0;
       float31 Trans (-0x10000..0x10000 step 0.01) = { 0,0,0 };
     }
-    string ActorName;
   }
   code
   {
@@ -778,8 +784,8 @@ operator WpxRigidBodyJointsSpherical JointSpherical "JointSpherical" (WpxActorBa
   parameter
   {
     group "Input Left";
-    string RigidBodyNameA "Name";
-    layout flags RigidBodyA "RigidBody" ("first|last|all|specified|range");
+    string RigidBodyNameA "RigidBodyName";
+    layout flags RigidBodyA "Instance" ("first|last|all|specified|range");
     if(RigidBodyA==3 || RigidBodyA==4)
       int IdA "Identifier" (0..0x100000 step 1) = 0;
     if(RigidBodyA==4)
@@ -790,8 +796,8 @@ operator WpxRigidBodyJointsSpherical JointSpherical "JointSpherical" (WpxActorBa
     int AttachmentPointA "AttachmentPoint" (0..0x100000 step 1) = 0;
 
     group "Input Right";
-    string RigidBodyNameB "Name";
-    layout flags RigidBodyB "RigidBody" ("first|last|all|specified|range");
+    string RigidBodyNameB "RigidBodyName";
+    layout flags RigidBodyB "Instance" ("first|last|all|specified|range");
     if(RigidBodyB==3 || RigidBodyB==4)
       int IdB "Identifier" (0..0x100000 step 1) = 0;
     if(RigidBodyB==4)
