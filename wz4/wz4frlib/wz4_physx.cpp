@@ -2037,8 +2037,8 @@ void WpxRigidBodyJointsSpherical::Transform(const sMatrix34 & mat, PxScene * ptr
     if(child1MatCount == 0) child1MatCount = 1; else child1MatCount /= matCount;
     if(child2MatCount == 0) child2MatCount = 1; else child2MatCount /= matCount;
 
-    sInt offset1 = child1MatCount * (matCount-1) + start1;
-    sInt offset2 = child2MatCount * (matCount-1) + start2;
+    sInt offset1 = child1MatCount * (matCount-1);
+    sInt offset2 = child2MatCount * (matCount-1);
 
     // build joints
 
@@ -2202,8 +2202,8 @@ void WpxRigidBodyJoint2::Transform(const sMatrix34 & mat, PxScene * ptr)
     if(child1MatCount == 0) child1MatCount = 1; else child1MatCount /= matCount;
     if(child2MatCount == 0) child2MatCount = 1; else child2MatCount /= matCount;
 
-    sInt offset1 = child1MatCount * (matCount-1) + start1;
-    sInt offset2 = child2MatCount * (matCount-1) + start2;
+    sInt offset1 = child1MatCount * (matCount-1);
+    sInt offset2 = child2MatCount * (matCount-1);
 
     // build joints
 
@@ -2277,14 +2277,20 @@ void WpxRigidBodyJointsChained::Transform(const sMatrix34 & mat, PxScene * ptr)
     // get number of actors in both input
     sInt c1 = rb1->AllActors.GetCount();
 
+    // compute matrices offset
+    sInt matCount = Matrices.GetCount();
+    sInt child1MatCount =  Childs[0]->Matrices.GetCount();
+    if(child1MatCount == 0) child1MatCount = 1; else child1MatCount /= matCount;
+    sInt offset1 = child1MatCount * (matCount-1);
+
     sVERIFY(c1 > 0);
 
     for(sInt i=0; i<c1; i++)
     {
-      if(i+1<c1)
+      if(i+1+offset1<c1)
       {
-        PxRigidActor * ra1 = static_cast<PxRigidActor*>(rb1->AllActors[i]->actor);
-        PxRigidActor * ra2 = static_cast<PxRigidActor*>(rb1->AllActors[i+1]->actor);
+        PxRigidActor * ra1 = static_cast<PxRigidActor*>(rb1->AllActors[i+offset1]->actor);
+        PxRigidActor * ra2 = static_cast<PxRigidActor*>(rb1->AllActors[i+1+offset1]->actor);
 
         PxJoint * joint = 0;
         joint = PxSphericalJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
