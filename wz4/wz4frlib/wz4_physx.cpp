@@ -650,6 +650,7 @@ void WpxActorBase::AddActorsChilds(wCommand *cmd)
 void WpxActorBase::PhysxReset()
 {
   PhysxResetChilds();
+  ClearMatricesR();
 }
 
 void WpxActorBase::PhysxResetChilds()
