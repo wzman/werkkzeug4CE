@@ -302,10 +302,10 @@ public:
 
 /****************************************************************************/
 
-class WpxRigidBodyJointsSpherical : public WpxActorBase
+class WpxRigidBodyJoint : public WpxActorBase
 {
 public:
-  WpxRigidBodyJointsSphericalParaJointSpherical ParaBase, Para;
+  WpxRigidBodyJointParaJoint ParaBase, Para;
   void Transform(const sMatrix34 & mat, PxScene * ptr);
 
   sChar NameA[255];

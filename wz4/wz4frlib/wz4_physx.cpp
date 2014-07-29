@@ -1910,9 +1910,140 @@ WpxRigidBody * WpxActorBase::GetRigidBodyR(WpxActorBase * node, sChar * name)
   return 0;
 }
 
+void SetFixedJoint(PxJoint * joint, WpxRigidBodyJointParaJoint *j)
+{
+  PxFixedJoint * fixedJoint = static_cast<PxFixedJoint *>(joint);
+
+  if(j->FixedProjectionFlag)
+  {
+    fixedJoint->setConstraintFlag(PxConstraintFlag::ePROJECTION, true);
+    fixedJoint->setProjectionLinearTolerance(j->FixedProjectionLinearTolerance);
+    fixedJoint->setProjectionAngularTolerance(sDEG2RAD(j->FixedProjectionAngularTolerance));
+  }
+}
+
+void SetSphericalJoint(PxJoint * joint, WpxRigidBodyJointParaJoint * j)
+{
+  PxSphericalJoint * sphericalJoint = static_cast<PxSphericalJoint *>(joint);
+
+  if(j->LimitConeFlag)
+  {
+    sphericalJoint->setSphericalJointFlag(PxSphericalJointFlag::eLIMIT_ENABLED, sTRUE);
+
+    PxReal a,b;
+    a = sDEG2RAD(j->LimitConeYLimitAngle);
+    b = sDEG2RAD(j->LimitConeZLimitAngle);
+    PxSpring c(j->LimitConeSpringStiffness, j->LimitConeSpringDamping);
+
+    PxJointLimitCone limit(a,b,c);
+    limit.bounceThreshold = j->SphericalLimitBounceThreshold;
+    limit.contactDistance = j->SphericalLimitContactDistance;
+    limit.restitution = j->SphericalLimitRestitution;
+    sphericalJoint->setLimitCone(limit);
+  }
+
+  if(j->SphericalProjectionFlag)
+  {
+    sphericalJoint->setConstraintFlag(PxConstraintFlag::ePROJECTION, true);
+    sphericalJoint->setProjectionLinearTolerance(j->SphericalProjectionLinearTolerance);
+  }
+}
+
+void SetRevoluteJoint(PxJoint * joint, WpxRigidBodyJointParaJoint * j)
+{
+  PxRevoluteJoint * revoluteJoint = static_cast<PxRevoluteJoint *>(joint);
+
+  if(j->LimitPrismaticFlag)
+  {
+    revoluteJoint->setRevoluteJointFlag(PxRevoluteJointFlag::eLIMIT_ENABLED, sTRUE);
+
+    PxReal a,b,c;
+    a = sDEG2RAD(j->RevoluteLowerLimit);
+    b = sDEG2RAD(j->RevoluteUpperLimit);
+    c = j->RevoluteLimitContactDistance;
+
+    PxJointAngularLimitPair limit(a,b,c);
+    limit.damping = j->RevoluteLimitDamping;
+    limit.restitution = j->RevoluteLimitRestitution;
+    limit.stiffness = j->RevoluteLimitSpring;
+
+    revoluteJoint->setLimit(limit);
+  }
+
+  if(j->RevoluteDriveEnabled)
+    revoluteJoint->setRevoluteJointFlag(PxRevoluteJointFlag::eDRIVE_ENABLED, sTRUE);
+
+  if(j->RevoluteFreeSpinEnabled)
+    revoluteJoint->setRevoluteJointFlag(PxRevoluteJointFlag::eDRIVE_FREESPIN, true);
+
+  revoluteJoint->setDriveForceLimit(j->DriveForceLimit);
+  revoluteJoint->setDriveGearRatio(j->DriveGearRatio);
+  revoluteJoint->setDriveVelocity(j->DriveVelocity);
+
+  if(j->RevoluteProjectionFlag)
+  {
+    revoluteJoint->setConstraintFlag(PxConstraintFlag::ePROJECTION, true);
+    revoluteJoint->setProjectionLinearTolerance(j->RevoluteProjectionLinearTolerance);
+    revoluteJoint->setProjectionAngularTolerance(sDEG2RAD(j->RevoluteProjectionAngularTolerance));
+  }
+}
+
+void SetPrismaticJoint(PxJoint * joint, WpxRigidBodyJointParaJoint * j)
+{
+  PxPrismaticJoint * prismaticJoint = static_cast<PxPrismaticJoint *>(joint);
+
+  if(j->LimitPrismaticFlag)
+  {
+    prismaticJoint->setPrismaticJointFlag(PxPrismaticJointFlag::eLIMIT_ENABLED, sTRUE);
+
+    PxReal a,b;
+    a = sDEG2RAD(j->PrismaticLowerLimit);
+    b = sDEG2RAD(j->PrismaticUpperLimit);
+    PxSpring c(1,1);// = j->PrismaticLimitContactDistance;
+    //c.damping
+
+    PxJointLinearLimitPair limit(a,b,c);
+    limit.damping = j->PrismaticLimitDamping;
+    limit.restitution = j->PrismaticLimitRestitution;
+    limit.stiffness = j->PrismaticLimitSpring;
+
+    prismaticJoint->setLimit(limit);
+  }
+
+  if(j->PrismaticProjectionFlag)
+  {
+    prismaticJoint->setConstraintFlag(PxConstraintFlag::ePROJECTION, true);
+    prismaticJoint->setProjectionLinearTolerance(j->PrismaticProjectionLinearTolerance);
+    prismaticJoint->setProjectionAngularTolerance(sDEG2RAD(j->PrismaticProjectionAngularTolerance));
+  }
+}
+
+void SetDistanceJoint(PxJoint * joint, WpxRigidBodyJointParaJoint * j)
+{
+  PxDistanceJoint * distanceJoint = static_cast<PxDistanceJoint *>(joint);
+
+  if(j->MaxDistanceEnable)
+  {
+    distanceJoint->setDistanceJointFlag(PxDistanceJointFlag::eMAX_DISTANCE_ENABLED, sTRUE);
+    distanceJoint->setMaxDistance(j->DistanceMax);
+  }
+
+  if(j->MinDistanceEnable)
+  {
+    distanceJoint->setDistanceJointFlag(PxDistanceJointFlag::eMIN_DISTANCE_ENABLED, sTRUE);
+    distanceJoint->setMinDistance(j->DistanceMin);
+  }
+
+  if(j->SpringEnable)
+  {
+    distanceJoint->setDistanceJointFlag(PxDistanceJointFlag::eSPRING_ENABLED, sTRUE);
+    //distanceJoint->setSpring(j->SpringStrength);
+    distanceJoint->setDamping(j->SpringDamping);
+  }
+}
 /****************************************************************************/
 
-void WpxRigidBodyJointsSpherical::Transform(const sMatrix34 & mat, PxScene * ptr)
+void WpxRigidBodyJoint::Transform(const sMatrix34 & mat, PxScene * ptr)
 {
   TransformChilds(mat, ptr);
 
@@ -2065,7 +2196,50 @@ void WpxRigidBodyJointsSpherical::Transform(const sMatrix34 & mat, PxScene * ptr
       PxRigidActor * ra2 = static_cast<PxRigidActor*>(rb2->AllActors[index2]->actor);
 
       PxJoint * joint = 0;
-      joint = PxSphericalJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
+
+      switch(Para.JointType)
+      {
+      case 0: // fixed
+        joint = PxFixedJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
+        if(joint && Para.FixedSettings)
+          SetFixedJoint(joint, &Para);
+        break;
+
+      case 1: // spherical
+        joint = PxSphericalJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
+        if(joint && Para.SphericalSettings)
+          SetSphericalJoint(joint, &Para);
+        break;
+
+      case 2: // revolute
+          joint = PxRevoluteJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
+          if(joint && Para.RevoluteSettings)
+            SetRevoluteJoint(joint, &Para);
+        break;
+
+      case 3: // prismatic
+          joint = PxPrismaticJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
+          if(joint && Para.PrismaticSettings)
+            SetPrismaticJoint(joint, &Para);
+        break;
+
+      case 4: // distance
+          joint = PxDistanceJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
+          if(joint && Para.DistanceSettings)
+            SetDistanceJoint(joint, &Para);
+        break;
+      }
+
+      if(joint)
+      {
+        // set breakable
+        if(Para.Breakable)
+          joint->setBreakForce(Para.BreakForceMax, Para.BreakTorqueMax);
+
+        // joints mesh can collide each other
+        if(Para.CollideJoint)
+          joint->setConstraintFlag(PxConstraintFlag::eCOLLISION_ENABLED, true);
+      }
 
       if(index1<maxA) index1 += step1;
       if(index2<maxB) index2 += step2;
