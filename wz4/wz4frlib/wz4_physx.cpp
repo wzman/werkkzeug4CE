@@ -1919,10 +1919,13 @@ void WpxRigidBodyJointsSpherical::Transform(const sMatrix34 & mat, PxScene * ptr
   // if ptr is not null, physx scene creation is in progress
   if(ptr)
   {
+    sInt firstChild = 0;
+    sInt secondChild = (Childs.GetCount() > 1) ? 1 : 0;
+
     // get rigidbodies for input1 and input2
-    WpxActorBase * ab1 = static_cast<WpxActorBase *>(Childs[0]);
+    WpxActorBase * ab1 = static_cast<WpxActorBase *>(Childs[firstChild]);
     WpxRigidBody * rb1 = GetRigidBodyR(ab1, NameA);
-    WpxActorBase * ab2 = static_cast<WpxActorBase *>(Childs[1]);
+    WpxActorBase * ab2 = static_cast<WpxActorBase *>(Childs[secondChild]);
     WpxRigidBody * rb2 = GetRigidBodyR(ab2, NameB);
 
     //sVERIFY(rb2 && rb1);
@@ -2028,180 +2031,12 @@ void WpxRigidBodyJointsSpherical::Transform(const sMatrix34 & mat, PxScene * ptr
     }
 
 
-    // define start offsets according multiply matrices
-
+    // define offsets according multiply matrices
     sInt matCount = Matrices.GetCount();
-    sInt child1MatCount =  Childs[0]->Matrices.GetCount();
-    sInt child2MatCount =  Childs[1]->Matrices.GetCount();
-
-    if(child1MatCount == 0) child1MatCount = 1; else child1MatCount /= matCount;
-    if(child2MatCount == 0) child2MatCount = 1; else child2MatCount /= matCount;
-
-    sInt offset1 = child1MatCount * (matCount-1);
-    sInt offset2 = child2MatCount * (matCount-1);
-
-    // build joints
-
-    sInt index1 = start1 + offset1;
-    sInt index2 = start2 + offset2;
-    sInt stop = sMax(count1,count2);
-
-    if(Para.RigidBodyA == 4 && Para.RigidBodyB != 4)
-      stop = count1;
-    else if(Para.RigidBodyB == 4 && Para.RigidBodyA != 4)
-      stop = count2;
-    else if (Para.RigidBodyA == 4 && Para.RigidBodyB == 4)
-      stop = sMin(count1,count2);
-
-    for(sInt i=0; i<stop; i++)
-    {
-      if(index1>=maxA) index1 = maxA-1;
-      if(index2>=maxB) index2 = maxB-1;
-
-      sVERIFY(index1 < maxA);
-      sVERIFY(index2 < maxB);
-
-      PxRigidActor * ra1 = static_cast<PxRigidActor*>(rb1->AllActors[index1]->actor);
-      PxRigidActor * ra2 = static_cast<PxRigidActor*>(rb2->AllActors[index2]->actor);
-
-      PxJoint * joint = 0;
-      joint = PxSphericalJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
-
-      if(index1<maxA) index1 += step1;
-      if(index2<maxB) index2 += step2;
-    }
-
-
-  }
-}
-
-/****************************************************************************/
-
-void WpxRigidBodyJoint2::Transform(const sMatrix34 & mat, PxScene * ptr)
-{
-  TransformChilds(mat, ptr);
-
-  // if ptr is not null, physx scene creation is in progress
-  if(ptr)
-  {
-    // get rigidbodies for input1 and input2
-    WpxActorBase * ab1 = static_cast<WpxActorBase *>(Childs[0]);
-    WpxRigidBody * rb1 = GetRigidBodyR(ab1, NameA);
-    WpxActorBase * ab2 = static_cast<WpxActorBase *>(Childs[0]);
-    WpxRigidBody * rb2 = GetRigidBodyR(ab2, NameB);
-
-    //sVERIFY(rb2 && rb1);
-    if(!rb1 || !rb2) return;
-
-    // do nothing if no joint poses in rigidbodies
-    if(rb1->JointsFixations.GetCount()==0 || rb2->JointsFixations.GetCount()==0)
-      return;
-
-    // do nothing if joint indices are incorrect
-    if(Para.AttachmentPointA >= rb1->JointsFixations.GetCount() || Para.AttachmentPointB >= rb2->JointsFixations.GetCount())
-      return;
-
-    // get attachement point of rigidbody A
-    PxMat44 pxmat1;
-    sMatrix34 m1 = rb1->JointsFixations[Para.AttachmentPointA]->Pose;
-    sMatrix34ToPxMat44(m1, pxmat1);
-
-    // get attachement point of rigidbody B
-    PxMat44 pxmat2;
-    sMatrix34 m2 = rb2->JointsFixations[Para.AttachmentPointB]->Pose;
-    sMatrix34ToPxMat44(m2, pxmat2);
-
-    // get number of actors in both input
-    sInt maxA = rb1->AllActors.GetCount();
-    sInt maxB = rb2->AllActors.GetCount();
-
-    sVERIFY(maxA>0 && maxB>0);
-
-    // loop rules for actors A
-    sInt start1;
-    sInt count1;
-    sInt step1;
-    switch(Para.RigidBodyA)
-    {
-    case 0: // first
-      start1 = 0;
-      count1 = 1;
-      step1 = 0;
-      break;
-
-    case 1: // last
-      start1 = maxA-1;
-      count1 = 1;
-      step1 = 0;
-      break;
-
-    case 2: // all
-      start1 = 0;
-      count1 = maxA;
-      step1 = 1;
-      break;
-
-    case 3: // specified
-      start1 = Para.IdA;
-      count1 = 1;
-      step1 = 0;
-      break;
-
-    case 4: // range
-      start1 = Para.IdA;
-      count1 = sMin(Para.CountA,maxA);
-      step1 = Para.StepA;
-      break;
-    }
-
-
-    // loop rules for actors B
-    sInt start2;
-    sInt count2;
-    sInt step2;
-    switch(Para.RigidBodyB)
-    {
-    case 0: // first
-      start2 = 0;
-      count2 = 1;
-      step2 = 0;
-      break;
-
-    case 1: // last
-      start2 = maxB-1;
-      count2 = 1;
-      step2 = 0;
-      break;
-
-    case 2: // all
-      start2 = 0;
-      count2 = maxB;
-      step2 = 1;
-      break;
-
-    case 3: // specified
-      start2 = Para.IdB;
-      count2 = 1;
-      step2 = 0;
-      break;
-
-    case 4: // range
-      start2 = Para.IdB;
-      count2 = sMin(Para.CountB,maxB);
-      step2 = Para.StepB;
-      break;
-    }
-
-
-    // define start offsets according multiply matrices
-
-    sInt matCount = Matrices.GetCount();
-    sInt child1MatCount =  Childs[0]->Matrices.GetCount();
-    sInt child2MatCount =  Childs[0]->Matrices.GetCount();
-
-    if(child1MatCount == 0) child1MatCount = 1; else child1MatCount /= matCount;
-    if(child2MatCount == 0) child2MatCount = 1; else child2MatCount /= matCount;
-
+    sInt child1MatCount =  Childs[firstChild]->Matrices.GetCount();
+    sInt child2MatCount =  Childs[secondChild]->Matrices.GetCount();
+    (child1MatCount == 0) ? child1MatCount = 1 : child1MatCount /= matCount;
+    (child2MatCount == 0) ? child2MatCount = 1 : child2MatCount /= matCount;
     sInt offset1 = child1MatCount * (matCount-1);
     sInt offset2 = child2MatCount * (matCount-1);
 
@@ -2280,7 +2115,7 @@ void WpxRigidBodyJointsChained::Transform(const sMatrix34 & mat, PxScene * ptr)
     // compute matrices offset
     sInt matCount = Matrices.GetCount();
     sInt child1MatCount =  Childs[0]->Matrices.GetCount();
-    if(child1MatCount == 0) child1MatCount = 1; else child1MatCount /= matCount;
+    (child1MatCount == 0) ? child1MatCount = 1 : child1MatCount /= matCount;
     sInt offset1 = child1MatCount * (matCount-1);
 
     sVERIFY(c1 > 0);

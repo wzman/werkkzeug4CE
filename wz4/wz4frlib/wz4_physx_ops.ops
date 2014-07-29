@@ -768,14 +768,6 @@ type WpxRigidBodyJointsSpherical : WpxActorBase
   color = 0xFF9CCC52;
 }
 
-type WpxRigidBodyJoint2 : WpxActorBase
-{
-  name = "WpxRigidBodyJoint2";
-  gui = base3d;
-  flags = render3d|notab;
-  color = 0xFF9CCC52;
-}
-
 type WpxRigidBodyJointsChained : WpxActorBase
 {
   name = "WpxRigidBodyJointsChained";
@@ -786,7 +778,7 @@ type WpxRigidBodyJointsChained : WpxActorBase
 
 /****************************************************************************/
 
-operator WpxRigidBodyJointsSpherical JointSpherical "JointSpherical" (WpxActorBase, WpxActorBase)
+operator WpxRigidBodyJointsSpherical JointSpherical "JointSpherical" (WpxActorBase, ?WpxActorBase)
 {
   tab = PhysXTab;
   column = 1;
@@ -806,55 +798,6 @@ operator WpxRigidBodyJointsSpherical JointSpherical "JointSpherical" (WpxActorBa
     int AttachmentPointA "AttachmentPoint" (0..0x100000 step 1) = 0;
 
     group "Input Right";
-    string RigidBodyNameB "RigidBodyName";
-    layout flags RigidBodyB "Instance" ("first|last|all|specified|range");
-    if(RigidBodyB==3 || RigidBodyB==4)
-      int IdB "Identifier" (0..0x100000 step 1) = 0;
-    if(RigidBodyB==4)
-    {
-      int CountB "Count" (0..0x100000 step 1) = 1;
-      int StepB "Step" (0..0x100000 step 1) = 1;
-    }
-    int AttachmentPointB "AttachmentPoint" (0..0x100000 step 1) = 0;
-  }
-  code
-  {
-    WpxRigidBodyNodeBase * node = new WpxRigidBodyNodeBase();
-    out->ParaBase = out->Para = *para;
-
-    out->AddActorsChilds(cmd);
-
-    sCopyString(out->NameA, cmd->Strings[0], 255);
-    sCopyString(out->NameB, cmd->Strings[1], 255);
-
-    out->RootNode = node;
-    cmd->Strings[0] = 0;  // we don't want code
-    out->AddChilds(cmd, 0);
-  }
-}
-
-/****************************************************************************/
-
-operator WpxRigidBodyJoint2 Joint2 "Joint2" (WpxActorBase)
-{
-  tab = PhysXTab;
-  column = 1;
-
-  parameter
-  {
-    group "Actor Left";
-    string RigidBodyNameA "RigidBodyName";
-    layout flags RigidBodyA "Instance" ("first|last|all|specified|range");
-    if(RigidBodyA==3 || RigidBodyA==4)
-      int IdA "Identifier" (0..0x100000 step 1) = 0;
-    if(RigidBodyA==4)
-    {
-      int CountA "Count" (0..0x100000 step 1) = 1;
-      int StepA "Step" (0..0x100000 step 1) = 1;
-    }
-    int AttachmentPointA "AttachmentPoint" (0..0x100000 step 1) = 0;
-
-    group "Actor Right";
     string RigidBodyNameB "RigidBodyName";
     layout flags RigidBodyB "Instance" ("first|last|all|specified|range");
     if(RigidBodyB==3 || RigidBodyB==4)
