@@ -314,6 +314,18 @@ public:
 
 /****************************************************************************/
 
+class WpxRigidBodyJoint2 : public WpxActorBase
+{
+public:
+  WpxRigidBodyJoint2ParaJoint2 ParaBase, Para;
+  void Transform(const sMatrix34 & mat, PxScene * ptr);
+
+  sChar NameA[255];
+  sChar NameB[255];
+};
+
+/****************************************************************************/
+
 struct sChunkCollider
 {
   WpxCollider * wCollider;      // physx collider
