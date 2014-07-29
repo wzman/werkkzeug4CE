@@ -1965,14 +1965,14 @@ void WpxRigidBodyJointsSpherical::Transform(const sMatrix34 & mat, PxScene * ptr
       break;
 
     case 1: // last
-      start1 = maxA-1;//rb1->AllActors.GetCount()-1;
+      start1 = maxA-1;
       count1 = 1;
       step1 = 0;
       break;
 
     case 2: // all
       start1 = 0;
-      count1 = maxA;// rb1->AllActors.GetCount();
+      count1 = maxA;
       step1 = 1;
       break;
 
@@ -2027,8 +2027,23 @@ void WpxRigidBodyJointsSpherical::Transform(const sMatrix34 & mat, PxScene * ptr
       break;
     }
 
-    sInt index1 = start1;
-    sInt index2 = start2;
+
+    // define start offsets according multiply matrices
+
+    sInt matCount = Matrices.GetCount();
+    sInt child1MatCount =  Childs[0]->Matrices.GetCount();
+    sInt child2MatCount =  Childs[1]->Matrices.GetCount();
+
+    if(child1MatCount == 0) child1MatCount = 1; else child1MatCount /= matCount;
+    if(child2MatCount == 0) child2MatCount = 1; else child2MatCount /= matCount;
+
+    sInt offset1 = child1MatCount * (matCount-1) + start1;
+    sInt offset2 = child2MatCount * (matCount-1) + start2;
+
+    // build joints
+
+    sInt index1 = start1 + offset1;
+    sInt index2 = start2 + offset2;
     sInt stop = sMax(count1,count2);
 
     if(Para.RigidBodyA == 4 && Para.RigidBodyB != 4)
