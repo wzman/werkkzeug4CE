@@ -2252,6 +2252,70 @@ void WpxRigidBodyJoint::Transform(const sMatrix34 & mat, PxScene * ptr)
 
 /****************************************************************************/
 
+void CopyJointParams(WpxRigidBodyJointParaJoint &p, WpxRigidBodyJointsChainedParaJointsChained &Para)
+{
+  p.AttachmentPointB  = Para.AttachmentPointB;
+  p.JointType  = Para.JointType;
+  p.FixedSettings  = Para.FixedSettings;
+  p.FixedProjectionFlag  = Para.FixedProjectionFlag;
+  p.FixedProjectionLinearTolerance  = Para.FixedProjectionLinearTolerance;
+  p.FixedProjectionAngularTolerance  = Para.FixedProjectionAngularTolerance;
+  p.SphericalSettings  = Para.SphericalSettings;
+  p.LimitConeFlag  = Para.LimitConeFlag;
+  p.SphericalLimitConeAngleY  = Para.SphericalLimitConeAngleY;
+  p.SphericalLimitConeAngleZ  = Para.SphericalLimitConeAngleZ;
+  p.SphericalLimitConeSpringStiffness  = Para.SphericalLimitConeSpringStiffness;
+  p.SphericalLimitConeSpringDamping  = Para.SphericalLimitConeSpringDamping;
+  p.SphericalLimitBounceThreshold  = Para.SphericalLimitBounceThreshold;
+  p.SphericalLimitContactDistance  = Para.SphericalLimitContactDistance;
+  p.SphericalLimitRestitution  = Para.SphericalLimitRestitution;
+  p.SphericalProjectionFlag  = Para.SphericalProjectionFlag;
+  p.SphericalProjectionLinearTolerance  = Para.SphericalProjectionLinearTolerance;
+  p.RevoluteSettings  = Para.RevoluteSettings;
+  p.RevoluteLimitFlag  = Para.RevoluteLimitFlag;
+  p.RevoluteUpperLimit  = Para.RevoluteUpperLimit;
+  p.RevoluteLowerLimit  = Para.RevoluteLowerLimit;
+  p.RevoluteLimitContactDistance  = Para.RevoluteLimitContactDistance;
+  p.RevoluteLimitDamping  = Para.RevoluteLimitDamping;
+  p.RevoluteLimitRestitution  = Para.RevoluteLimitRestitution;
+  p.RevoluteLimitSpring  = Para.RevoluteLimitSpring;
+  p.RevoluteDriveEnabled  = Para.RevoluteDriveEnabled;
+  p.RevoluteFreeSpinEnabled  = Para.RevoluteFreeSpinEnabled;
+  p.DriveForceLimit  = Para.DriveForceLimit;
+  p.DriveGearRatio  = Para.DriveGearRatio;
+  p.DriveVelocity  = Para.DriveVelocity;
+  p.RevoluteProjectionFlag  = Para.RevoluteProjectionFlag;
+  p.RevoluteProjectionLinearTolerance  = Para.RevoluteProjectionLinearTolerance;
+  p.RevoluteProjectionAngularTolerance  = Para.RevoluteProjectionAngularTolerance;
+  p.PrismaticSettings  = Para.PrismaticSettings;
+  p.LimitPrismaticFlag  = Para.LimitPrismaticFlag;
+  p.PrismaticUpperLimit  = Para.PrismaticUpperLimit;
+  p.PrismaticLowerLimit  = Para.PrismaticLowerLimit;
+  p.PrismaticLimitSpringStiffness  = Para.PrismaticLimitSpringStiffness;
+  p.PrismaticLimitSpringDamping  = Para.PrismaticLimitSpringDamping;
+  p.PrismaticLimitDamping  = Para.PrismaticLimitDamping;
+  p.PrismaticLimitRestitution  = Para.PrismaticLimitRestitution;
+  p.PrismaticLimitSpring  = Para.PrismaticLimitSpring;
+  p.PrismaticProjectionFlag  = Para.PrismaticProjectionFlag;
+  p.PrismaticProjectionLinearTolerance  = Para.PrismaticProjectionLinearTolerance;
+  p.PrismaticProjectionAngularTolerance  = Para.PrismaticProjectionAngularTolerance;
+  p.DistanceSettings  = Para.DistanceSettings;
+  p.MaxDistanceEnable  = Para.MaxDistanceEnable;
+  p.DistanceMax  = Para.DistanceMax;
+  p.MinDistanceEnable  = Para.MinDistanceEnable;
+  p.DistanceMin  = Para.DistanceMin;
+  p.SpringEnable  = Para.SpringEnable;
+  p.SpringStiffness  = Para.SpringStiffness;
+  p.SpringDamping  = Para.SpringDamping;
+  p.DistanceProjectionFlag  = Para.DistanceProjectionFlag;
+  p.DistanceTolerance  = Para.DistanceTolerance;
+  p.Breakable  = Para.Breakable;
+  p.BreakForceMax  = Para.BreakForceMax;
+  p.BreakTorqueMax  = Para.BreakTorqueMax;
+  p.CollideJoint  = Para.CollideJoint;
+}
+
+
 void WpxRigidBodyJointsChained::Transform(const sMatrix34 & mat, PxScene * ptr)
 {
   TransformChilds(mat, ptr);
@@ -2269,17 +2333,17 @@ void WpxRigidBodyJointsChained::Transform(const sMatrix34 & mat, PxScene * ptr)
       return;
 
     // do nothing if joint indices are incorrect
-    if(Para.Joint1Index >= rb1->JointsFixations.GetCount() || Para.Joint2Index >= rb1->JointsFixations.GetCount())
+    if(Para.AttachmentPointA >= rb1->JointsFixations.GetCount() || Para.AttachmentPointB >= rb1->JointsFixations.GetCount())
       return;
 
     // get joint 1 pose
-    sInt indexJoint1 = Para.Joint1Index;
+    sInt indexJoint1 = Para.AttachmentPointA;
     PxMat44 pxmat1;
     sMatrix34 m1 = rb1->JointsFixations[indexJoint1]->Pose;
     sMatrix34ToPxMat44(m1, pxmat1);
 
     // get joint 2 pose
-    sInt indexJoint2 = Para.Joint2Index;
+    sInt indexJoint2 = Para.AttachmentPointB;
     PxMat44 pxmat2;
     sMatrix34 m2 = rb1->JointsFixations[indexJoint2]->Pose;
     sMatrix34ToPxMat44(m2, pxmat2);
@@ -2295,6 +2359,10 @@ void WpxRigidBodyJointsChained::Transform(const sMatrix34 & mat, PxScene * ptr)
 
     sVERIFY(c1 > 0);
 
+    WpxRigidBodyJointParaJoint p;
+    CopyJointParams(p, Para);
+
+
     for(sInt i=0; i<c1; i++)
     {
       if(i+1+offset1<c1)
@@ -2302,8 +2370,54 @@ void WpxRigidBodyJointsChained::Transform(const sMatrix34 & mat, PxScene * ptr)
         PxRigidActor * ra1 = static_cast<PxRigidActor*>(rb1->AllActors[i+offset1]->actor);
         PxRigidActor * ra2 = static_cast<PxRigidActor*>(rb1->AllActors[i+1+offset1]->actor);
 
+        //PxJoint * joint = 0;
+        //joint = PxSphericalJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
+
         PxJoint * joint = 0;
-        joint = PxSphericalJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
+        switch(Para.JointType)
+        {
+        case 0: // fixed
+          joint = PxFixedJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
+          if(joint && Para.FixedSettings)
+            SetFixedJoint(joint, &p);
+          break;
+
+        case 1: // spherical
+          joint = PxSphericalJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
+          if(joint && Para.SphericalSettings)
+            SetSphericalJoint(joint, &p);
+          break;
+
+        case 2: // revolute
+          joint = PxRevoluteJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
+          if(joint && Para.RevoluteSettings)
+            SetRevoluteJoint(joint, &p);
+          break;
+
+        case 3: // prismatic
+          joint = PxPrismaticJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
+          if(joint && Para.PrismaticSettings)
+            SetPrismaticJoint(joint, &p);
+          break;
+
+        case 4: // distance
+          joint = PxDistanceJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
+          if(joint && Para.DistanceSettings)
+            SetDistanceJoint(joint, &p);
+          break;
+        }
+
+        if(joint)
+        {
+          // set breakable
+          if(Para.Breakable)
+            joint->setBreakForce(Para.BreakForceMax, Para.BreakTorqueMax);
+
+          // joints mesh can collide each other
+          if(Para.CollideJoint)
+            joint->setConstraintFlag(PxConstraintFlag::eCOLLISION_ENABLED, true);
+        }
+
       }
     }
 
