@@ -816,10 +816,10 @@ operator WpxRigidBodyJoint Joint "Joint" (WpxActorBase, ?WpxActorBase)
 
     if(JointType==0)
     {
-      layout flags FixedSettings ("default|custom") = 0;
+      layout flags FixedSettings ("default|advanced") = 0;
       if(FixedSettings)
       {
-        layout flags FixedProjectionFlag ("-|enabled") = 0;
+        layout flags FixedProjectionFlag "ProjectionFlag" ("-|enabled") = 0;
         if(FixedProjectionFlag)
         {
           float FixedProjectionLinearTolerance "LinearTolerance" (0..0x1000000 step 1) = 1;
@@ -830,50 +830,50 @@ operator WpxRigidBodyJoint Joint "Joint" (WpxActorBase, ?WpxActorBase)
 
     if(JointType==1)
     {
-      layout flags SphericalSettings ("default|custom") = 0;
+      layout flags SphericalSettings ("default|advanced") = 0;
       if(SphericalSettings)
       {
         layout flags LimitConeFlag ("-|enabled") = 0;
         if(LimitConeFlag)
         {
-          float LimitConeYLimitAngle "LimitConeAngleY" (0..180 step 1) = 90;
-          float LimitConeZLimitAngle "LimitConeAngleZ" (0..180 step 1) = 90;
-          float LimitConeSpringStiffness "Stiffness" (0..0x1000000 step 1) = 1;
-          float LimitConeSpringDamping "Damping" (0..0x1000000 step 1) = 0;
-          float SphericalLimitBounceThreshold "BounceThreshold" (0..0x1000000 step 1) = 1;
-          float SphericalLimitContactDistance "ContactDistance" (0..0x1000000 step 1) = 1;
-          float SphericalLimitRestitution "Restitution" (0..0x1000000 step 1) = 1;
+          float SphericalLimitConeAngleY "LimitConeAngleY" (0..180 step 1) = 90;
+          float SphericalLimitConeAngleZ "LimitConeAngleZ" (0..180 step 1) = 90;
+          float SphericalLimitConeSpringStiffness "Stiffness" (0..0x1000000 step 1) = 1;
+          float SphericalLimitConeSpringDamping "Damping" (0..0x1000000 step 1) = 0;
+          float SphericalLimitBounceThreshold "BounceThreshold" (0..0x1000000 step 1) = 0.1;
+          float SphericalLimitContactDistance "ContactDistance" (0..0x1000000 step 0.1) = 1;
+          float SphericalLimitRestitution "Restitution" (0..1 step 0.01) = 0;
         }
         layout flags SphericalProjectionFlag "ProjectionFlag" ("-|enabled") = 0;
         if(SphericalProjectionFlag)
         {
-          float SphericalProjectionLinearTolerance "LinearTolerance" (0..0x1000000 step 1) = 1;
+          float SphericalProjectionLinearTolerance "LinearTolerance" (0..0x1000000 step 1) = 0.1;
         }
       }
     }
 
     if(JointType==2)
     {
-      layout flags RevoluteSettings ("default|custom") = 0;
+      layout flags RevoluteSettings ("default|advanced") = 0;
       if(RevoluteSettings)
       {
         layout flags RevoluteLimitFlag ("-|enabled") = 0;
         if(RevoluteLimitFlag)
         {
-          float RevoluteUpperLimit (-360..360 step 0.01) = 0;
-          float RevoluteLowerLimit (-360..360 step 0.01) = 0;
-          float RevoluteLimitContactDistance (0..0x1000000 step 1) = 1;
+          float RevoluteUpperLimit "UpperLimit" (-360..360 step 0.01) = 0;
+          float RevoluteLowerLimit "LowerLimit" (-360..360 step 0.01) = 0;
+          float RevoluteLimitContactDistance "LimitContactDistance" (0..0x1000000 step 1) = 1;
           float RevoluteLimitDamping "Damping" (0..0x1000000 step 0.1) = 0;
           float RevoluteLimitRestitution "Restitution" (0..1 step 0.01) = 0;
           float RevoluteLimitSpring "Spring" (0..0x1000000 step 1) = 0;
         }
-        layout flags RevoluteDriveEnabled ("-|enabled") = 0;
-        layout flags RevoluteFreeSpinEnabled ("-|enabled") = 0;
-        float DriveForceLimit (0..0x100000 step 0.01) = 3.4028;
+        layout flags RevoluteDriveEnabled "Drive" ("-|enabled") = 0;
+        layout flags RevoluteFreeSpinEnabled "FreeSpin" ("-|enabled") = 0;
+        float DriveForceLimit (0..0x100000 step 0.01) = 10000;
         float DriveGearRatio (0..0x100000 step 0.01) = 1;
         float DriveVelocity (-0x100000..0x100000 step 0.01) = 0;
 
-        layout flags RevoluteProjectionFlag ("-|enabled") = 0;
+        layout flags RevoluteProjectionFlag "ProjectionFlag" ("-|enabled") = 0;
         if(RevoluteProjectionFlag)
         {
           float RevoluteProjectionLinearTolerance "LinearTolerance" (0..0x1000000 step 1) = 1;
@@ -884,20 +884,21 @@ operator WpxRigidBodyJoint Joint "Joint" (WpxActorBase, ?WpxActorBase)
 
     if(JointType==3)
     {
-      layout flags PrismaticSettings ("default|custom") = 0;
+      layout flags PrismaticSettings ("default|advanced") = 0;
       if(PrismaticSettings)
       {
         layout flags LimitPrismaticFlag ("-|enabled") = 0;
         if(LimitPrismaticFlag)
         {
-          float PrismaticUpperLimit (-194.966..194.966 step 0.01) = 194;
-          float PrismaticLowerLimit (-194.966..194.966 step 0.01) = -194;
-          float PrismaticLimitContactDistance (0..0x1000000 step 1) = 0.009;
+          float PrismaticUpperLimit "UpperLimit" (-0x1000000..0x1000000 step 0.01) = 5;
+          float PrismaticLowerLimit "LowerLimit" (-0x1000000..0x1000000 step 0.01) = -5;
+          float PrismaticLimitSpringStiffness "SpringStiffness" (0..0x1000000 step 1) = 1;
+          float PrismaticLimitSpringDamping "SpringDamping" (0..0x1000000 step 1) = 0;
           float PrismaticLimitDamping "Damping" (0..0x1000000 step 0.1) = 0;
           float PrismaticLimitRestitution "Restitution" (0..1 step 0.01) = 0;
           float PrismaticLimitSpring "Spring" (0..0x1000000 step 1) = 0;
         }
-        layout flags PrismaticProjectionFlag ("-|enabled") = 0;
+        layout flags PrismaticProjectionFlag "ProjectionFlag" ("-|enabled") = 0;
         if(PrismaticProjectionFlag)
         {
           float PrismaticProjectionLinearTolerance "LinearTolerance" (0..0x1000000 step 1) = 1;
@@ -908,7 +909,7 @@ operator WpxRigidBodyJoint Joint "Joint" (WpxActorBase, ?WpxActorBase)
 
     if(JointType==4)
     {
-      layout flags DistanceSettings ("default|custom") = 0;
+      layout flags DistanceSettings ("default|advanced") = 0;
       if(DistanceSettings)
       {
         layout flags MaxDistanceEnable ("-|enabled") = 0;
@@ -920,14 +921,19 @@ operator WpxRigidBodyJoint Joint "Joint" (WpxActorBase, ?WpxActorBase)
         if(MinDistanceEnable)
         {
           float DistanceMin (0..0x1000000 step 0.1) = 0;
-          float DistanceTolerance (0..0x1000000 step 0.1) = 0;
         }
         layout flags SpringEnable ("-|enabled") = 0;
         if(SpringEnable)
         {
-          float SpringStrength (0..0x1000000 step 0.1) = 10;
+          float SpringStiffness (0..0x1000000 step 0.1) = 10;
           float SpringDamping (0..0x1000000 step 0.1) = 1;
         }
+        layout flags DistanceProjectionFlag "ProjectionFlag" ("-|enabled") = 0;
+        if(DistanceProjectionFlag)
+        {
+          float DistanceTolerance (0..0x1000000 step 0.1) = 0;
+        }
+
       }
     }
 

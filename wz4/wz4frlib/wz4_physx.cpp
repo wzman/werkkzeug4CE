@@ -1931,9 +1931,9 @@ void SetSphericalJoint(PxJoint * joint, WpxRigidBodyJointParaJoint * j)
     sphericalJoint->setSphericalJointFlag(PxSphericalJointFlag::eLIMIT_ENABLED, sTRUE);
 
     PxReal a,b;
-    a = sDEG2RAD(j->LimitConeYLimitAngle);
-    b = sDEG2RAD(j->LimitConeZLimitAngle);
-    PxSpring c(j->LimitConeSpringStiffness, j->LimitConeSpringDamping);
+    a = sDEG2RAD(j->SphericalLimitConeAngleY);
+    b = sDEG2RAD(j->SphericalLimitConeAngleZ);
+    PxSpring c(j->SphericalLimitConeSpringStiffness, j->SphericalLimitConeSpringDamping);
 
     PxJointLimitCone limit(a,b,c);
     limit.bounceThreshold = j->SphericalLimitBounceThreshold;
@@ -1944,8 +1944,8 @@ void SetSphericalJoint(PxJoint * joint, WpxRigidBodyJointParaJoint * j)
 
   if(j->SphericalProjectionFlag)
   {
-    sphericalJoint->setConstraintFlag(PxConstraintFlag::ePROJECTION, true);
     sphericalJoint->setProjectionLinearTolerance(j->SphericalProjectionLinearTolerance);
+    sphericalJoint->setConstraintFlag(PxConstraintFlag::ePROJECTION, true);    
   }
 }
 
@@ -1981,10 +1981,10 @@ void SetRevoluteJoint(PxJoint * joint, WpxRigidBodyJointParaJoint * j)
   revoluteJoint->setDriveVelocity(j->DriveVelocity);
 
   if(j->RevoluteProjectionFlag)
-  {
-    revoluteJoint->setConstraintFlag(PxConstraintFlag::ePROJECTION, true);
+  {    
     revoluteJoint->setProjectionLinearTolerance(j->RevoluteProjectionLinearTolerance);
     revoluteJoint->setProjectionAngularTolerance(sDEG2RAD(j->RevoluteProjectionAngularTolerance));
+    revoluteJoint->setConstraintFlag(PxConstraintFlag::ePROJECTION, true);
   }
 }
 
@@ -1997,10 +1997,9 @@ void SetPrismaticJoint(PxJoint * joint, WpxRigidBodyJointParaJoint * j)
     prismaticJoint->setPrismaticJointFlag(PxPrismaticJointFlag::eLIMIT_ENABLED, sTRUE);
 
     PxReal a,b;
-    a = sDEG2RAD(j->PrismaticLowerLimit);
-    b = sDEG2RAD(j->PrismaticUpperLimit);
-    PxSpring c(1,1);// = j->PrismaticLimitContactDistance;
-    //c.damping
+    a = j->PrismaticLowerLimit;
+    b = j->PrismaticUpperLimit;
+    PxSpring c(j->PrismaticLimitSpringStiffness, j->PrismaticLimitSpringDamping);
 
     PxJointLinearLimitPair limit(a,b,c);
     limit.damping = j->PrismaticLimitDamping;
@@ -2011,10 +2010,10 @@ void SetPrismaticJoint(PxJoint * joint, WpxRigidBodyJointParaJoint * j)
   }
 
   if(j->PrismaticProjectionFlag)
-  {
-    prismaticJoint->setConstraintFlag(PxConstraintFlag::ePROJECTION, true);
+  {    
     prismaticJoint->setProjectionLinearTolerance(j->PrismaticProjectionLinearTolerance);
     prismaticJoint->setProjectionAngularTolerance(sDEG2RAD(j->PrismaticProjectionAngularTolerance));
+    prismaticJoint->setConstraintFlag(PxConstraintFlag::ePROJECTION, true);
   }
 }
 
@@ -2037,8 +2036,14 @@ void SetDistanceJoint(PxJoint * joint, WpxRigidBodyJointParaJoint * j)
   if(j->SpringEnable)
   {
     distanceJoint->setDistanceJointFlag(PxDistanceJointFlag::eSPRING_ENABLED, sTRUE);
-    //distanceJoint->setSpring(j->SpringStrength);
+    distanceJoint->setStiffness(j->SpringStiffness);
     distanceJoint->setDamping(j->SpringDamping);
+  }
+
+  if(j->DistanceProjectionFlag)
+  {    
+    distanceJoint->setTolerance(j->DistanceTolerance);
+    distanceJoint->setConstraintFlag(PxConstraintFlag::ePROJECTION, true);
   }
 }
 /****************************************************************************/
