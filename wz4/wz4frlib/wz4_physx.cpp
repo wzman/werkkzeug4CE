@@ -2084,6 +2084,13 @@ void WpxRigidBodyJoint::Transform(const sMatrix34 & mat, PxScene * ptr)
     sInt maxA = rb1->AllActors.GetCount();
     sInt maxB = rb2->AllActors.GetCount();
 
+    // get number of mul matrices
+    sInt matCount = Matrices.GetCount();
+
+    // get number of actor per mul
+    sInt maxAPerMat = maxA / matCount;
+    sInt maxBPerMat = maxB / matCount;
+
     sVERIFY(maxA>0 && maxB>0);
 
     // loop rules for actors A
@@ -2121,8 +2128,13 @@ void WpxRigidBodyJoint::Transform(const sMatrix34 & mat, PxScene * ptr)
       count1 = sMin(Para.CountA,maxA);
       step1 = Para.StepA;
       break;
-    }
 
+    case 5: // eachfirst
+      start1 = maxAPerMat * (matCount-1);
+      count1 = 1;
+      step1 = 0;
+      break;
+    }
 
     // loop rules for actors B
     sInt start2;
@@ -2159,92 +2171,76 @@ void WpxRigidBodyJoint::Transform(const sMatrix34 & mat, PxScene * ptr)
       count2 = sMin(Para.CountB,maxB);
       step2 = Para.StepB;
       break;
+
+     case 5: // eachfirst
+      start2 = maxBPerMat * (matCount-1);
+      count2 = 1;
+      step2 = 0;
+      break;
     }
 
-
-    // define offsets according multiply matrices
-    sInt matCount = Matrices.GetCount();
-    sInt child1MatCount =  Childs[firstChild]->Matrices.GetCount();
-    sInt child2MatCount =  Childs[secondChild]->Matrices.GetCount();
-    (child1MatCount == 0) ? child1MatCount = 1 : child1MatCount /= matCount;
-    (child2MatCount == 0) ? child2MatCount = 1 : child2MatCount /= matCount;
-    sInt offset1 = child1MatCount * (matCount-1);
-    sInt offset2 = child2MatCount * (matCount-1);
-
-    // build joints
-
-    sInt index1 = start1 + offset1;
-    sInt index2 = start2 + offset2;
-    sInt stop = sMax(count1,count2);
-
-    if(Para.RigidBodyA == 4 && Para.RigidBodyB != 4)
-      stop = count1;
-    else if(Para.RigidBodyB == 4 && Para.RigidBodyA != 4)
-      stop = count2;
-    else if (Para.RigidBodyA == 4 && Para.RigidBodyB == 4)
-      stop = sMin(count1,count2);
+    sInt stop = sMax(count1, count2);
+    sInt index1 = start1;
+    sInt index2 = start2;
 
     for(sInt i=0; i<stop; i++)
     {
-      if(index1>=maxA) index1 = maxA-1;
-      if(index2>=maxB) index2 = maxB-1;
-
-      sVERIFY(index1 < maxA);
-      sVERIFY(index2 < maxB);
-
-      PxRigidActor * ra1 = static_cast<PxRigidActor*>(rb1->AllActors[index1]->actor);
-      PxRigidActor * ra2 = static_cast<PxRigidActor*>(rb2->AllActors[index2]->actor);
-
-      PxJoint * joint = 0;
-
-      switch(Para.JointType)
+      if(index1 < maxA && index2 < maxB)
       {
-      case 0: // fixed
-        joint = PxFixedJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
-        if(joint && Para.FixedSettings)
-          SetFixedJoint(joint, &Para);
-        break;
 
-      case 1: // spherical
-        joint = PxSphericalJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
-        if(joint && Para.SphericalSettings)
-          SetSphericalJoint(joint, &Para);
-        break;
+        PxRigidActor * ra1 = static_cast<PxRigidActor*>(rb1->AllActors[index1]->actor);
+        PxRigidActor * ra2 = static_cast<PxRigidActor*>(rb2->AllActors[index2]->actor);
 
-      case 2: // revolute
+        PxJoint * joint = 0;
+        switch(Para.JointType)
+        {
+        case 0: // fixed
+          joint = PxFixedJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
+          if(joint && Para.FixedSettings)
+            SetFixedJoint(joint, &Para);
+          break;
+
+        case 1: // spherical
+          joint = PxSphericalJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
+          if(joint && Para.SphericalSettings)
+            SetSphericalJoint(joint, &Para);
+          break;
+
+        case 2: // revolute
           joint = PxRevoluteJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
           if(joint && Para.RevoluteSettings)
             SetRevoluteJoint(joint, &Para);
-        break;
+          break;
 
-      case 3: // prismatic
+        case 3: // prismatic
           joint = PxPrismaticJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
           if(joint && Para.PrismaticSettings)
             SetPrismaticJoint(joint, &Para);
-        break;
+          break;
 
-      case 4: // distance
+        case 4: // distance
           joint = PxDistanceJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
           if(joint && Para.DistanceSettings)
             SetDistanceJoint(joint, &Para);
-        break;
+          break;
+        }
+
+        if(joint)
+        {
+          // set breakable
+          if(Para.Breakable)
+            joint->setBreakForce(Para.BreakForceMax, Para.BreakTorqueMax);
+
+          // joints mesh can collide each other
+          if(Para.CollideJoint)
+            joint->setConstraintFlag(PxConstraintFlag::eCOLLISION_ENABLED, true);
+        }
+
       }
 
-      if(joint)
-      {
-        // set breakable
-        if(Para.Breakable)
-          joint->setBreakForce(Para.BreakForceMax, Para.BreakTorqueMax);
-
-        // joints mesh can collide each other
-        if(Para.CollideJoint)
-          joint->setConstraintFlag(PxConstraintFlag::eCOLLISION_ENABLED, true);
-      }
-
-      if(index1<maxA) index1 += step1;
-      if(index2<maxB) index2 += step2;
+      index1 += step1;
+      index2 += step2;
     }
-
 
   }
 }

@@ -788,7 +788,7 @@ operator WpxRigidBodyJoint Joint "Joint" (WpxActorBase, ?WpxActorBase)
   {
     group "Input Left";
     string RigidBodyNameA "RigidBodyName";
-    layout flags RigidBodyA "Instance" ("first|last|all|specified|range");
+    layout flags RigidBodyA "Instance" ("veryfirst|eachlast|all|specified|range|eachfirst");
     if(RigidBodyA==3 || RigidBodyA==4)
       int IdA "Identifier" (0..0x100000 step 1) = 0;
     if(RigidBodyA==4)
@@ -800,7 +800,7 @@ operator WpxRigidBodyJoint Joint "Joint" (WpxActorBase, ?WpxActorBase)
 
     group "Input Right";
     string RigidBodyNameB "RigidBodyName";
-    layout flags RigidBodyB "Instance" ("first|last|all|specified|range");
+    layout flags RigidBodyB "Instance" ("veryfirst|eachlast|all|specified|range|eachfirst");
     if(RigidBodyB==3 || RigidBodyB==4)
       int IdB "Identifier" (0..0x100000 step 1) = 0;
     if(RigidBodyB==4)
@@ -836,15 +836,15 @@ operator WpxRigidBodyJoint Joint "Joint" (WpxActorBase, ?WpxActorBase)
         layout flags LimitConeFlag ("-|enabled") = 0;
         if(LimitConeFlag)
         {
-          float LimitConeYLimitAngle (0..180 step 1) = 90;
-          float LimitConeZLimitAngle (0..180 step 1) = 90;
-          float LimitConeSpringStiffness (0..0x1000000 step 1) = 1;
-          float LimitConeSpringDamping (0..0x1000000 step 1) = 1;
-          float SphericalLimitBounceThreshold (0..0x1000000 step 1) = 1;
-          float SphericalLimitContactDistance (0..0x1000000 step 1) = 1;
-          float SphericalLimitRestitution (0..0x1000000 step 1) = 1;
+          float LimitConeYLimitAngle "LimitConeAngleY" (0..180 step 1) = 90;
+          float LimitConeZLimitAngle "LimitConeAngleZ" (0..180 step 1) = 90;
+          float LimitConeSpringStiffness "Stiffness" (0..0x1000000 step 1) = 1;
+          float LimitConeSpringDamping "Damping" (0..0x1000000 step 1) = 0;
+          float SphericalLimitBounceThreshold "BounceThreshold" (0..0x1000000 step 1) = 1;
+          float SphericalLimitContactDistance "ContactDistance" (0..0x1000000 step 1) = 1;
+          float SphericalLimitRestitution "Restitution" (0..0x1000000 step 1) = 1;
         }
-        layout flags SphericalProjectionFlag ("-|enabled") = 0;
+        layout flags SphericalProjectionFlag "ProjectionFlag" ("-|enabled") = 0;
         if(SphericalProjectionFlag)
         {
           float SphericalProjectionLinearTolerance "LinearTolerance" (0..0x1000000 step 1) = 1;
