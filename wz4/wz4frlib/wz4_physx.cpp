@@ -2350,28 +2350,23 @@ void WpxRigidBodyJointsChained::Transform(const sMatrix34 & mat, PxScene * ptr)
 
     // get number of actors in both input
     sInt c1 = rb1->AllActors.GetCount();
-
-    // compute matrices offset
-    sInt matCount = Matrices.GetCount();
-    sInt child1MatCount =  Childs[0]->Matrices.GetCount();
-    (child1MatCount == 0) ? child1MatCount = 1 : child1MatCount /= matCount;
-    sInt offset1 = child1MatCount * (matCount-1);
-
     sVERIFY(c1 > 0);
+
+    // get number of actors in both input
+    sInt maxA = rb1->AllActors.GetCount();
+    sInt matCount = Matrices.GetCount();
+    sInt maxAPerMat = maxA / matCount;
+    sInt start1 = maxAPerMat * (matCount-1);
 
     WpxRigidBodyJointParaJoint p;
     CopyJointParams(p, Para);
 
-
     for(sInt i=0; i<c1; i++)
     {
-      if(i+1+offset1<c1)
+      if(i+1+start1<c1)
       {
-        PxRigidActor * ra1 = static_cast<PxRigidActor*>(rb1->AllActors[i+offset1]->actor);
-        PxRigidActor * ra2 = static_cast<PxRigidActor*>(rb1->AllActors[i+1+offset1]->actor);
-
-        //PxJoint * joint = 0;
-        //joint = PxSphericalJointCreate(*gPhysicsSDK, ra1, PxTransform(pxmat1), ra2, PxTransform(pxmat2));
+        PxRigidActor * ra1 = static_cast<PxRigidActor*>(rb1->AllActors[i+start1]->actor);
+        PxRigidActor * ra2 = static_cast<PxRigidActor*>(rb1->AllActors[i+start1+1]->actor);
 
         PxJoint * joint = 0;
         switch(Para.JointType)
