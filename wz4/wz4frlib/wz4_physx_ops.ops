@@ -973,8 +973,7 @@ operator WpxRigidBodyJointsChained JointsChained "Chain" (WpxActorBase)
 
   parameter
   {
-    //int Joint1Index (0..0x100000 step 1) = 0;
-    //int Joint2Index (0..0x100000 step 1) = 1;
+    string RigidBodyNameA "RigidBodyName";
     int AttachmentPointA "AttachmentPointA" (0..0x100000 step 1) = 1;
     int AttachmentPointB "AttachmentPointB" (0..0x100000 step 1) = 0;
 
@@ -1122,8 +1121,10 @@ operator WpxRigidBodyJointsChained JointsChained "Chain" (WpxActorBase)
     out->ParaBase = out->Para = *para;
 
     out->AddActorsChilds(cmd);
+    sCopyString(out->NameA, cmd->Strings[0], 255);
 
     out->RootNode = node;
+    cmd->Strings[0] = 0;  // we don't want code
     out->AddChilds(cmd, 0);
   }
 }

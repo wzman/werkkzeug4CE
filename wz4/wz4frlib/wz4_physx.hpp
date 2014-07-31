@@ -298,6 +298,8 @@ class WpxRigidBodyJointsChained : public WpxActorBase
 public:
   WpxRigidBodyJointsChainedParaJointsChained ParaBase, Para;
   void Transform(const sMatrix34 & mat, PxScene * ptr);
+
+  sChar NameA[255];
 };
 
 /****************************************************************************/

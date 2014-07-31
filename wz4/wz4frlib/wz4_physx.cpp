@@ -1895,7 +1895,7 @@ WpxRigidBody * WpxActorBase::GetRigidBodyR(WpxActorBase * node, sChar * name)
 {
   WpxRigidBody * rb = static_cast<WpxRigidBody *>(node);
 
-  if(sCmpString(rb->Name, name) == 0)
+  if(sCmpString(rb->Name, L"") &&  sCmpString(rb->Name, name) == 0)
     return rb;
   else
   {
@@ -2324,9 +2324,9 @@ void WpxRigidBodyJointsChained::Transform(const sMatrix34 & mat, PxScene * ptr)
   {
     // get rigidbodies for input1
     WpxActorBase * ab1 = static_cast<WpxActorBase *>(Childs[0]);
-    WpxRigidBody * rb1 = GetRigidBodyR(ab1);
+    WpxRigidBody * rb1 = GetRigidBodyR(ab1, NameA);
 
-    sVERIFY(rb1);
+    if(!rb1) return;
 
     // do nothing if no joint poses in rigidbody
     if(rb1->JointsFixations.GetCount()==0)
